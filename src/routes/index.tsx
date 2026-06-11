@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState, useRef, useEffect } from "react";
+import { useMemo, useState, useRef } from "react";
 import {
   Brain, GraduationCap, Zap, MessagesSquare, BookOpen, Briefcase, Crown,
   ArrowRight, Check, Globe, Menu, X, Mail, Phone, ChevronUp, Star, Sparkles,
