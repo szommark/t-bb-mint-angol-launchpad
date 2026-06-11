@@ -170,6 +170,45 @@ function Index() {
   const formRef = useRef<HTMLDivElement>(null);
   const coursesRef = useRef<HTMLDivElement>(null);
 
+  const [form, setForm] = useState({ name: "", email: "", focus: "" });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const name = form.name.trim();
+    const email = form.email.trim();
+    if (!name) return toast.error(lang === "hu" ? "Add meg a neved." : lang === "de" ? "Bitte gib deinen Namen ein." : "Please enter your name.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return toast.error(lang === "hu" ? "Érvénytelen e-mail cím." : lang === "de" ? "Ungültige E-Mail-Adresse." : "Please enter a valid email.");
+    }
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/public/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, focus: form.focus || null, language: lang }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setSubmitted(true);
+      setForm({ name: "", email: "", focus: "" });
+      toast.success(
+        lang === "hu" ? "Köszönjük! Hamarosan jelentkezünk." :
+        lang === "de" ? "Danke! Wir melden uns in Kürze." :
+        "Thanks! We'll be in touch shortly."
+      );
+    } catch (err) {
+      console.error(err);
+      toast.error(
+        lang === "hu" ? "Hiba történt. Próbáld újra." :
+        lang === "de" ? "Etwas ist schiefgelaufen. Bitte erneut versuchen." :
+        "Something went wrong. Please try again."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const scrollTo = (ref: React.RefObject<HTMLDivElement | null>) => {
     ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     setMobileOpen(false);
