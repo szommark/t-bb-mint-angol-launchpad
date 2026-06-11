@@ -13,6 +13,7 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -168,6 +169,45 @@ function Index() {
   const t = translations[lang];
   const formRef = useRef<HTMLDivElement>(null);
   const coursesRef = useRef<HTMLDivElement>(null);
+
+  const [form, setForm] = useState({ name: "", email: "", focus: "" });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const name = form.name.trim();
+    const email = form.email.trim();
+    if (!name) return toast.error(lang === "hu" ? "Add meg a neved." : lang === "de" ? "Bitte gib deinen Namen ein." : "Please enter your name.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return toast.error(lang === "hu" ? "Érvénytelen e-mail cím." : lang === "de" ? "Ungültige E-Mail-Adresse." : "Please enter a valid email.");
+    }
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/public/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, focus: form.focus || null, language: lang }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setSubmitted(true);
+      setForm({ name: "", email: "", focus: "" });
+      toast.success(
+        lang === "hu" ? "Köszönjük! Hamarosan jelentkezünk." :
+        lang === "de" ? "Danke! Wir melden uns in Kürze." :
+        "Thanks! We'll be in touch shortly."
+      );
+    } catch (err) {
+      console.error(err);
+      toast.error(
+        lang === "hu" ? "Hiba történt. Próbáld újra." :
+        lang === "de" ? "Etwas ist schiefgelaufen. Bitte erneut versuchen." :
+        "Something went wrong. Please try again."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const scrollTo = (ref: React.RefObject<HTMLDivElement | null>) => {
     ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -362,22 +402,22 @@ function Index() {
               <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{t.form.title}</h2>
               <p className="mt-2 text-sm text-muted-foreground">{t.form.sub}</p>
             </div>
-            <form onSubmit={(e) => { e.preventDefault(); }} className="mt-8 space-y-5">
+            <form onSubmit={handleSubmit} className="mt-8 space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="name">{t.form.name}</Label>
-                <Input id="name" placeholder="Jane Doe" className="h-11" />
+                <Input id="name" required maxLength={120} value={form.name}
+                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                  placeholder="Jane Doe" className="h-11" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">{t.form.email}</Label>
-                <Input id="email" type="email" placeholder="you@company.com" className="h-11" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">{t.form.password}</Label>
-                <Input id="password" type="password" placeholder="••••••••" className="h-11" />
+                <Input id="email" type="email" required maxLength={255} value={form.email}
+                  onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                  placeholder="you@company.com" className="h-11" />
               </div>
               <div className="space-y-2">
                 <Label>{t.form.focus}</Label>
-                <Select>
+                <Select value={form.focus} onValueChange={(v) => setForm((f) => ({ ...f, focus: v }))}>
                   <SelectTrigger className="h-11">
                     <SelectValue placeholder={t.form.focusPh} />
                   </SelectTrigger>
@@ -388,9 +428,17 @@ function Index() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button type="submit" className="h-12 w-full bg-[var(--teal-accent)] text-base font-semibold text-primary-foreground hover:bg-[var(--teal-accent-strong)]">
-                {t.form.submit} <ArrowRight className="ml-1.5 h-4 w-4" />
+              <Button type="submit" disabled={submitting}
+                className="h-12 w-full bg-[var(--teal-accent)] text-base font-semibold text-primary-foreground hover:bg-[var(--teal-accent-strong)] disabled:opacity-60">
+                {submitting ? "…" : t.form.submit} <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
+              {submitted && (
+                <p className="text-center text-sm text-[var(--teal-accent-strong)]">
+                  {lang === "hu" ? "Köszönjük! Hamarosan jelentkezünk e-mailben." :
+                   lang === "de" ? "Danke! Wir melden uns per E-Mail." :
+                   "Thanks! A confirmation email is on the way."}
+                </p>
+              )}
             </form>
           </div>
         </div>
