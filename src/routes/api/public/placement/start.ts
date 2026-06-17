@@ -15,19 +15,13 @@ const IntakeSchema = z.object({
   }),
 });
 
-const QuestionSchema = z.object({
-  questions: z
-    .array(
-      z.object({
-        id: z.string(),
-        prompt: z.string(),
-        options: z.array(z.string()).length(4),
-        correctIndex: z.number().int().min(0).max(3),
-        skill: z.enum(["grammar", "vocabulary", "reading"]),
-        cefr: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
-      }),
-    )
-    .length(20),
+const ItemSchema = z.object({
+  id: z.string(),
+  prompt: z.string(),
+  options: z.array(z.string()).length(4),
+  answer: z.string(),
+  skill: z.enum(["grammar", "vocabulary", "reading"]),
+  cefr: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
 });
 
 export const Route = createFileRoute("/api/public/placement/start")({
@@ -77,7 +71,7 @@ export const Route = createFileRoute("/api/public/placement/start")({
         const gateway = createLovableAiGatewayProvider(key);
         const model = gateway("google/gemini-3-flash-preview");
 
-        const sys = `You are an expert English placement test designer. Generate exactly 20 multiple-choice questions to estimate a learner's CEFR level (A1-C2). Distribute across CEFR levels roughly: 3 A1, 3 A2, 4 B1, 4 B2, 3 C1, 3 C2. Mix grammar, vocabulary, and short reading-comprehension items. Each question has exactly 4 distinct plausible options and one correct answer. Questions and options must be in English (the test measures English ability). Prompts must be self-contained, unambiguous, and free of trick wording.`;
+        const sys = `You are an expert English placement test designer. Generate exactly 20 multiple-choice questions to estimate a learner's CEFR level (A1-C2). Distribute across CEFR levels roughly: 3 A1, 3 A2, 4 B1, 4 B2, 3 C1, 3 C2. Mix grammar, vocabulary, and short reading-comprehension items. Each question has exactly 4 distinct plausible options. The "answer" field MUST be the full text of one of the four options (exact string match). Questions and options must be in English (the test measures English ability). Prompts must be self-contained and unambiguous.`;
 
         const userPrompt = `Learner profile:
 - Self-assessed level: ${intake.selfLevel}
@@ -86,20 +80,37 @@ export const Route = createFileRoute("/api/public/placement/start")({
 - Last actively used English: ${intake.lastUsed}
 - Skills they want to develop: ${intake.skills.join(", ")}
 
-Bias question topics toward the learner's focus area where natural (e.g. business vocabulary if focus is professional). Use ids q1..q20.`;
+Bias question topics toward the learner's focus area where natural. Use ids q1..q20. Return an array of 20 items.`;
 
-        let questions;
+        let rawItems: z.infer<typeof ItemSchema>[];
         try {
           const result = await generateObject({
             model,
-            schema: QuestionSchema,
+            output: "array",
+            schema: ItemSchema,
             system: sys,
             prompt: userPrompt,
           });
-          questions = result.object.questions;
+          rawItems = result.object;
         } catch (e) {
           console.error("[placement/start] AI error", e);
           return Response.json({ error: "Could not generate the test. Please try again." }, { status: 502 });
+        }
+
+        // Map answer string to correctIndex; drop malformed items
+        const questions = rawItems
+          .map((q) => {
+            const idx = q.options.findIndex((o) => o.trim().toLowerCase() === q.answer.trim().toLowerCase());
+            if (idx < 0) return null;
+            return {
+              id: q.id, prompt: q.prompt, options: q.options,
+              correctIndex: idx, skill: q.skill, cefr: q.cefr,
+            };
+          })
+          .filter((q): q is NonNullable<typeof q> => q !== null);
+
+        if (questions.length < 10) {
+          return Response.json({ error: "Test generation produced too few valid items, please retry." }, { status: 502 });
         }
 
         const { error: updErr } = await supabaseAdmin
