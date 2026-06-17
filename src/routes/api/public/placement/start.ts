@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { generateObject } from "ai";
+import { generateText } from "ai";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 
@@ -15,13 +15,13 @@ const IntakeSchema = z.object({
   }),
 });
 
-const ItemSchema = z.object({
+const RawItemSchema = z.object({
   id: z.string(),
-  prompt: z.string(),
+  question: z.string(),
   options: z.array(z.string()).length(4),
   answer: z.string(),
-  skill: z.enum(["grammar", "vocabulary", "reading"]),
-  cefr: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
+  level: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
+  skill: z.enum(["grammar", "vocabulary", "reading"]).optional(),
 });
 
 export const Route = createFileRoute("/api/public/placement/start")({
@@ -71,7 +71,7 @@ export const Route = createFileRoute("/api/public/placement/start")({
         const gateway = createLovableAiGatewayProvider(key);
         const model = gateway("google/gemini-3-flash-preview");
 
-        const sys = `You are an expert English placement test designer. Generate exactly 20 multiple-choice questions to estimate a learner's CEFR level (A1-C2). Distribute across CEFR levels roughly: 3 A1, 3 A2, 4 B1, 4 B2, 3 C1, 3 C2. Mix grammar, vocabulary, and short reading-comprehension items. Each question has exactly 4 distinct plausible options. The "answer" field MUST be the full text of one of the four options (exact string match). Questions and options must be in English (the test measures English ability). Prompts must be self-contained and unambiguous.`;
+        const sys = `You are an expert English placement test designer. Generate exactly 20 multiple-choice questions to estimate a learner's CEFR level (A1-C2). Distribute roughly: 3 A1, 3 A2, 4 B1, 4 B2, 3 C1, 3 C2. Mix grammar, vocabulary, and short reading items. Each item has exactly 4 distinct plausible options. The "answer" field MUST be the full text of one of the four options (exact string match). Output JSON ONLY — no prose, no markdown fences.`;
 
         const userPrompt = `Learner profile:
 - Self-assessed level: ${intake.selfLevel}
@@ -80,18 +80,25 @@ export const Route = createFileRoute("/api/public/placement/start")({
 - Last actively used English: ${intake.lastUsed}
 - Skills they want to develop: ${intake.skills.join(", ")}
 
-Bias question topics toward the learner's focus area where natural. Use ids q1..q20. Return an array of 20 items.`;
+Bias topics toward the learner's focus area where natural. Use ids q1..q20.
 
-        let rawItems: z.infer<typeof ItemSchema>[];
+Return a JSON array of 20 objects with this exact shape:
+[{"id":"q1","question":"...","options":["A","B","C","D"],"answer":"<exact text of correct option>","level":"A1","skill":"grammar"}, ...]
+
+level must be one of: A1, A2, B1, B2, C1, C2.
+skill must be one of: grammar, vocabulary, reading.`;
+
+        let rawItems: z.infer<typeof RawItemSchema>[];
         try {
-          const result = await generateObject({
+          const result = await generateText({
             model,
-            output: "array",
-            schema: ItemSchema,
             system: sys,
             prompt: userPrompt,
           });
-          rawItems = result.object;
+          const text = result.text.trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "");
+          const parsed = JSON.parse(text);
+          const arr = Array.isArray(parsed) ? parsed : parsed?.questions ?? parsed?.items;
+          rawItems = z.array(RawItemSchema).parse(arr);
         } catch (e) {
           console.error("[placement/start] AI error", e);
           return Response.json({ error: "Could not generate the test. Please try again." }, { status: 502 });
@@ -103,8 +110,8 @@ Bias question topics toward the learner's focus area where natural. Use ids q1..
             const idx = q.options.findIndex((o) => o.trim().toLowerCase() === q.answer.trim().toLowerCase());
             if (idx < 0) return null;
             return {
-              id: q.id, prompt: q.prompt, options: q.options,
-              correctIndex: idx, skill: q.skill, cefr: q.cefr,
+              id: q.id, prompt: q.question, options: q.options,
+              correctIndex: idx, skill: q.skill ?? "grammar", cefr: q.level,
             };
           })
           .filter((q): q is NonNullable<typeof q> => q !== null);
