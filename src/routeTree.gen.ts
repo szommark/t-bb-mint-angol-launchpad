@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PlacementTestLeadIdRouteImport } from './routes/placement-test.$leadId'
 import { Route as ApiPublicLeadsRouteImport } from './routes/api/public/leads'
 import { Route as ApiPublicPlacementSubmitRouteImport } from './routes/api/public/placement/submit'
 import { Route as ApiPublicPlacementStateRouteImport } from './routes/api/public/placement/state'
@@ -18,6 +19,11 @@ import { Route as ApiPublicPlacementStartRouteImport } from './routes/api/public
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlacementTestLeadIdRoute = PlacementTestLeadIdRouteImport.update({
+  id: '/placement-test/$leadId',
+  path: '/placement-test/$leadId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicLeadsRoute = ApiPublicLeadsRouteImport.update({
@@ -44,6 +50,7 @@ const ApiPublicPlacementStartRoute = ApiPublicPlacementStartRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
   '/api/public/placement/start': typeof ApiPublicPlacementStartRoute
   '/api/public/placement/state': typeof ApiPublicPlacementStateRoute
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
   '/api/public/placement/start': typeof ApiPublicPlacementStartRoute
   '/api/public/placement/state': typeof ApiPublicPlacementStateRoute
@@ -59,6 +67,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
   '/api/public/placement/start': typeof ApiPublicPlacementStartRoute
   '/api/public/placement/state': typeof ApiPublicPlacementStateRoute
@@ -68,6 +77,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/placement-test/$leadId'
     | '/api/public/leads'
     | '/api/public/placement/start'
     | '/api/public/placement/state'
@@ -75,6 +85,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/placement-test/$leadId'
     | '/api/public/leads'
     | '/api/public/placement/start'
     | '/api/public/placement/state'
@@ -82,6 +93,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/placement-test/$leadId'
     | '/api/public/leads'
     | '/api/public/placement/start'
     | '/api/public/placement/state'
@@ -90,6 +102,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PlacementTestLeadIdRoute: typeof PlacementTestLeadIdRoute
   ApiPublicLeadsRoute: typeof ApiPublicLeadsRoute
   ApiPublicPlacementStartRoute: typeof ApiPublicPlacementStartRoute
   ApiPublicPlacementStateRoute: typeof ApiPublicPlacementStateRoute
@@ -103,6 +116,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/placement-test/$leadId': {
+      id: '/placement-test/$leadId'
+      path: '/placement-test/$leadId'
+      fullPath: '/placement-test/$leadId'
+      preLoaderRoute: typeof PlacementTestLeadIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/leads': {
@@ -138,6 +158,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PlacementTestLeadIdRoute: PlacementTestLeadIdRoute,
   ApiPublicLeadsRoute: ApiPublicLeadsRoute,
   ApiPublicPlacementStartRoute: ApiPublicPlacementStartRoute,
   ApiPublicPlacementStateRoute: ApiPublicPlacementStateRoute,
