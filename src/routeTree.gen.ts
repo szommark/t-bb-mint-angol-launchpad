@@ -11,6 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiPublicLeadsRouteImport } from './routes/api/public/leads'
+import { Route as ApiPublicPlacementSubmitRouteImport } from './routes/api/public/placement/submit'
+import { Route as ApiPublicPlacementStateRouteImport } from './routes/api/public/placement/state'
+import { Route as ApiPublicPlacementStartRouteImport } from './routes/api/public/placement/start'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +25,75 @@ const ApiPublicLeadsRoute = ApiPublicLeadsRouteImport.update({
   path: '/api/public/leads',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPlacementSubmitRoute =
+  ApiPublicPlacementSubmitRouteImport.update({
+    id: '/api/public/placement/submit',
+    path: '/api/public/placement/submit',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicPlacementStateRoute = ApiPublicPlacementStateRouteImport.update({
+  id: '/api/public/placement/state',
+  path: '/api/public/placement/state',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicPlacementStartRoute = ApiPublicPlacementStartRouteImport.update({
+  id: '/api/public/placement/start',
+  path: '/api/public/placement/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
+  '/api/public/placement/start': typeof ApiPublicPlacementStartRoute
+  '/api/public/placement/state': typeof ApiPublicPlacementStateRoute
+  '/api/public/placement/submit': typeof ApiPublicPlacementSubmitRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
+  '/api/public/placement/start': typeof ApiPublicPlacementStartRoute
+  '/api/public/placement/state': typeof ApiPublicPlacementStateRoute
+  '/api/public/placement/submit': typeof ApiPublicPlacementSubmitRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
+  '/api/public/placement/start': typeof ApiPublicPlacementStartRoute
+  '/api/public/placement/state': typeof ApiPublicPlacementStateRoute
+  '/api/public/placement/submit': typeof ApiPublicPlacementSubmitRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/public/leads'
+  fullPaths:
+    | '/'
+    | '/api/public/leads'
+    | '/api/public/placement/start'
+    | '/api/public/placement/state'
+    | '/api/public/placement/submit'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/public/leads'
-  id: '__root__' | '/' | '/api/public/leads'
+  to:
+    | '/'
+    | '/api/public/leads'
+    | '/api/public/placement/start'
+    | '/api/public/placement/state'
+    | '/api/public/placement/submit'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/public/leads'
+    | '/api/public/placement/start'
+    | '/api/public/placement/state'
+    | '/api/public/placement/submit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiPublicLeadsRoute: typeof ApiPublicLeadsRoute
+  ApiPublicPlacementStartRoute: typeof ApiPublicPlacementStartRoute
+  ApiPublicPlacementStateRoute: typeof ApiPublicPlacementStateRoute
+  ApiPublicPlacementSubmitRoute: typeof ApiPublicPlacementSubmitRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +112,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicLeadsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/placement/submit': {
+      id: '/api/public/placement/submit'
+      path: '/api/public/placement/submit'
+      fullPath: '/api/public/placement/submit'
+      preLoaderRoute: typeof ApiPublicPlacementSubmitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/placement/state': {
+      id: '/api/public/placement/state'
+      path: '/api/public/placement/state'
+      fullPath: '/api/public/placement/state'
+      preLoaderRoute: typeof ApiPublicPlacementStateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/placement/start': {
+      id: '/api/public/placement/start'
+      path: '/api/public/placement/start'
+      fullPath: '/api/public/placement/start'
+      preLoaderRoute: typeof ApiPublicPlacementStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiPublicLeadsRoute: ApiPublicLeadsRoute,
+  ApiPublicPlacementStartRoute: ApiPublicPlacementStartRoute,
+  ApiPublicPlacementStateRoute: ApiPublicPlacementStateRoute,
+  ApiPublicPlacementSubmitRoute: ApiPublicPlacementSubmitRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
