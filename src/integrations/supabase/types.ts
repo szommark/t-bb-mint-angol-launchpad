@@ -16,28 +16,46 @@ export type Database = {
     Tables: {
       leads: {
         Row: {
+          cefr_level: string | null
+          completed_at: string | null
           created_at: string
           email: string
           focus: string | null
           id: string
+          intake: Json | null
           language: string
           name: string
+          score_summary: string | null
+          test_answers: Json | null
+          test_questions: Json | null
         }
         Insert: {
+          cefr_level?: string | null
+          completed_at?: string | null
           created_at?: string
           email: string
           focus?: string | null
           id?: string
+          intake?: Json | null
           language?: string
           name: string
+          score_summary?: string | null
+          test_answers?: Json | null
+          test_questions?: Json | null
         }
         Update: {
+          cefr_level?: string | null
+          completed_at?: string | null
           created_at?: string
           email?: string
           focus?: string | null
           id?: string
+          intake?: Json | null
           language?: string
           name?: string
+          score_summary?: string | null
+          test_answers?: Json | null
+          test_questions?: Json | null
         }
         Relationships: []
       }

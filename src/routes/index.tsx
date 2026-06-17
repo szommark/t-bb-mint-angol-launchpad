@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, useRef } from "react";
 import {
   Brain, GraduationCap, Zap, MessagesSquare, BookOpen, Briefcase, Crown,
@@ -169,6 +169,7 @@ function Index() {
   const t = translations[lang];
   const formRef = useRef<HTMLDivElement>(null);
   const coursesRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   const [form, setForm] = useState({ name: "", email: "", focus: "" });
   const [submitting, setSubmitting] = useState(false);
@@ -190,13 +191,18 @@ function Index() {
         body: JSON.stringify({ name, email, focus: form.focus || null, language: lang }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
       setSubmitted(true);
-      setForm({ name: "", email: "", focus: "" });
       toast.success(
         lang === "hu" ? "Köszönjük! Hamarosan jelentkezünk." :
         lang === "de" ? "Danke! Wir melden uns in Kürze." :
         "Thanks! We'll be in touch shortly."
       );
+      if (data?.id) {
+        navigate({ to: "/placement-test/$leadId", params: { leadId: data.id } });
+        return;
+      }
+      setForm({ name: "", email: "", focus: "" });
     } catch (err) {
       console.error(err);
       toast.error(

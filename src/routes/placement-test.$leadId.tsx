@@ -1,0 +1,435 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import { toast } from "sonner";
+
+type Lang = "en" | "hu" | "de";
+type Level = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+type Skill = "reading" | "writing" | "speaking" | "listening";
+
+type Question = {
+  id: string;
+  prompt: string;
+  options: string[];
+  skill: string;
+  cefr: Level;
+};
+
+type Result = {
+  level: Level;
+  totalCorrect: number;
+  totalQ: number;
+  summary: string;
+};
+
+const t = {
+  en: {
+    title: "Free English Placement Test",
+    sub: "A short intake, then 20 quick questions. About 10 minutes.",
+    intake: {
+      heading: "Tell us a bit about you",
+      selfLevel: "Self-assessed level",
+      selfPh: "Choose a level",
+      focus: "Main focus area",
+      focusPh: "What do you want to use English for?",
+      years: "Years studying English",
+      last: "Last time you actively used English",
+      skills: "Skills you most want to improve",
+      start: "Generate my test",
+    },
+    generating: "Crafting your personalized test…",
+    test: { prev: "Previous", next: "Next", submit: "Submit test", q: "Question" },
+    result: {
+      heading: "Your estimated level",
+      back: "Back to homepage",
+      booking: "Book my consultation",
+    },
+    levelLabel: {
+      A1: "Beginner", A2: "Elementary", B1: "Intermediate",
+      B2: "Upper-Intermediate", C1: "Advanced", C2: "Proficient",
+    } as Record<Level, string>,
+    skillLabels: { reading: "Reading", writing: "Writing", speaking: "Speaking", listening: "Listening" } as Record<Skill, string>,
+    yearsOpts: ["< 1", "1–3", "3–5", "5–10", "10+"],
+    lastOpts: ["Currently", "Last month", "Last year", "Several years ago", "Long ago"],
+    requiredAll: "Please answer every question before submitting.",
+    pickLevel: "Please pick a level.",
+    pickSkill: "Please pick at least one skill.",
+  },
+  hu: {
+    title: "Ingyenes angol szintfelmérő",
+    sub: "Rövid bemutatkozás, majd 20 gyors kérdés. Kb. 10 perc.",
+    intake: {
+      heading: "Mesélj magadról röviden",
+      selfLevel: "Önbecsült szint",
+      selfPh: "Válassz szintet",
+      focus: "Fő fókuszterület",
+      focusPh: "Mire használnád az angolt?",
+      years: "Évek óta tanulsz angolt",
+      last: "Mikor használtad utoljára aktívan?",
+      skills: "Melyik készségeden fejlesztenél leginkább?",
+      start: "Teszt indítása",
+    },
+    generating: "Személyre szabott teszt készítése…",
+    test: { prev: "Előző", next: "Következő", submit: "Beküldés", q: "Kérdés" },
+    result: {
+      heading: "Becsült szinted",
+      back: "Vissza a főoldalra",
+      booking: "Konzultáció foglalása",
+    },
+    levelLabel: {
+      A1: "Kezdő", A2: "Alapfok", B1: "Középhaladó",
+      B2: "Középfok+", C1: "Haladó", C2: "Mestermű",
+    } as Record<Level, string>,
+    skillLabels: { reading: "Olvasás", writing: "Írás", speaking: "Beszéd", listening: "Hallás" } as Record<Skill, string>,
+    yearsOpts: ["< 1", "1–3", "3–5", "5–10", "10+"],
+    lastOpts: ["Most is", "Múlt hónap", "Tavaly", "Több éve", "Nagyon régen"],
+    requiredAll: "Kérlek válaszolj minden kérdésre a beküldés előtt.",
+    pickLevel: "Válassz egy szintet.",
+    pickSkill: "Válassz legalább egy készséget.",
+  },
+  de: {
+    title: "Kostenloser Englisch-Einstufungstest",
+    sub: "Kurze Vorstellung, dann 20 schnelle Fragen. Etwa 10 Minuten.",
+    intake: {
+      heading: "Erzähle uns kurz von dir",
+      selfLevel: "Selbsteinschätzung",
+      selfPh: "Niveau wählen",
+      focus: "Hauptfokus",
+      focusPh: "Wofür möchtest du Englisch nutzen?",
+      years: "Jahre, die du Englisch lernst",
+      last: "Wann hast du Englisch zuletzt aktiv genutzt?",
+      skills: "Welche Fähigkeiten möchtest du verbessern?",
+      start: "Test starten",
+    },
+    generating: "Personalisierter Test wird erstellt…",
+    test: { prev: "Zurück", next: "Weiter", submit: "Test abschicken", q: "Frage" },
+    result: {
+      heading: "Dein geschätztes Niveau",
+      back: "Zurück zur Startseite",
+      booking: "Beratungstermin buchen",
+    },
+    levelLabel: {
+      A1: "Anfänger", A2: "Grundkenntnisse", B1: "Mittelstufe",
+      B2: "Obere Mittelstufe", C1: "Fortgeschritten", C2: "Muttersprachlich",
+    } as Record<Level, string>,
+    skillLabels: { reading: "Lesen", writing: "Schreiben", speaking: "Sprechen", listening: "Hören" } as Record<Skill, string>,
+    yearsOpts: ["< 1", "1–3", "3–5", "5–10", "10+"],
+    lastOpts: ["Aktuell", "Letzten Monat", "Letztes Jahr", "Vor mehreren Jahren", "Vor sehr langer Zeit"],
+    requiredAll: "Bitte beantworte alle Fragen vor dem Absenden.",
+    pickLevel: "Bitte wähle ein Niveau.",
+    pickSkill: "Bitte wähle mindestens eine Fähigkeit.",
+  },
+} as const;
+
+export const Route = createFileRoute("/placement-test/$leadId")({
+  head: () => ({
+    meta: [
+      { title: "Placement Test — Több mint angol" },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
+  component: PlacementTest,
+});
+
+type Step = "loading" | "intake" | "generating" | "test" | "result";
+
+function PlacementTest() {
+  const { leadId } = Route.useParams();
+  const navigate = useNavigate();
+
+  const [lang, setLang] = useState<Lang>("en");
+  const [name, setName] = useState("");
+  const [step, setStep] = useState<Step>("loading");
+
+  const [selfLevel, setSelfLevel] = useState<Level | "">("");
+  const [focus, setFocus] = useState("");
+  const [years, setYears] = useState("");
+  const [lastUsed, setLastUsed] = useState("");
+  const [skills, setSkills] = useState<Skill[]>([]);
+
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [qIdx, setQIdx] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState<Result | null>(null);
+
+  const lc = t[lang];
+
+  // Load existing state for refresh-safety
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/public/placement/state?leadId=${leadId}`);
+        if (!res.ok) {
+          if (!cancelled) {
+            toast.error("Could not load your test session.");
+            setStep("intake");
+          }
+          return;
+        }
+        const data = await res.json();
+        if (cancelled) return;
+        if (data.language && (["en", "hu", "de"] as const).includes(data.language)) setLang(data.language);
+        if (data.name) setName(data.name);
+        if (data.focus) setFocus(data.focus);
+        if (data.completedAt && data.cefrLevel) {
+          setResult({ level: data.cefrLevel, totalCorrect: 0, totalQ: 0, summary: data.summary ?? "" });
+          setStep("result");
+          return;
+        }
+        if (Array.isArray(data.questions) && data.questions.length > 0) {
+          setQuestions(data.questions);
+          setStep("test");
+          return;
+        }
+        setStep("intake");
+      } catch (e) {
+        console.error(e);
+        if (!cancelled) setStep("intake");
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [leadId]);
+
+  const toggleSkill = (s: Skill) =>
+    setSkills((cur) => (cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s]));
+
+  const startTest = async () => {
+    if (!selfLevel) return toast.error(lc.pickLevel);
+    if (skills.length === 0) return toast.error(lc.pickSkill);
+    setStep("generating");
+    try {
+      const res = await fetch("/api/public/placement/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          leadId,
+          intake: {
+            selfLevel, focus: focus || null,
+            yearsStudied: years || "unspecified",
+            lastUsed: lastUsed || "unspecified",
+            skills, language: lang,
+          },
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "Failed");
+      setQuestions(data.questions);
+      setQIdx(0);
+      setAnswers({});
+      setStep("test");
+    } catch (e) {
+      console.error(e);
+      toast.error(e instanceof Error ? e.message : "Could not generate the test.");
+      setStep("intake");
+    }
+  };
+
+  const submitTest = async () => {
+    if (Object.keys(answers).length < questions.length) {
+      return toast.error(lc.requiredAll);
+    }
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/public/placement/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ leadId, answers }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "Failed");
+      setResult({ level: data.level, totalCorrect: data.totalCorrect, totalQ: data.totalQ, summary: data.summary });
+      setStep("result");
+    } catch (e) {
+      console.error(e);
+      toast.error(e instanceof Error ? e.message : "Could not submit.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const progress = useMemo(
+    () => (questions.length ? Math.round(((qIdx + 1) / questions.length) * 100) : 0),
+    [qIdx, questions.length],
+  );
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="border-b border-border/60 bg-background/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-5">
+          <Link to="/" className="flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--gradient-hero)] text-xs font-bold text-primary-foreground shadow-[var(--shadow-card)]">T</span>
+            <span className="text-[15px] font-semibold tracking-tight">Több mint angol</span>
+          </Link>
+          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{lc.title}</div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-3xl px-5 py-12">
+        {step === "loading" && (
+          <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+            <Loader2 className="h-8 w-8 animate-spin text-[var(--teal-accent-strong)]" />
+          </div>
+        )}
+
+        {step === "intake" && (
+          <div className="rounded-3xl border border-border bg-card p-8 shadow-[var(--shadow-elegant)] sm:p-10">
+            <div className="mb-8 text-center">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--teal-accent)]/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--teal-accent-strong)]">
+                <Sparkles className="h-3 w-3" /> {lc.title}
+              </span>
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight">
+                {name ? `${lc.intake.heading}, ${name.split(" ")[0]}` : lc.intake.heading}
+              </h1>
+              <p className="mt-2 text-sm text-muted-foreground">{lc.sub}</p>
+            </div>
+
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label>{lc.intake.selfLevel}</Label>
+                <Select value={selfLevel} onValueChange={(v) => setSelfLevel(v as Level)}>
+                  <SelectTrigger className="h-11"><SelectValue placeholder={lc.intake.selfPh} /></SelectTrigger>
+                  <SelectContent>
+                    {(["A1", "A2", "B1", "B2", "C1", "C2"] as Level[]).map((l) => (
+                      <SelectItem key={l} value={l}>{l} — {lc.levelLabel[l]}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="focus">{lc.intake.focus}</Label>
+                <Input id="focus" value={focus} onChange={(e) => setFocus(e.target.value)} maxLength={120} placeholder={lc.intake.focusPh} className="h-11" />
+              </div>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>{lc.intake.years}</Label>
+                  <Select value={years} onValueChange={setYears}>
+                    <SelectTrigger className="h-11"><SelectValue placeholder="—" /></SelectTrigger>
+                    <SelectContent>
+                      {lc.yearsOpts.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>{lc.intake.last}</Label>
+                  <Select value={lastUsed} onValueChange={setLastUsed}>
+                    <SelectTrigger className="h-11"><SelectValue placeholder="—" /></SelectTrigger>
+                    <SelectContent>
+                      {lc.lastOpts.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <Label>{lc.intake.skills}</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  {(["reading", "writing", "speaking", "listening"] as Skill[]).map((s) => (
+                    <label key={s} className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3.5 transition-colors ${skills.includes(s) ? "border-[var(--teal-accent)] bg-[var(--teal-accent)]/5" : "border-border hover:bg-muted/40"}`}>
+                      <Checkbox checked={skills.includes(s)} onCheckedChange={() => toggleSkill(s)} />
+                      <span className="text-sm font-medium">{lc.skillLabels[s]}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <Button onClick={startTest}
+                className="h-12 w-full bg-[var(--teal-accent)] text-base font-semibold text-primary-foreground hover:bg-[var(--teal-accent-strong)]">
+                {lc.intake.start} <ArrowRight className="ml-1.5 h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {step === "generating" && (
+          <div className="flex flex-col items-center justify-center py-32 text-center">
+            <div className="relative">
+              <Loader2 className="h-10 w-10 animate-spin text-[var(--teal-accent-strong)]" />
+            </div>
+            <p className="mt-5 text-sm font-medium text-muted-foreground">{lc.generating}</p>
+          </div>
+        )}
+
+        {step === "test" && questions.length > 0 && (() => {
+          const q = questions[qIdx];
+          const sel = answers[q.id];
+          const isLast = qIdx === questions.length - 1;
+          return (
+            <div className="rounded-3xl border border-border bg-card p-7 shadow-[var(--shadow-card)] sm:p-9">
+              <div className="mb-6 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <span>{lc.test.q} {qIdx + 1} / {questions.length}</span>
+                <span className="text-[var(--teal-accent-strong)]">{q.cefr}</span>
+              </div>
+              <Progress value={progress} className="mb-8 h-1.5" />
+              <h2 className="text-lg font-semibold leading-snug text-foreground sm:text-xl">{q.prompt}</h2>
+              <RadioGroup
+                value={sel !== undefined ? String(sel) : ""}
+                onValueChange={(v) => setAnswers((a) => ({ ...a, [q.id]: Number(v) }))}
+                className="mt-6 space-y-3"
+              >
+                {q.options.map((opt, i) => (
+                  <label key={i}
+                    className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors ${sel === i ? "border-[var(--teal-accent)] bg-[var(--teal-accent)]/5" : "border-border hover:bg-muted/40"}`}>
+                    <RadioGroupItem value={String(i)} className="mt-0.5" />
+                    <span className="text-sm leading-relaxed">{opt}</span>
+                  </label>
+                ))}
+              </RadioGroup>
+              <div className="mt-8 flex items-center justify-between">
+                <Button variant="outline" onClick={() => setQIdx((i) => Math.max(0, i - 1))} disabled={qIdx === 0}>
+                  <ArrowLeft className="mr-1.5 h-4 w-4" /> {lc.test.prev}
+                </Button>
+                {isLast ? (
+                  <Button onClick={submitTest} disabled={submitting}
+                    className="bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)]">
+                    {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <>{lc.test.submit} <CheckCircle2 className="ml-1.5 h-4 w-4" /></>}
+                  </Button>
+                ) : (
+                  <Button onClick={() => setQIdx((i) => Math.min(questions.length - 1, i + 1))}
+                    disabled={sel === undefined}
+                    className="bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)]">
+                    {lc.test.next} <ArrowRight className="ml-1.5 h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+
+        {step === "result" && result && (
+          <div className="rounded-3xl border border-border bg-card p-8 text-center shadow-[var(--shadow-elegant)] sm:p-12">
+            <div className="mx-auto inline-flex h-16 w-16 items-center justify-center rounded-full bg-[var(--teal-accent)]/15">
+              <CheckCircle2 className="h-8 w-8 text-[var(--teal-accent-strong)]" />
+            </div>
+            <p className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">{lc.result.heading}</p>
+            <div className="mt-3 text-6xl font-semibold tracking-tight" style={{ background: "var(--gradient-hero)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              {result.level}
+            </div>
+            <div className="mt-1 text-base font-medium text-foreground">{lc.levelLabel[result.level]}</div>
+            {result.summary && (
+              <p className="mx-auto mt-5 max-w-md text-sm leading-relaxed text-muted-foreground">{result.summary}</p>
+            )}
+            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Button onClick={() => navigate({ to: "/" })} variant="outline">
+                {lc.result.back}
+              </Button>
+              <Button onClick={() => navigate({ to: "/" })}
+                className="bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)]">
+                {lc.result.booking} <ArrowRight className="ml-1.5 h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
