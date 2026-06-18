@@ -228,7 +228,13 @@ function PlacementTest() {
         if (data.name) setName(data.name);
         if (data.focus) setFocus(data.focus);
         if (data.completedAt && data.cefrLevel) {
-          setResult({ level: data.cefrLevel, totalCorrect: 0, totalQ: 0, summary: data.summary ?? "" });
+          setResult({
+            level: data.cefrLevel,
+            totalCorrect: 0,
+            totalQ: 0,
+            summary: data.summary ?? "",
+            review: Array.isArray(data.review) ? data.review : [],
+          });
           setStep("result");
           return;
         }
@@ -293,7 +299,13 @@ function PlacementTest() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ?? "Failed");
-      setResult({ level: data.level, totalCorrect: data.totalCorrect, totalQ: data.totalQ, summary: data.summary });
+      setResult({
+        level: data.level,
+        totalCorrect: data.totalCorrect,
+        totalQ: data.totalQ,
+        summary: data.summary,
+        review: Array.isArray(data.review) ? data.review : [],
+      });
       setStep("result");
     } catch (e) {
       console.error(e);
