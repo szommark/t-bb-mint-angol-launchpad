@@ -26,6 +26,7 @@ export type Database = {
           language: string
           name: string
           score_summary: string | null
+          session_token_hash: string | null
           test_answers: Json | null
           test_questions: Json | null
         }
@@ -40,6 +41,7 @@ export type Database = {
           language?: string
           name: string
           score_summary?: string | null
+          session_token_hash?: string | null
           test_answers?: Json | null
           test_questions?: Json | null
         }
@@ -54,6 +56,7 @@ export type Database = {
           language?: string
           name?: string
           score_summary?: string | null
+          session_token_hash?: string | null
           test_answers?: Json | null
           test_questions?: Json | null
         }

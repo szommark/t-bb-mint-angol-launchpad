@@ -199,6 +199,9 @@ function Index() {
         "Thanks! We'll be in touch shortly."
       );
       if (data?.id) {
+        if (data?.sessionToken) {
+          try { sessionStorage.setItem(`lead-token:${data.id}`, data.sessionToken); } catch {}
+        }
         navigate({ to: "/placement-test/$leadId", params: { leadId: data.id } });
         return;
       }

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { randomBytes, createHash } from "crypto";
 
 const LeadSchema = z.object({
   name: z.string().trim().min(1).max(120),
@@ -51,6 +52,11 @@ export const Route = createFileRoute("/api/public/leads")({
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+        // Issue a one-time session token that the client must present on every
+        // subsequent placement API call. Only the SHA-256 hash is stored.
+        const sessionToken = randomBytes(32).toString("base64url");
+        const sessionTokenHash = createHash("sha256").update(sessionToken).digest("hex");
+
         const { data: inserted, error } = await supabaseAdmin
           .from("leads")
           .insert({
@@ -58,6 +64,7 @@ export const Route = createFileRoute("/api/public/leads")({
             email: data.email,
             focus: data.focus ?? null,
             language: data.language,
+            session_token_hash: sessionTokenHash,
           })
           .select("id")
           .single();
@@ -100,7 +107,7 @@ export const Route = createFileRoute("/api/public/leads")({
           console.warn("[leads] email send failed", e);
         }
 
-        return Response.json({ ok: true, id: inserted.id });
+        return Response.json({ ok: true, id: inserted.id, sessionToken });
       },
     },
   },

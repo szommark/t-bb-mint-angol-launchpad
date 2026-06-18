@@ -145,6 +145,11 @@ type Step = "loading" | "intake" | "generating" | "test" | "result";
 function PlacementTest() {
   const { leadId } = Route.useParams();
   const navigate = useNavigate();
+  const sessionToken = (() => {
+    if (typeof window === "undefined") return "";
+    try { return sessionStorage.getItem(`lead-token:${leadId}`) ?? ""; } catch { return ""; }
+  })();
+  const authHeaders: Record<string, string> = sessionToken ? { "X-Lead-Token": sessionToken } : {};
 
   const [lang, setLang] = useState<Lang>("en");
   const [name, setName] = useState("");
@@ -169,7 +174,7 @@ function PlacementTest() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`/api/public/placement/state?leadId=${leadId}`);
+        const res = await fetch(`/api/public/placement/state?leadId=${leadId}`, { headers: authHeaders });
         if (!res.ok) {
           if (!cancelled) {
             toast.error("Could not load your test session.");
@@ -211,7 +216,7 @@ function PlacementTest() {
     try {
       const res = await fetch("/api/public/placement/start", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders },
         body: JSON.stringify({
           leadId,
           intake: {
@@ -243,7 +248,7 @@ function PlacementTest() {
     try {
       const res = await fetch("/api/public/placement/submit", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders },
         body: JSON.stringify({ leadId, answers }),
       });
       const data = await res.json();
