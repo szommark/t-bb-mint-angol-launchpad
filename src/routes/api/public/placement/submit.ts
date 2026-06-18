@@ -1,20 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { extractLeadToken, verifyLeadToken } from "@/lib/placement-auth.server";
+import { buildReview, type StoredQuestion } from "@/lib/placement-review.server";
 
 const SubmitSchema = z.object({
   leadId: z.string().uuid(),
   answers: z.record(z.string(), z.number().int().min(0).max(3)),
 });
-
-type StoredQuestion = {
-  id: string;
-  prompt: string;
-  options: string[];
-  correctIndex: number;
-  skill: "grammar" | "vocabulary" | "reading";
-  cefr: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
-};
 
 const LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"] as const;
 
@@ -98,6 +90,7 @@ export const Route = createFileRoute("/api/public/placement/submit")({
           totalQ,
           summary,
           byLevel,
+          review: buildReview(questions, answers),
         });
       },
     },

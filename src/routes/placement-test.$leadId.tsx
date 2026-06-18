@@ -29,6 +29,19 @@ type Result = {
   totalCorrect: number;
   totalQ: number;
   summary: string;
+  review: ReviewItem[];
+};
+
+type ReviewItem = {
+  id: string;
+  prompt: string;
+  cefr: Level;
+  options: string[];
+  userIndex: number | null;
+  userAnswer: string | null;
+  correctIndex: number;
+  correctAnswer: string;
+  explanation: string;
 };
 
 const t = {
@@ -52,6 +65,15 @@ const t = {
       heading: "Your estimated level",
       back: "Back to homepage",
       booking: "Book my consultation",
+    },
+    review: {
+      heading: "Review your answers",
+      empty: "Perfect run — nothing to review.",
+      yours: "Your answer",
+      correct: "Correct answer",
+      noAnswer: "No answer",
+      why: "Why",
+      score: "Score",
     },
     levelLabel: {
       A1: "Beginner", A2: "Elementary", B1: "Intermediate",
@@ -85,6 +107,15 @@ const t = {
       back: "Vissza a főoldalra",
       booking: "Konzultáció foglalása",
     },
+    review: {
+      heading: "Kérdések átnézésre",
+      empty: "Hibátlan teljesítmény — nincs mit átnézni.",
+      yours: "A te válaszod",
+      correct: "Helyes válasz",
+      noAnswer: "Nincs válasz",
+      why: "Magyarázat",
+      score: "Pontszám",
+    },
     levelLabel: {
       A1: "Kezdő", A2: "Alapfok", B1: "Középhaladó",
       B2: "Középfok+", C1: "Haladó", C2: "Mestermű",
@@ -116,6 +147,15 @@ const t = {
       heading: "Dein geschätztes Niveau",
       back: "Zurück zur Startseite",
       booking: "Beratungstermin buchen",
+    },
+    review: {
+      heading: "Fragen zur Wiederholung",
+      empty: "Perfekter Lauf — nichts zu wiederholen.",
+      yours: "Deine Antwort",
+      correct: "Richtige Antwort",
+      noAnswer: "Keine Antwort",
+      why: "Erklärung",
+      score: "Punktzahl",
     },
     levelLabel: {
       A1: "Anfänger", A2: "Grundkenntnisse", B1: "Mittelstufe",
@@ -188,7 +228,13 @@ function PlacementTest() {
         if (data.name) setName(data.name);
         if (data.focus) setFocus(data.focus);
         if (data.completedAt && data.cefrLevel) {
-          setResult({ level: data.cefrLevel, totalCorrect: 0, totalQ: 0, summary: data.summary ?? "" });
+          setResult({
+            level: data.cefrLevel,
+            totalCorrect: 0,
+            totalQ: 0,
+            summary: data.summary ?? "",
+            review: Array.isArray(data.review) ? data.review : [],
+          });
           setStep("result");
           return;
         }
@@ -253,7 +299,13 @@ function PlacementTest() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ?? "Failed");
-      setResult({ level: data.level, totalCorrect: data.totalCorrect, totalQ: data.totalQ, summary: data.summary });
+      setResult({
+        level: data.level,
+        totalCorrect: data.totalCorrect,
+        totalQ: data.totalQ,
+        summary: data.summary,
+        review: Array.isArray(data.review) ? data.review : [],
+      });
       setStep("result");
     } catch (e) {
       console.error(e);
@@ -411,6 +463,7 @@ function PlacementTest() {
         })()}
 
         {step === "result" && result && (
+          <div className="space-y-6">
           <div className="rounded-3xl border border-border bg-card p-8 text-center shadow-[var(--shadow-elegant)] sm:p-12">
             <div className="mx-auto inline-flex h-16 w-16 items-center justify-center rounded-full bg-[var(--teal-accent)]/15">
               <CheckCircle2 className="h-8 w-8 text-[var(--teal-accent-strong)]" />
@@ -420,6 +473,11 @@ function PlacementTest() {
               {result.level}
             </div>
             <div className="mt-1 text-base font-medium text-foreground">{lc.levelLabel[result.level]}</div>
+            {result.totalQ > 0 && (
+              <div className="mt-3 text-sm font-semibold text-foreground">
+                {lc.review.score}: {result.totalCorrect}/{result.totalQ}
+              </div>
+            )}
             {result.summary && (
               <p className="mx-auto mt-5 max-w-md text-sm leading-relaxed text-muted-foreground">{result.summary}</p>
             )}
@@ -432,6 +490,44 @@ function PlacementTest() {
                 {lc.result.booking} <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
             </div>
+          </div>
+
+          <div className="rounded-3xl border border-border bg-card p-7 shadow-[var(--shadow-card)] sm:p-9">
+            <h2 className="text-lg font-semibold tracking-tight sm:text-xl">{lc.review.heading}</h2>
+            {result.review.length === 0 ? (
+              <p className="mt-3 text-sm text-muted-foreground">{lc.review.empty}</p>
+            ) : (
+              <ol className="mt-5 space-y-4">
+                {result.review.map((r, i) => (
+                  <li key={r.id} className="rounded-2xl border border-border bg-background/40 p-5">
+                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <span className="rounded-full bg-[var(--teal-accent)]/15 px-2 py-0.5 text-[var(--teal-accent-strong)]">{r.cefr}</span>
+                      <span>#{i + 1}</span>
+                    </div>
+                    <p className="text-sm font-medium leading-snug text-foreground sm:text-base">{r.prompt}</p>
+                    <div className="mt-3 space-y-1.5 text-sm">
+                      <div className="flex flex-wrap gap-x-2">
+                        <span className="font-semibold text-destructive">{lc.review.yours}:</span>
+                        <span className="text-foreground/90 line-through decoration-destructive/60">
+                          {r.userAnswer ?? lc.review.noAnswer}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-x-2">
+                        <span className="font-semibold text-[var(--teal-accent-strong)]">{lc.review.correct}:</span>
+                        <span className="text-foreground">{r.correctAnswer}</span>
+                      </div>
+                    </div>
+                    {r.explanation && (
+                      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                        <span className="font-semibold text-foreground/80">{lc.review.why}: </span>
+                        {r.explanation}
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
           </div>
         )}
       </main>
