@@ -29,6 +29,19 @@ type Result = {
   totalCorrect: number;
   totalQ: number;
   summary: string;
+  review: ReviewItem[];
+};
+
+type ReviewItem = {
+  id: string;
+  prompt: string;
+  cefr: Level;
+  options: string[];
+  userIndex: number | null;
+  userAnswer: string | null;
+  correctIndex: number;
+  correctAnswer: string;
+  explanation: string;
 };
 
 const t = {
@@ -52,6 +65,15 @@ const t = {
       heading: "Your estimated level",
       back: "Back to homepage",
       booking: "Book my consultation",
+    },
+    review: {
+      heading: "Review your answers",
+      empty: "Perfect run — nothing to review.",
+      yours: "Your answer",
+      correct: "Correct answer",
+      noAnswer: "No answer",
+      why: "Why",
+      score: "Score",
     },
     levelLabel: {
       A1: "Beginner", A2: "Elementary", B1: "Intermediate",
@@ -85,6 +107,15 @@ const t = {
       back: "Vissza a főoldalra",
       booking: "Konzultáció foglalása",
     },
+    review: {
+      heading: "Kérdések átnézésre",
+      empty: "Hibátlan teljesítmény — nincs mit átnézni.",
+      yours: "A te válaszod",
+      correct: "Helyes válasz",
+      noAnswer: "Nincs válasz",
+      why: "Magyarázat",
+      score: "Pontszám",
+    },
     levelLabel: {
       A1: "Kezdő", A2: "Alapfok", B1: "Középhaladó",
       B2: "Középfok+", C1: "Haladó", C2: "Mestermű",
@@ -116,6 +147,15 @@ const t = {
       heading: "Dein geschätztes Niveau",
       back: "Zurück zur Startseite",
       booking: "Beratungstermin buchen",
+    },
+    review: {
+      heading: "Fragen zur Wiederholung",
+      empty: "Perfekter Lauf — nichts zu wiederholen.",
+      yours: "Deine Antwort",
+      correct: "Richtige Antwort",
+      noAnswer: "Keine Antwort",
+      why: "Erklärung",
+      score: "Punktzahl",
     },
     levelLabel: {
       A1: "Anfänger", A2: "Grundkenntnisse", B1: "Mittelstufe",
