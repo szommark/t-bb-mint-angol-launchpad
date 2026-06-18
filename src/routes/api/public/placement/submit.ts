@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { extractLeadToken, verifyLeadToken } from "@/lib/placement-auth.server";
 
 const SubmitSchema = z.object({
   leadId: z.string().uuid(),
@@ -41,6 +42,7 @@ export const Route = createFileRoute("/api/public/placement/submit")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const token = extractLeadToken(request);
         let raw: unknown;
         try {
           raw = await request.json();
@@ -57,10 +59,13 @@ export const Route = createFileRoute("/api/public/placement/submit")({
 
         const { data: lead, error } = await supabaseAdmin
           .from("leads")
-          .select("id, test_questions, language, intake")
+          .select("id, test_questions, language, intake, session_token_hash")
           .eq("id", leadId)
           .maybeSingle();
         if (error || !lead) return Response.json({ error: "Lead not found" }, { status: 404 });
+        if (!verifyLeadToken(token, lead.session_token_hash)) {
+          return Response.json({ error: "Unauthorized" }, { status: 401 });
+        }
         if (!lead.test_questions) return Response.json({ error: "No test in progress" }, { status: 400 });
 
         const questions = lead.test_questions as StoredQuestion[];
