@@ -30,6 +30,7 @@ type Result = {
   totalQ: number;
   summary: string;
   review: ReviewItem[];
+  byLevel: Record<string, { correct: number; total: number }>;
 };
 
 type ReviewItem = {
@@ -75,6 +76,7 @@ const t = {
       why: "Why",
       score: "Score",
     },
+      byLevelHeading: "Accuracy by level",
     levelLabel: {
       A1: "Beginner", A2: "Elementary", B1: "Intermediate",
       B2: "Upper-Intermediate", C1: "Advanced", C2: "Proficient",
