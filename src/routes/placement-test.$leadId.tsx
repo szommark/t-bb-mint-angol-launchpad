@@ -118,6 +118,7 @@ const t = {
       why: "Magyarázat",
       score: "Pontszám",
     },
+    byLevelHeading: "Pontosság szintenként",
     levelLabel: {
       A1: "Kezdő", A2: "Alapfok", B1: "Középhaladó",
       B2: "Középfok+", C1: "Haladó", C2: "Mestermű",
@@ -159,6 +160,7 @@ const t = {
       why: "Erklärung",
       score: "Punktzahl",
     },
+    byLevelHeading: "Genauigkeit pro Niveau",
     levelLabel: {
       A1: "Anfänger", A2: "Grundkenntnisse", B1: "Mittelstufe",
       B2: "Obere Mittelstufe", C1: "Fortgeschritten", C2: "Muttersprachlich",
@@ -232,10 +234,11 @@ function PlacementTest() {
         if (data.completedAt && data.cefrLevel) {
           setResult({
             level: data.cefrLevel,
-            totalCorrect: 0,
-            totalQ: 0,
+            totalCorrect: typeof data.totalCorrect === "number" ? data.totalCorrect : 0,
+            totalQ: typeof data.totalQ === "number" ? data.totalQ : 0,
             summary: data.summary ?? "",
             review: Array.isArray(data.review) ? data.review : [],
+            byLevel: data.byLevel ?? {},
           });
           setStep("result");
           return;
@@ -307,6 +310,7 @@ function PlacementTest() {
         totalQ: data.totalQ,
         summary: data.summary,
         review: Array.isArray(data.review) ? data.review : [],
+        byLevel: data.byLevel ?? {},
       });
       setStep("result");
     } catch (e) {
