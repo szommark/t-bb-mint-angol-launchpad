@@ -30,6 +30,7 @@ type Result = {
   totalQ: number;
   summary: string;
   review: ReviewItem[];
+  byLevel: Record<string, { correct: number; total: number }>;
 };
 
 type ReviewItem = {
@@ -75,6 +76,7 @@ const t = {
       why: "Why",
       score: "Score",
     },
+      byLevelHeading: "Accuracy by level",
     levelLabel: {
       A1: "Beginner", A2: "Elementary", B1: "Intermediate",
       B2: "Upper-Intermediate", C1: "Advanced", C2: "Proficient",
@@ -116,6 +118,7 @@ const t = {
       why: "Magyarázat",
       score: "Pontszám",
     },
+    byLevelHeading: "Pontosság szintenként",
     levelLabel: {
       A1: "Kezdő", A2: "Alapfok", B1: "Középhaladó",
       B2: "Középfok+", C1: "Haladó", C2: "Mestermű",
@@ -157,6 +160,7 @@ const t = {
       why: "Erklärung",
       score: "Punktzahl",
     },
+    byLevelHeading: "Genauigkeit pro Niveau",
     levelLabel: {
       A1: "Anfänger", A2: "Grundkenntnisse", B1: "Mittelstufe",
       B2: "Obere Mittelstufe", C1: "Fortgeschritten", C2: "Muttersprachlich",
@@ -230,10 +234,11 @@ function PlacementTest() {
         if (data.completedAt && data.cefrLevel) {
           setResult({
             level: data.cefrLevel,
-            totalCorrect: 0,
-            totalQ: 0,
+            totalCorrect: typeof data.totalCorrect === "number" ? data.totalCorrect : 0,
+            totalQ: typeof data.totalQ === "number" ? data.totalQ : 0,
             summary: data.summary ?? "",
             review: Array.isArray(data.review) ? data.review : [],
+            byLevel: data.byLevel ?? {},
           });
           setStep("result");
           return;
@@ -305,6 +310,7 @@ function PlacementTest() {
         totalQ: data.totalQ,
         summary: data.summary,
         review: Array.isArray(data.review) ? data.review : [],
+        byLevel: data.byLevel ?? {},
       });
       setStep("result");
     } catch (e) {
@@ -478,9 +484,45 @@ function PlacementTest() {
                 {lc.review.score}: {result.totalCorrect}/{result.totalQ}
               </div>
             )}
-            {result.summary && (
-              <p className="mx-auto mt-5 max-w-md text-sm leading-relaxed text-muted-foreground">{result.summary}</p>
-            )}
+            {(() => {
+              const order: Level[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
+              const rows = order
+                .map((l) => ({ level: l, ...(result.byLevel?.[l] ?? { correct: 0, total: 0 }) }))
+                .filter((r) => r.total > 0);
+              if (rows.length === 0) return null;
+              return (
+                <div className="mx-auto mt-6 max-w-md text-left">
+                  <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    {lc.byLevelHeading}
+                  </p>
+                  <ul className="space-y-2.5">
+                    {rows.map((r) => {
+                      const pct = Math.round((r.correct / r.total) * 100);
+                      const color =
+                        pct >= 75
+                          ? "var(--teal-accent-strong)"
+                          : pct >= 50
+                          ? "var(--teal-accent)"
+                          : "hsl(var(--destructive))";
+                      return (
+                        <li key={r.level} className="flex items-center gap-3">
+                          <span className="w-8 shrink-0 text-xs font-semibold text-foreground/80">{r.level}</span>
+                          <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-muted">
+                            <div
+                              className="h-full rounded-full transition-all"
+                              style={{ width: `${pct}%`, backgroundColor: color }}
+                            />
+                          </div>
+                          <span className="w-20 shrink-0 text-right text-xs font-medium tabular-nums text-muted-foreground">
+                            {pct}% ({r.correct}/{r.total})
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              );
+            })()}
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button onClick={() => navigate({ to: "/" })} variant="outline">
                 {lc.result.back}

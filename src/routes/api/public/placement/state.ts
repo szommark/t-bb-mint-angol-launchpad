@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { extractLeadToken, verifyLeadToken } from "@/lib/placement-auth.server";
-import { buildReview, type StoredQuestion } from "@/lib/placement-review.server";
+import { buildReview, computeByLevel, type StoredQuestion } from "@/lib/placement-review.server";
 
 export const Route = createFileRoute("/api/public/placement/state")({
   server: {
@@ -30,11 +30,21 @@ export const Route = createFileRoute("/api/public/placement/state")({
           : null;
 
         let review: ReturnType<typeof buildReview> | null = null;
+        let byLevel: ReturnType<typeof computeByLevel>["byLevel"] | null = null;
+        let totalCorrect = 0;
+        let totalQ = 0;
         if (data.completed_at && Array.isArray(data.test_questions) && data.test_answers) {
           review = buildReview(
             data.test_questions as StoredQuestion[],
             data.test_answers as Record<string, number>,
           );
+          const stats = computeByLevel(
+            data.test_questions as StoredQuestion[],
+            data.test_answers as Record<string, number>,
+          );
+          byLevel = stats.byLevel;
+          totalCorrect = stats.totalCorrect;
+          totalQ = stats.totalQ;
         }
 
         return Response.json({
@@ -48,6 +58,9 @@ export const Route = createFileRoute("/api/public/placement/state")({
           summary: data.score_summary,
           completedAt: data.completed_at,
           review,
+          byLevel,
+          totalCorrect,
+          totalQ,
         });
       },
     },
