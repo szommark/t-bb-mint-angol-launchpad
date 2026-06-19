@@ -484,9 +484,45 @@ function PlacementTest() {
                 {lc.review.score}: {result.totalCorrect}/{result.totalQ}
               </div>
             )}
-            {result.summary && (
-              <p className="mx-auto mt-5 max-w-md text-sm leading-relaxed text-muted-foreground">{result.summary}</p>
-            )}
+            {(() => {
+              const order: Level[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
+              const rows = order
+                .map((l) => ({ level: l, ...(result.byLevel?.[l] ?? { correct: 0, total: 0 }) }))
+                .filter((r) => r.total > 0);
+              if (rows.length === 0) return null;
+              return (
+                <div className="mx-auto mt-6 max-w-md text-left">
+                  <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    {lc.byLevelHeading}
+                  </p>
+                  <ul className="space-y-2.5">
+                    {rows.map((r) => {
+                      const pct = Math.round((r.correct / r.total) * 100);
+                      const color =
+                        pct >= 75
+                          ? "var(--teal-accent-strong)"
+                          : pct >= 50
+                          ? "var(--teal-accent)"
+                          : "hsl(var(--destructive))";
+                      return (
+                        <li key={r.level} className="flex items-center gap-3">
+                          <span className="w-8 shrink-0 text-xs font-semibold text-foreground/80">{r.level}</span>
+                          <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-muted">
+                            <div
+                              className="h-full rounded-full transition-all"
+                              style={{ width: `${pct}%`, backgroundColor: color }}
+                            />
+                          </div>
+                          <span className="w-20 shrink-0 text-right text-xs font-medium tabular-nums text-muted-foreground">
+                            {pct}% ({r.correct}/{r.total})
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              );
+            })()}
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button onClick={() => navigate({ to: "/" })} variant="outline">
                 {lc.result.back}
