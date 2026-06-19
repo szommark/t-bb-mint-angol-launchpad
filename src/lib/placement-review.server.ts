@@ -12,6 +12,25 @@ const LEVEL_ORDER: Record<StoredQuestion["cefr"], number> = {
   A1: 0, A2: 1, B1: 2, B2: 3, C1: 4, C2: 5,
 };
 
+const ALL_LEVELS: StoredQuestion["cefr"][] = ["A1", "A2", "B1", "B2", "C1", "C2"];
+
+export function computeByLevel(
+  questions: StoredQuestion[],
+  answers: Record<string, number>,
+) {
+  const byLevel: Record<string, { correct: number; total: number }> = {};
+  for (const l of ALL_LEVELS) byLevel[l] = { correct: 0, total: 0 };
+  let totalCorrect = 0;
+  for (const q of questions) {
+    byLevel[q.cefr].total += 1;
+    if (answers[q.id] === q.correctIndex) {
+      byLevel[q.cefr].correct += 1;
+      totalCorrect += 1;
+    }
+  }
+  return { byLevel, totalCorrect, totalQ: questions.length };
+}
+
 export function buildReview(
   questions: StoredQuestion[],
   answers: Record<string, number>,
