@@ -1,0 +1,1 @@
+ALTER TABLE public.test_attempts ADD COLUMN IF NOT EXISTS total_questions integer NOT NULL DEFAULT 0;

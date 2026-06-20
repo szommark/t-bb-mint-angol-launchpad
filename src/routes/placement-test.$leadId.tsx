@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, Sparkles } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, Sparkles, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -87,6 +87,9 @@ const t = {
     requiredAll: "Please answer every question before submitting.",
     pickLevel: "Please pick a level.",
     pickSkill: "Please pick at least one skill.",
+    timeLeft: "Time left",
+    timedOut: "Time's up — submitting what you've answered.",
+    unansweredNote: (n: number) => `${n} unanswered — submitting anyway.`,
   },
   hu: {
     title: "Ingyenes angol szintfelmérő",
@@ -129,6 +132,9 @@ const t = {
     requiredAll: "Kérlek válaszolj minden kérdésre a beküldés előtt.",
     pickLevel: "Válassz egy szintet.",
     pickSkill: "Válassz legalább egy készséget.",
+    timeLeft: "Hátralévő idő",
+    timedOut: "Lejárt az idő — a megválaszolt kérdések beküldve.",
+    unansweredNote: (n: number) => `${n} megválaszolatlan kérdés — beküldés folyamatban.`,
   },
   de: {
     title: "Kostenloser Englisch-Einstufungstest",
@@ -171,8 +177,14 @@ const t = {
     requiredAll: "Bitte beantworte alle Fragen vor dem Absenden.",
     pickLevel: "Bitte wähle ein Niveau.",
     pickSkill: "Bitte wähle mindestens eine Fähigkeit.",
+    timeLeft: "Verbleibende Zeit",
+    timedOut: "Zeit abgelaufen — beantwortete Fragen werden gesendet.",
+    unansweredNote: (n: number) => `${n} unbeantwortet — wird trotzdem gesendet.`,
   },
 } as const;
+
+const TEST_DURATION_SECONDS = 600;
+const deadlineKey = (leadId: string) => `placement-deadline:${leadId}`;
 
 export const Route = createFileRoute("/placement-test/$leadId")({
   head: () => ({
@@ -210,6 +222,10 @@ function PlacementTest() {
   const [qIdx, setQIdx] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
+  const [remaining, setRemaining] = useState<number | null>(null);
+  const submittedRef = useRef(false);
+  const answersRef = useRef(answers);
+  useEffect(() => { answersRef.current = answers; }, [answers]);
 
   const lc = t[lang];
 
@@ -292,18 +308,21 @@ function PlacementTest() {
   };
 
   const submitTest = async () => {
-    if (Object.keys(answers).length < questions.length) {
-      return toast.error(lc.requiredAll);
-    }
+    if (submittedRef.current) return;
+    submittedRef.current = true;
+    const currentAnswers = answersRef.current;
+    const unanswered = questions.length - Object.keys(currentAnswers).length;
+    if (unanswered > 0) toast.message(lc.unansweredNote(unanswered));
     setSubmitting(true);
     try {
       const res = await fetch("/api/public/placement/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...authHeaders },
-        body: JSON.stringify({ leadId, answers }),
+        body: JSON.stringify({ leadId, answers: currentAnswers }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ?? "Failed");
+      try { localStorage.removeItem(deadlineKey(leadId)); } catch { /* noop */ }
       setResult({
         level: data.level,
         totalCorrect: data.totalCorrect,
@@ -316,10 +335,51 @@ function PlacementTest() {
     } catch (e) {
       console.error(e);
       toast.error(e instanceof Error ? e.message : "Could not submit.");
+      submittedRef.current = false;
     } finally {
       setSubmitting(false);
     }
   };
+
+  // Overall test timer with refresh-safe deadline.
+  useEffect(() => {
+    if (step !== "test" || questions.length === 0) return;
+    let deadline: number;
+    try {
+      const stored = localStorage.getItem(deadlineKey(leadId));
+      const parsed = stored ? parseInt(stored, 10) : NaN;
+      if (Number.isFinite(parsed) && parsed > Date.now()) {
+        deadline = parsed;
+      } else {
+        deadline = Date.now() + TEST_DURATION_SECONDS * 1000;
+        localStorage.setItem(deadlineKey(leadId), String(deadline));
+      }
+    } catch {
+      deadline = Date.now() + TEST_DURATION_SECONDS * 1000;
+    }
+    const tick = () => {
+      const left = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      setRemaining(left);
+      if (left <= 0) {
+        clearInterval(id);
+        if (!submittedRef.current) {
+          toast.error(lc.timedOut);
+          submitTest();
+        }
+      }
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, questions.length, leadId]);
+
+  // Clear deadline once results are shown (covers resume path too).
+  useEffect(() => {
+    if (step === "result") {
+      try { localStorage.removeItem(deadlineKey(leadId)); } catch { /* noop */ }
+    }
+  }, [step, leadId]);
 
   const progress = useMemo(
     () => (questions.length ? Math.round(((qIdx + 1) / questions.length) * 100) : 0),
@@ -430,7 +490,26 @@ function PlacementTest() {
             <div className="rounded-3xl border border-border bg-card p-7 shadow-[var(--shadow-card)] sm:p-9">
               <div className="mb-6 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 <span>{lc.test.q} {qIdx + 1} / {questions.length}</span>
-                <span className="text-[var(--teal-accent-strong)]">{q.cefr}</span>
+                <span className="flex items-center gap-3">
+                  {remaining !== null && (
+                    <span
+                      className={`flex items-center gap-1 tabular-nums ${
+                        remaining <= 30
+                          ? "text-destructive"
+                          : remaining <= 120
+                          ? "text-amber-500"
+                          : "text-muted-foreground"
+                      }`}
+                      aria-label={lc.timeLeft}
+                      title={lc.timeLeft}
+                    >
+                      <Clock className="h-3.5 w-3.5" />
+                      {String(Math.floor(remaining / 60)).padStart(2, "0")}:
+                      {String(remaining % 60).padStart(2, "0")}
+                    </span>
+                  )}
+                  <span className="text-[var(--teal-accent-strong)]">{q.cefr}</span>
+                </span>
               </div>
               <Progress value={progress} className="mb-8 h-1.5" />
               <h2 className="text-lg font-semibold leading-snug text-foreground sm:text-xl">{q.prompt}</h2>
