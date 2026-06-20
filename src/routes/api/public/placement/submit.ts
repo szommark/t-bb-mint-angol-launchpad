@@ -83,6 +83,33 @@ export const Route = createFileRoute("/api/public/placement/submit")({
           return Response.json({ error: "Could not save your result" }, { status: 500 });
         }
 
+        // Log attempt + per-question answers (best-effort; never block the user's result).
+        try {
+          const { data: attempt, error: attemptErr } = await supabaseAdmin
+            .from("test_attempts")
+            .insert({ lead_id: leadId, final_level: level, score: totalCorrect })
+            .select("id")
+            .single();
+          if (attemptErr || !attempt) throw attemptErr ?? new Error("no attempt id");
+          const rows = (questions as Array<StoredQuestion & { bankId?: string }>)
+            .filter((q) => !!q.bankId)
+            .map((q) => {
+              const userIdx = typeof answers[q.id] === "number" ? answers[q.id] : null;
+              return {
+                attempt_id: attempt.id,
+                question_id: q.bankId!,
+                selected_answer: userIdx !== null ? (q.options[userIdx] ?? null) : null,
+                is_correct: userIdx === q.correctIndex,
+              };
+            });
+          if (rows.length > 0) {
+            const { error: ansErr } = await supabaseAdmin.from("attempt_answers").insert(rows);
+            if (ansErr) throw ansErr;
+          }
+        } catch (logErr) {
+          console.error("[placement/submit] attempt logging failed", logErr);
+        }
+
         return Response.json({
           ok: true,
           level,
