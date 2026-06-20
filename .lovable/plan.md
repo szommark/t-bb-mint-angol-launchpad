@@ -1,68 +1,84 @@
-# Question bank + attempt logging
+## Goal
 
-## 1. Database (one migration)
+Give the placement test an overall time limit. Show a countdown during the test. When it expires, auto-submit whatever's been answered. Score becomes `X/N` where `N` is the number of questions actually answered (skipped/unanswered questions are excluded from scoring, per-level bars, and CEFR derivation). The "Review your answers" section is unaffected (it already only lists wrong answers among questions seen).
 
-Create three tables in `public`. All writes happen through `supabaseAdmin` in server routes, so RLS stays locked down to anon/authenticated and `service_role` is granted full access (matches the existing `leads` table pattern).
+## Behavior
 
-### `questions`
-- `id uuid pk default gen_random_uuid()`
-- `question_text text not null`
-- `options jsonb not null` — array of 4 strings
-- `correct_answer text not null` — exact text of the correct option
-- `level text not null` — `A1`..`C2` (check constraint)
-- `skill text not null` — `grammar | vocabulary | reading` (check constraint, matches what `start.ts` already tags)
-- `explanation text not null default ''`
-- `times_used integer not null default 0`
-- `created_at timestamptz not null default now()`
-- Index on `(level, skill, times_used)` for the "least-used match" lookup.
+- **Time limit:** 5 minutes total per test (single configurable constant, `TEST_DURATION_SECONDS = 600`).
+- **Start point:** Timer starts when the user first lands on step `"test"` with questions loaded. Persisted across refresh via `localStorage` keyed by `leadId` (e.g. `placement-deadline:{leadId}`), so refreshing doesn't reset it.
+- **Display:** Compact `MM:SS` chip in the test card header (next to the `Question X / N` row). Turns amber under 2:00 remaining, red under 0:30. Purely visual; no behavior change until 0.
+- **Timeout:** When the countdown hits 0, auto-call `submitTest()` with whatever's in `answers`. Same flow as manual submit; user sees the normal result screen.
+- **Manual submit:** Remove the "must answer all" gate so users may submit early. (Optional small confirm if any are unanswered — keep it as a `toast` "X unanswered, submitting…" instead of blocking.)
+- **Resume after completion:** Once `completed_at` is set, timer is irrelevant; clear the stored deadline.
 
-### `test_attempts`
-- `id uuid pk default gen_random_uuid()`
-- `lead_id uuid not null references public.leads(id) on delete cascade` — the app's existing anonymous test-taker identifier
-- `final_level text not null`
-- `score integer not null`
-- `created_at timestamptz not null default now()`
+## Scoring changes
 
-### `attempt_answers`
-- `id uuid pk default gen_random_uuid()`
-- `attempt_id uuid not null references public.test_attempts(id) on delete cascade`
-- `question_id uuid not null references public.questions(id) on delete restrict`
-- `selected_answer text` (nullable: user may skip)
-- `is_correct boolean not null`
+Today, score = correct / 20. With partial answers:
 
-### RLS / GRANTs
-- `GRANT ALL ... TO service_role` on all three (server routes use the admin client).
-- Enable RLS, add a single restrictive `Deny all access to anon` policy (same shape as today's `leads` table). No anon or authenticated grants — the public flow already goes through the service-role server routes with a per-lead session token, which keeps anonymous test-takers working without exposing the bank or attempts to the Data API.
+- `N` = number of questions the user actually answered (i.e. `Object.keys(answers).length`, bounded to question set).
+- `score` = `totalCorrect / N`, displayed as `X/N` on the results screen (replacing the hardcoded `/20`).
+- **CEFR derivation:** keep the existing walk-up logic in `deriveCefr`, but skip levels with `total === 0` (already does). Unanswered questions are simply not counted as correct, so a level with all unanswered questions will fail the 60% bar and stop progression there. This is the desired behavior (timing out means you don't get credit for what you didn't reach). Keep the existing algorithm; no formula change needed beyond not pre-counting unanswered as wrong against an inflated `total`.
 
-## 2. `start.ts` — reuse before generate
+Decision for per-level totals: **only count answered questions in `total**`. So if a B2 question was never answered, it doesn't appear in B2's denominator. This makes the per-level bars reflect actual demonstrated accuracy at each level, not "you ran out of time." Specifically:
 
-Switch from "one AI call returns 20 items" to a per-slot fill that prefers the bank:
+```
+for q in questions:
+  if answers[q.id] is undefined: continue   // skip unanswered
+  byLevel[q.cefr].total += 1
+  if correct: byLevel[q.cefr].correct += 1
+```
 
-1. Build the 20-slot blueprint with the existing distribution (3 A1 / 3 A2 / 4 B1 / 4 B2 / 3 C1 / 3 C2) and pick a skill per slot using a fixed rotation across `grammar / vocabulary / reading`.
-2. For each slot, query `questions` filtered by `level` + `skill`, ordered by `times_used asc, created_at asc`, excluding ids already chosen for this test. If a row exists, use it and `update ... set times_used = times_used + 1` for that row.
-3. Collect the still-empty slots and ask the AI to generate exactly those (same prompt structure as today, but parameterised by the needed `{level, skill}` counts). Insert each new question into `questions` and use it to fill the remaining slots; new rows start with `times_used = 1`.
-4. Persist the resulting array on `leads.test_questions` exactly as today, adding one extra field per item: `bankId` (uuid of the row in `questions`). Existing fields (`id`, `prompt`, `options`, `correctIndex`, `skill`, `cefr`, `explanation`) stay the same so `state.ts`, `submit.ts`, and the results UI keep working unchanged.
-5. Client-sanitised payload continues to strip `correctIndex` and `explanation` (and now also `bankId`).
+This affects both `deriveCefr` (submit.ts) and `computeByLevel` (placement-review.server.ts). `totalQ` returned to the client becomes the **answered** count, used as `N` in `X/N`.
 
-If the AI call fails but the bank already filled every slot, skip the AI entirely.
+## DB changes
 
-## 3. `submit.ts` — log the attempt
+Add `total_questions` (int, not null) to `test_attempts` so we know the denominator alongside `score`. Insert it from `submit.ts`. `attempt_answers` keeps inserting one row per answered question (skip unanswered — current `.filter((q) => !!q.bankId)` becomes `q.bankId && answers[q.id] !== undefined`). No row for skipped questions.
 
-After the existing scoring + `leads` update (unchanged), and before returning the response:
+Migration:
 
-1. Insert one row into `test_attempts` with `lead_id = leadId`, `final_level = level`, `score = totalCorrect`. Capture the new `attempt.id`.
-2. Build one `attempt_answers` row per question in `lead.test_questions`:
-   - `attempt_id = attempt.id`
-   - `question_id = q.bankId`
-   - `selected_answer = q.options[answers[q.id]] ?? null`
-   - `is_correct = answers[q.id] === q.correctIndex`
-   Insert as a single batch.
-3. Wrap the two inserts in a try/catch and log failures; never block the user's result on logging.
+```sql
+ALTER TABLE public.test_attempts
+  ADD COLUMN total_questions integer NOT NULL DEFAULT 0;
+```
 
-Scoring, CEFR derivation, `byLevel`, and `buildReview` output are untouched.
+(Default 0 only to satisfy existing rows; new inserts always supply the real value.)
 
-## 4. Out of scope
+## UI changes (`src/routes/placement-test.$leadId.tsx`)
 
-- No change to `state.ts`, the results UI, scoring thresholds, or the lead session-token auth.
-- No admin/analytics surface for the new tables in this change — they just accumulate data.
-- No backfill of historic completed tests into `test_attempts`.
+1. New `useEffect` that, when `step === "test"` and `questions.length > 0`:
+  - Reads/writes `localStorage[`placement-deadline:${leadId}`]` (ISO timestamp). Initializes to `now + TEST_DURATION_SECONDS` if absent.
+  - Sets an interval (1s) updating a `remaining` state.
+  - When `remaining <= 0`, clears interval and calls `submitTest()` once (guarded with a ref).
+2. Render the `MM:SS` chip in the test card header. Color thresholds via Tailwind classes.
+3. Drop / soften the "must answer all" guard in `submitTest`.
+4. Results screen: replace any `/20` with `/{result.totalQ}`. Per-level bars already read from `result.byLevel`, which will now reflect answered-only stats automatically.
+5. Translations: add `timeLeft` label (en/hu/de) and a short `timedOut` toast.
+6. Clear the stored deadline when the result screen renders.
+
+## Server changes
+
+- `submit.ts`
+  - In `deriveCefr`: skip questions where `answers[q.id]` is undefined (don't add to `byLevel[].total`).
+  - Compute `totalQ = answeredCount` instead of `questions.length`.
+  - Insert `total_questions: totalQ` into `test_attempts`.
+  - `attempt_answers` rows: only for answered questions (`answers[q.id] !== undefined`).
+- `state.ts`
+  - `computeByLevel` will now return answered-only stats by the same change; resume path keeps working unchanged.
+- `placement-review.server.ts`
+  - Update `computeByLevel` to skip unanswered. `buildReview` already only emits wrong answers — leave a tiny tweak so a fully unanswered question is also surfaced as a "no answer" review item (it currently is, because `userIndex === q.correctIndex` is false when `userIndex === null`). No change needed.
+
+## Out of scope
+
+- Per-question timers.
+- Pause/resume controls.
+- Server-side time enforcement (client-driven only; acceptable here — this is a self-assessment, not a high-stakes exam, and lead-token auth still gates submission).
+- Visual redesign of the results card beyond the score-denominator swap.
+- Backfilling `total_questions` for historic attempts (left at default 0).
+
+## Files touched
+
+- `supabase/migrations/<new>.sql` (add `total_questions` column)
+- `src/routes/placement-test.$leadId.tsx` (timer UI + auto-submit + score display)
+- `src/routes/api/public/placement/submit.ts` (answered-only scoring + new column insert + filtered `attempt_answers`)
+- `src/lib/placement-review.server.ts` (skip unanswered in `computeByLevel`)
+- `src/integrations/supabase/types.ts` (auto-regenerated after migration)

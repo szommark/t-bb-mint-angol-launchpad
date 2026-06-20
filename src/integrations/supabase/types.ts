@@ -144,6 +144,7 @@ export type Database = {
           id: string
           lead_id: string
           score: number
+          total_questions: number
         }
         Insert: {
           created_at?: string
@@ -151,6 +152,7 @@ export type Database = {
           id?: string
           lead_id: string
           score: number
+          total_questions?: number
         }
         Update: {
           created_at?: string
@@ -158,6 +160,7 @@ export type Database = {
           id?: string
           lead_id?: string
           score?: number
+          total_questions?: number
         }
         Relationships: [
           {
