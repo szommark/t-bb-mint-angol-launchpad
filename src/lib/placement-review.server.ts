@@ -21,14 +21,17 @@ export function computeByLevel(
   const byLevel: Record<string, { correct: number; total: number }> = {};
   for (const l of ALL_LEVELS) byLevel[l] = { correct: 0, total: 0 };
   let totalCorrect = 0;
+  let answered = 0;
   for (const q of questions) {
+    if (typeof answers[q.id] !== "number") continue;
+    answered += 1;
     byLevel[q.cefr].total += 1;
     if (answers[q.id] === q.correctIndex) {
       byLevel[q.cefr].correct += 1;
       totalCorrect += 1;
     }
   }
-  return { byLevel, totalCorrect, totalQ: questions.length };
+  return { byLevel, totalCorrect, totalQ: answered };
 }
 
 export function buildReview(

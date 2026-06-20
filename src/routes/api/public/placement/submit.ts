@@ -13,7 +13,10 @@ const LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"] as const;
 function deriveCefr(questions: StoredQuestion[], answers: Record<string, number>) {
   const byLevel: Record<string, { correct: number; total: number }> = {};
   for (const l of LEVELS) byLevel[l] = { correct: 0, total: 0 };
+  let answered = 0;
   for (const q of questions) {
+    if (typeof answers[q.id] !== "number") continue;
+    answered += 1;
     byLevel[q.cefr].total += 1;
     if (answers[q.id] === q.correctIndex) byLevel[q.cefr].correct += 1;
   }
@@ -26,7 +29,7 @@ function deriveCefr(questions: StoredQuestion[], answers: Record<string, number>
     else break;
   }
   const totalCorrect = Object.values(byLevel).reduce((s, b) => s + b.correct, 0);
-  const totalQ = questions.length;
+  const totalQ = answered;
   return { level, totalCorrect, totalQ, byLevel };
 }
 
@@ -87,12 +90,12 @@ export const Route = createFileRoute("/api/public/placement/submit")({
         try {
           const { data: attempt, error: attemptErr } = await supabaseAdmin
             .from("test_attempts")
-            .insert({ lead_id: leadId, final_level: level, score: totalCorrect })
+            .insert({ lead_id: leadId, final_level: level, score: totalCorrect, total_questions: totalQ })
             .select("id")
             .single();
           if (attemptErr || !attempt) throw attemptErr ?? new Error("no attempt id");
           const rows = (questions as Array<StoredQuestion & { bankId?: string }>)
-            .filter((q) => !!q.bankId)
+            .filter((q) => !!q.bankId && typeof answers[q.id] === "number")
             .map((q) => {
               const userIdx = typeof answers[q.id] === "number" ? answers[q.id] : null;
               return {
