@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      attempt_answers: {
+        Row: {
+          attempt_id: string
+          id: string
+          is_correct: boolean
+          question_id: string
+          selected_answer: string | null
+        }
+        Insert: {
+          attempt_id: string
+          id?: string
+          is_correct: boolean
+          question_id: string
+          selected_answer?: string | null
+        }
+        Update: {
+          attempt_id?: string
+          id?: string
+          is_correct?: boolean
+          question_id?: string
+          selected_answer?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attempt_answers_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "test_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attempt_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           cefr_level: string | null
@@ -61,6 +100,74 @@ export type Database = {
           test_questions?: Json | null
         }
         Relationships: []
+      }
+      questions: {
+        Row: {
+          correct_answer: string
+          created_at: string
+          explanation: string
+          id: string
+          level: string
+          options: Json
+          question_text: string
+          skill: string
+          times_used: number
+        }
+        Insert: {
+          correct_answer: string
+          created_at?: string
+          explanation?: string
+          id?: string
+          level: string
+          options: Json
+          question_text: string
+          skill: string
+          times_used?: number
+        }
+        Update: {
+          correct_answer?: string
+          created_at?: string
+          explanation?: string
+          id?: string
+          level?: string
+          options?: Json
+          question_text?: string
+          skill?: string
+          times_used?: number
+        }
+        Relationships: []
+      }
+      test_attempts: {
+        Row: {
+          created_at: string
+          final_level: string
+          id: string
+          lead_id: string
+          score: number
+        }
+        Insert: {
+          created_at?: string
+          final_level: string
+          id?: string
+          lead_id: string
+          score: number
+        }
+        Update: {
+          created_at?: string
+          final_level?: string
+          id?: string
+          lead_id?: string
+          score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_attempts_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
