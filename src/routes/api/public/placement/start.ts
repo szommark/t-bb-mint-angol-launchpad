@@ -132,7 +132,7 @@ export const Route = createFileRoute("/api/public/placement/start")({
           const { level, skill } = blueprint[i];
           let query = supabaseAdmin
             .from("questions")
-            .select("id, question_text, options, correct_answer, level, skill, explanation")
+            .select("id, question_text, options, correct_answer, level, skill, explanation, times_used")
             .eq("level", level)
             .eq("skill", skill)
             .order("times_used", { ascending: true })
@@ -158,11 +158,10 @@ export const Route = createFileRoute("/api/public/placement/start")({
             bankId: row.id,
           };
           usedBankIds.add(row.id);
+          const currentUsed = (row as { times_used?: number }).times_used ?? 0;
           await supabaseAdmin
             .from("questions")
-            .update({ times_used: (row as unknown as { times_used?: number }).times_used != null
-              ? ((row as unknown as { times_used: number }).times_used + 1)
-              : 1 })
+            .update({ times_used: currentUsed + 1 })
             .eq("id", row.id);
         }
 
