@@ -149,3 +149,32 @@
     color: var(--color-foreground);
   }
 }
+
+@keyframes hero-line-in {
+  0% { opacity: 0; transform: translateY(14px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes hero-shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes hero-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@utility hero-line {
+  opacity: 0;
+  animation: hero-line-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@utility hero-shimmer {
+  background-size: 200% 100%;
+  animation: hero-shimmer 5s ease-in-out infinite;
+}
+
+@utility hero-float {
+  animation: hero-float 6s ease-in-out infinite;
+}
