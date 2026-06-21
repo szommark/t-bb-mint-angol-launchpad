@@ -14,6 +14,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import heroBannerImg from "@/assets/hero-banner-connect.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -34,8 +35,9 @@ const translations = {
     nav: { courses: "Courses", about: "About Us", reviews: "Reviews", blog: "Blog", contact: "Contact", cta: "Free Placement Test" },
     hero: {
       eyebrow: "Premium English for a new era",
-      title1: "Több mint angol",
-      title2: "Prepare Yourself for the Challenges of New Times",
+      title1: "Connect to the world.",
+      title2: "Speak with ease.",
+      title3: "Learn the trendiest way.",
       subtitle: "Tailor-made, coaching-oriented professional and general English language training for adults, managers, and company leaders.",
       ctaPrimary: "Take Free Placement Test",
       ctaSecondary: "Explore Our Courses",
@@ -65,8 +67,9 @@ const translations = {
     nav: { courses: "Kurzusok", about: "Rólunk", reviews: "Vélemények", blog: "Blog", contact: "Kapcsolat", cta: "Ingyenes szintfelmérő" },
     hero: {
       eyebrow: "Prémium angol egy új korszakra",
-      title1: "Több mint angol",
-      title2: "Készülj fel az új idők kihívásaira",
+      title1: "Kapcsolódj a világhoz.",
+      title2: "Beszélj könnyedén.",
+      title3: "Tanulj a legtrendibb módon.",
       subtitle: "Személyre szabott, coaching szemléletű szakmai és általános angol nyelvi képzés felnőtteknek, vezetőknek és cégtulajdonosoknak.",
       ctaPrimary: "Ingyenes szintfelmérő",
       ctaSecondary: "Kurzusok megtekintése",
@@ -96,8 +99,9 @@ const translations = {
     nav: { courses: "Kurse", about: "Über uns", reviews: "Bewertungen", blog: "Blog", contact: "Kontakt", cta: "Kostenloser Einstufungstest" },
     hero: {
       eyebrow: "Premium-Englisch für eine neue Ära",
-      title1: "Több mint angol",
-      title2: "Bereite dich auf die Herausforderungen neuer Zeiten vor",
+      title1: "Verbinde dich mit der Welt.",
+      title2: "Sprich mit Leichtigkeit.",
+      title3: "Lerne auf die trendigste Art.",
       subtitle: "Maßgeschneidertes, coaching-orientiertes Business- und Allgemeinenglisch für Erwachsene, Manager und Führungskräfte.",
       ctaPrimary: "Kostenlosen Test starten",
       ctaSecondary: "Kurse entdecken",
