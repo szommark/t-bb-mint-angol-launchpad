@@ -14,6 +14,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import heroBannerImg from "@/assets/hero-banner-connect.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -34,8 +35,9 @@ const translations = {
     nav: { courses: "Courses", about: "About Us", reviews: "Reviews", blog: "Blog", contact: "Contact", cta: "Free Placement Test" },
     hero: {
       eyebrow: "Premium English for a new era",
-      title1: "Több mint angol",
-      title2: "Prepare Yourself for the Challenges of New Times",
+      title1: "Connect to the world.",
+      title2: "Speak with ease.",
+      title3: "Learn the trendiest way.",
       subtitle: "Tailor-made, coaching-oriented professional and general English language training for adults, managers, and company leaders.",
       ctaPrimary: "Take Free Placement Test",
       ctaSecondary: "Explore Our Courses",
@@ -65,8 +67,9 @@ const translations = {
     nav: { courses: "Kurzusok", about: "Rólunk", reviews: "Vélemények", blog: "Blog", contact: "Kapcsolat", cta: "Ingyenes szintfelmérő" },
     hero: {
       eyebrow: "Prémium angol egy új korszakra",
-      title1: "Több mint angol",
-      title2: "Készülj fel az új idők kihívásaira",
+      title1: "Kapcsolódj a világhoz.",
+      title2: "Beszélj könnyedén.",
+      title3: "Tanulj a legtrendibb módon.",
       subtitle: "Személyre szabott, coaching szemléletű szakmai és általános angol nyelvi képzés felnőtteknek, vezetőknek és cégtulajdonosoknak.",
       ctaPrimary: "Ingyenes szintfelmérő",
       ctaSecondary: "Kurzusok megtekintése",
@@ -96,8 +99,9 @@ const translations = {
     nav: { courses: "Kurse", about: "Über uns", reviews: "Bewertungen", blog: "Blog", contact: "Kontakt", cta: "Kostenloser Einstufungstest" },
     hero: {
       eyebrow: "Premium-Englisch für eine neue Ära",
-      title1: "Több mint angol",
-      title2: "Bereite dich auf die Herausforderungen neuer Zeiten vor",
+      title1: "Verbinde dich mit der Welt.",
+      title2: "Sprich mit Leichtigkeit.",
+      title3: "Lerne auf die trendigste Art.",
       subtitle: "Maßgeschneidertes, coaching-orientiertes Business- und Allgemeinenglisch für Erwachsene, Manager und Führungskräfte.",
       ctaPrimary: "Kostenlosen Test starten",
       ctaSecondary: "Kurse entdecken",
@@ -285,6 +289,12 @@ function Index() {
               "radial-gradient(circle at 20% 20%, oklch(0.72 0.13 195 / 0.35), transparent 50%), radial-gradient(circle at 80% 60%, oklch(0.45 0.10 240 / 0.5), transparent 55%)",
           }}
         />
+        <img
+          src={heroBannerImg}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-24 top-1/2 -z-10 hidden h-[640px] w-[640px] -translate-y-1/2 opacity-25 lg:block"
+        />
         <div className="mx-auto grid max-w-7xl gap-12 px-5 py-20 lg:grid-cols-12 lg:gap-10 lg:px-8 lg:py-28">
           <div className="lg:col-span-7 text-primary-foreground">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-white/80 backdrop-blur">
@@ -293,7 +303,8 @@ function Index() {
             </span>
             <h1 className="mt-6 text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
               <span className="block bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">{t.hero.title1}</span>
-              <span className="mt-2 block text-balance text-white/90">{t.hero.title2}</span>
+              <span className="mt-2 block text-white/90">{t.hero.title2}</span>
+              <span className="mt-2 block bg-gradient-to-r from-[var(--teal-accent)] to-[var(--teal-accent-strong)] bg-clip-text text-transparent">{t.hero.title3}</span>
             </h1>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-white/75 sm:text-lg">
               {t.hero.subtitle}
