@@ -14,7 +14,10 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
-import heroBannerImg from "@/assets/hero-banner-connect.png";
+import heroCafeImg from "@/assets/hero-collage-cafe.jpg";
+import heroCallImg from "@/assets/hero-collage-call.jpg";
+import heroMobileImg from "@/assets/hero-collage-mobile.jpg";
+import heroTravelImg from "@/assets/hero-collage-travel.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -39,8 +42,8 @@ const translations = {
       title2: "Speak with ease.",
       title3: "Learn the trendiest way.",
       subtitle: "Tailor-made, coaching-oriented professional and general English language training for adults, managers, and company leaders.",
-      ctaPrimary: "Take Free Placement Test",
-      ctaSecondary: "Explore Our Courses",
+      ctaPrimary: "Start Your Journey",
+      ctaSecondary: "Explore Courses",
     },
     value: {
       kicker: "Why choose us",
@@ -71,8 +74,8 @@ const translations = {
       title2: "Beszélj könnyedén.",
       title3: "Tanulj a legtrendibb módon.",
       subtitle: "Személyre szabott, coaching szemléletű szakmai és általános angol nyelvi képzés felnőtteknek, vezetőknek és cégtulajdonosoknak.",
-      ctaPrimary: "Ingyenes szintfelmérő",
-      ctaSecondary: "Kurzusok megtekintése",
+      ctaPrimary: "Indítsd az utad",
+      ctaSecondary: "Kurzusok",
     },
     value: {
       kicker: "Miért minket válassz",
@@ -103,7 +106,7 @@ const translations = {
       title2: "Sprich mit Leichtigkeit.",
       title3: "Lerne auf die trendigste Art.",
       subtitle: "Maßgeschneidertes, coaching-orientiertes Business- und Allgemeinenglisch für Erwachsene, Manager und Führungskräfte.",
-      ctaPrimary: "Kostenlosen Test starten",
+      ctaPrimary: "Starte deine Reise",
       ctaSecondary: "Kurse entdecken",
     },
     value: {
