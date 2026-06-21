@@ -289,6 +289,12 @@ function Index() {
               "radial-gradient(circle at 20% 20%, oklch(0.72 0.13 195 / 0.35), transparent 50%), radial-gradient(circle at 80% 60%, oklch(0.45 0.10 240 / 0.5), transparent 55%)",
           }}
         />
+        <img
+          src={heroBannerImg}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-24 top-1/2 -z-10 hidden h-[640px] w-[640px] -translate-y-1/2 opacity-25 lg:block"
+        />
         <div className="mx-auto grid max-w-7xl gap-12 px-5 py-20 lg:grid-cols-12 lg:gap-10 lg:px-8 lg:py-28">
           <div className="lg:col-span-7 text-primary-foreground">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-white/80 backdrop-blur">
@@ -297,7 +303,8 @@ function Index() {
             </span>
             <h1 className="mt-6 text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
               <span className="block bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">{t.hero.title1}</span>
-              <span className="mt-2 block text-balance text-white/90">{t.hero.title2}</span>
+              <span className="mt-2 block text-white/90">{t.hero.title2}</span>
+              <span className="mt-2 block bg-gradient-to-r from-[var(--teal-accent)] to-[var(--teal-accent-strong)] bg-clip-text text-transparent">{t.hero.title3}</span>
             </h1>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-white/75 sm:text-lg">
               {t.hero.subtitle}
