@@ -292,11 +292,10 @@ function Index() {
               "radial-gradient(circle at 20% 20%, oklch(0.72 0.13 195 / 0.35), transparent 50%), radial-gradient(circle at 80% 60%, oklch(0.45 0.10 240 / 0.5), transparent 55%)",
           }}
         />
-        <img
-          src={heroBannerImg}
-          alt=""
+        <div
           aria-hidden="true"
-          className="pointer-events-none absolute -right-24 top-1/2 -z-10 hidden h-[640px] w-[640px] -translate-y-1/2 opacity-25 lg:block"
+          className="pointer-events-none absolute right-[-10%] top-1/2 -z-10 hidden h-[520px] w-[520px] -translate-y-1/2 rounded-full opacity-40 blur-3xl lg:block"
+          style={{ background: "radial-gradient(circle, var(--teal-accent) 0%, transparent 70%)" }}
         />
         <div className="mx-auto grid max-w-7xl gap-12 px-5 py-20 lg:grid-cols-12 lg:gap-10 lg:px-8 lg:py-28">
           <div className="lg:col-span-7 text-primary-foreground">
@@ -305,9 +304,17 @@ function Index() {
               {t.hero.eyebrow}
             </span>
             <h1 className="mt-6 text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
-              <span className="block bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">{t.hero.title1}</span>
-              <span className="mt-2 block text-white/90">{t.hero.title2}</span>
-              <span className="mt-2 block bg-gradient-to-r from-[var(--teal-accent)] to-[var(--teal-accent-strong)] bg-clip-text text-transparent">{t.hero.title3}</span>
+              <span className="hero-line block bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent" style={{ animationDelay: "0ms" }}>{t.hero.title1}</span>
+              <span className="hero-line mt-2 block text-white/90" style={{ animationDelay: "150ms" }}>{t.hero.title2}</span>
+              <span
+                className="hero-line hero-shimmer mt-2 block bg-clip-text text-transparent"
+                style={{
+                  animationDelay: "300ms, 0ms",
+                  backgroundImage: "linear-gradient(90deg, var(--teal-accent) 0%, oklch(0.85 0.13 195) 50%, var(--teal-accent-strong) 100%)",
+                }}
+              >
+                {t.hero.title3}
+              </span>
             </h1>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-white/75 sm:text-lg">
               {t.hero.subtitle}
@@ -330,25 +337,41 @@ function Index() {
           </div>
 
           <div className="lg:col-span-5">
-            <div className="relative rounded-2xl border border-white/15 bg-white/[0.04] p-6 backdrop-blur-xl">
-              <div className="absolute -top-3 left-6 inline-flex items-center gap-1.5 rounded-full bg-[var(--teal-accent)] px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary">
-                <Star className="h-3 w-3" /> Trusted by leaders
+            <div className="relative mx-auto aspect-[5/6] w-full max-w-[460px]">
+              {/* Soft teal glow behind collage */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 -z-10 rounded-[2rem] opacity-50 blur-3xl"
+                style={{ background: "radial-gradient(circle at 60% 40%, var(--teal-accent) 0%, transparent 65%)" }}
+              />
+
+              {/* Card A — café (large, top-left) */}
+              <div className="absolute left-0 top-0 w-[62%] -rotate-2 overflow-hidden rounded-2xl border border-white/15 shadow-[var(--shadow-elegant)] ring-1 ring-white/10 transition-transform duration-500 hover:-translate-y-1 hover:rotate-0">
+                <img src={heroCafeImg} alt="Friends having a natural conversation in a modern café" width={1024} height={1024} className="aspect-[4/5] h-auto w-full object-cover" />
               </div>
-              <div className="grid grid-cols-2 gap-4 text-white">
-                {[
-                  { v: "18+", l: "Years training adults" },
-                  { v: "10", l: "Industry ESP tracks" },
-                  { v: "1:1", l: "Bespoke executive plans" },
-                  { v: "25–60h", l: "Per course level" },
-                ].map((s) => (
-                  <div key={s.l} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-                    <div className="text-2xl font-semibold tracking-tight">{s.v}</div>
-                    <div className="mt-1 text-xs text-white/60">{s.l}</div>
-                  </div>
-                ))}
+
+              {/* Card B — call (medium, top-right, raised) */}
+              <div className="absolute right-0 top-[8%] w-[46%] rotate-3 overflow-hidden rounded-2xl border border-white/15 shadow-[var(--shadow-elegant)] ring-1 ring-white/10 transition-transform duration-500 hover:-translate-y-1 hover:rotate-0">
+                <img src={heroCallImg} alt="Professional on a laptop video call" width={1024} height={1024} className="aspect-square h-auto w-full object-cover" />
               </div>
-              <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm text-white/75">
-                "We don't teach English. We prepare professionals to think, lead and negotiate in it."
+
+              {/* Card C — mobile (medium, bottom-left) */}
+              <div className="absolute bottom-0 left-[6%] w-[48%] rotate-2 overflow-hidden rounded-2xl border border-white/15 shadow-[var(--shadow-elegant)] ring-1 ring-white/10 transition-transform duration-500 hover:-translate-y-1 hover:rotate-0">
+                <img src={heroMobileImg} alt="Modern learner with smartphone and headphones" width={1024} height={1024} className="aspect-square h-auto w-full object-cover" />
+              </div>
+
+              {/* Card D — travel (small floating) */}
+              <div className="hero-float absolute -right-2 bottom-[10%] w-[42%] -rotate-3 overflow-hidden rounded-2xl border border-white/20 shadow-[var(--shadow-elegant)] ring-1 ring-white/10">
+                <img src={heroTravelImg} alt="Traveler connecting globally on a smartphone" width={1024} height={1024} className="aspect-[4/5] h-auto w-full object-cover" />
+              </div>
+
+              {/* Floating chip */}
+              <div className="absolute -left-3 top-[42%] inline-flex items-center gap-2 rounded-full border border-white/15 bg-primary/80 px-3 py-1.5 text-[11px] font-semibold text-white shadow-[var(--shadow-card)] backdrop-blur-xl">
+                <Globe className="h-3.5 w-3.5 text-[var(--teal-accent)]" />
+                Speak with the world
+              </div>
+              <div className="absolute -right-2 top-[2%] inline-flex items-center gap-1.5 rounded-full bg-[var(--teal-accent)] px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary shadow-[var(--shadow-card)]">
+                <Sparkles className="h-3 w-3" /> Live & real
               </div>
             </div>
           </div>
