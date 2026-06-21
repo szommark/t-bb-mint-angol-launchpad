@@ -1,36 +1,39 @@
-## Goal
+## Hero Banner Revamp
 
-Refresh the top hero on the homepage so it reads as a bold, on-brand banner with the new headline:
+Replace the right-column "Trusted by leaders" stats card with a **dynamic photo collage** and animate the three headline lines, while preserving the dark navy + teal palette, typography, eyebrow, subtitle, CTAs, and trust strip.
 
-> **Connect to the world. Speak with ease. Learn the trendiest way.**
+### 1. Right column — image collage (`src/routes/index.tsx`)
+Swap the stats panel for a layered collage of 4 photos representing the three messages:
+- **Card A (large, top-left)** — diverse friends chatting in a bright café (Connect)
+- **Card B (medium, top-right, slightly raised)** — confident young professional in a video call on laptop (Speak)
+- **Card C (medium, bottom-left, slightly lowered)** — adult learner on tablet/phone, modern lifestyle (Learn trendiest)
+- **Card D (small floating accent, overlapping)** — traveler with smartphone / global moment
 
-## Decisions made for you (since further questions were skipped)
+Styling: rounded-2xl, soft white/10 borders, layered drop shadows (`--shadow-elegant`), subtle rotation (-2°/+2°) on outer cards, teal-accent glow blob behind. A small floating "chip" badge ("🌍 50+ countries" or "⚡ Live conversation") on one card for premium polish. Mobile: collapses to a clean 2×2 grid below the text, no rotation.
 
-- **Placement**: Replace the existing homepage hero headline area (in place, no extra stacked banner). Nav stays sticky on top.
-- **Headline**: "Connect to the world. Speak with ease. Learn the trendiest way." — rendered as three stacked lines with the third line emphasized in teal accent for rhythm.
-- **Subheadline + CTAs**: Keep the current subtitle and the two existing CTAs ("Take Free Placement Test" / "Explore Our Courses") so the form flow and conversion path are unchanged.
-- **Translations**: Add HU and DE equivalents of the new headline so language switching keeps working.
-- **Visual**: Keep the current `--gradient-hero` (deep navy → slate → teal blend) and the existing radial glow overlay. Add a subtle generated abstract globe/network illustration on the right side at low opacity to reinforce "connect to the world" without competing with text.
-- **Trust row**: Keep the three check items below the CTAs.
+### 2. Headline animation
+Add a CSS-only entrance: each of the three `<span>` lines fades + slides up in sequence (0ms, 150ms, 300ms delays) using a new `@keyframes hero-line-in` utility in `src/styles.css`. The teal-gradient third line gets a subtle continuous shimmer (background-position animation on the existing gradient) to make it the focal accent. No JS, no new libs.
 
-## Scope (what changes)
+### 3. Background polish
+Keep existing `--gradient-hero` + radial overlays. Remove the existing decorative `hero-banner-connect.png` globe (now redundant with collage). Add one extra very-soft teal radial blob behind the collage for depth.
 
-1. `src/routes/index.tsx`
-   - Update the `hero.title1` / `hero.title2` translations in `en`, `hu`, `de` to the new banner copy (split into 3 lines: line1, line2, line3Highlight).
-   - Update the hero JSX so the headline renders as three lines, with the third line wrapped in a teal accent gradient/clip.
-   - Add a decorative right-side image (abstract globe / connection lines) absolutely positioned inside the hero, low opacity, only on `lg+`. Keeps the existing right-column placement-test card intact.
-2. `src/assets/hero-banner-connect.png` (new)
-   - Generated abstract on-brand visual: glowing globe with thin teal connection arcs on dark navy, transparent background, used as the decorative image. Imported as an ES6 asset.
+### 4. Images
+Generate 4 on-brand photos into `src/assets/`:
+- `hero-collage-cafe.jpg` — diverse young adults laughing in modern café conversation
+- `hero-collage-call.jpg` — professional woman on laptop video call, bright workspace
+- `hero-collage-mobile.jpg` — stylish adult learning on smartphone, urban lifestyle
+- `hero-collage-travel.jpg` — traveler with phone, airport/city scene
 
-## Out of scope
+Bright, authentic, natural light, candid expressions — matched warm tone so they sit cohesively against the dark navy.
 
-- Nav, language switcher, courses, about, testimonials, form, footer — untouched.
-- No new routes, no backend / DB / server-function changes.
-- No design-token changes in `src/styles.css`.
-- No copy changes outside the hero headline.
+### 5. CTA copy (translations)
+Update `ctaPrimary` to **"Start Your Journey"** / **"Indítsd az utad"** / **"Starte deine Reise"** across `en`/`hu`/`de`. Keep `ctaSecondary` ("Explore Our Courses" → already matches "Explore Courses"). Behavior unchanged: primary scrolls to placement form, secondary scrolls to courses.
 
-## Technical notes
+### Out of scope
+Nav, language switcher, value section, courses, form, about, testimonials, footer, routing, backend, design tokens (no new primary colors). The "Trusted by leaders" stats card is removed from the hero (stats can move to a later section in a follow-up if desired — not part of this task).
 
-- Translations remain typed via the existing `as const` `translations` object; the new structure adds `line1`, `line2`, `line3` alongside (or replacing) `title1`/`title2` — chosen to minimize JSX churn, single render path.
-- Decorative image uses `aria-hidden` and `pointer-events-none` so it doesn't affect the form/CTA tap targets.
-- No new dependencies.
+### Technical notes
+- Pure frontend/presentation change in `src/routes/index.tsx` + `src/styles.css` + 4 new image assets.
+- Animation via Tailwind v4 `@utility` keyframes in `src/styles.css` (no Motion/GSAP dependency).
+- All images decorative → `alt=""` with descriptive aria where meaningful.
+- No new packages.
