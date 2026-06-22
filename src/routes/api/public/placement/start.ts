@@ -4,14 +4,6 @@ import { z } from "zod";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { extractLeadToken, verifyLeadToken } from "@/lib/placement-auth.server";
 
-const YEARS_OPTS = ["< 1", "1–3", "3–5", "5–10", "10+", "unspecified"] as const;
-const LAST_OPTS = [
-  "Currently", "Last month", "Last year", "Several years ago", "Long ago",
-  "Most is", "Múlt hónap", "Tavaly", "Több éve", "Nagyon régen",
-  "Aktuell", "Letzten Monat", "Letztes Jahr", "Vor mehreren Jahren", "Vor sehr langer Zeit",
-  "unspecified",
-] as const;
-
 function sanitizeFocus(input: string | null | undefined): string {
   if (!input) return "";
   return input
@@ -26,8 +18,6 @@ const IntakeSchema = z.object({
   intake: z.object({
     selfLevel: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
     focus: z.string().trim().max(120).optional().nullable(),
-    yearsStudied: z.enum(YEARS_OPTS),
-    lastUsed: z.enum(LAST_OPTS),
     skills: z.array(z.enum(["reading", "writing", "speaking", "listening"])).min(1).max(4),
     language: z.enum(["en", "hu", "de"]).default("en"),
   }),
@@ -183,8 +173,6 @@ export const Route = createFileRoute("/api/public/placement/start")({
           const userPrompt = `<learner_profile>
 self_level: ${safeIntake.selfLevel}
 focus_area: ${safeIntake.focus ?? "general"}
-years_studied: ${safeIntake.yearsStudied}
-last_used: ${safeIntake.lastUsed}
 skills: ${safeIntake.skills.join(", ")}
 </learner_profile>
 
