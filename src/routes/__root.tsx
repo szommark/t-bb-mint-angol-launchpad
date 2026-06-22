@@ -88,8 +88,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Lovable App" },
       { name: "twitter:description", content: "Több mint angol offers premium English language training for professionals and adults." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/HnJo1dK9GvRY6o8gXXCkISO2FZf1/social-images/social-1782144321082-Márk_logo_átlátszó.mini.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/HnJo1dK9GvRY6o8gXXCkISO2FZf1/social-images/social-1782144321082-Márk_logo_átlátszó.mini.webp" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/HnJo1dK9GvRY6o8gXXCkISO2FZf1/social-images/social-1782144957491-Márk_logo_átlátszó.mini.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/HnJo1dK9GvRY6o8gXXCkISO2FZf1/social-images/social-1782144957491-Márk_logo_átlátszó.mini.webp" },
     ],
     links: [
       {
