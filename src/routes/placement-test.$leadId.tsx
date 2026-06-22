@@ -55,8 +55,6 @@ const t = {
       selfPh: "Choose a level",
       focus: "Main focus area",
       focusPh: "What do you want to use English for?",
-      years: "Years studying English",
-      last: "Last time you actively used English",
       skills: "Skills you most want to improve",
       start: "Generate my test",
     },
@@ -82,8 +80,6 @@ const t = {
       B2: "Upper-Intermediate", C1: "Advanced", C2: "Proficient",
     } as Record<Level, string>,
     skillLabels: { reading: "Reading", writing: "Writing", speaking: "Speaking", listening: "Listening" } as Record<Skill, string>,
-    yearsOpts: ["< 1", "1–3", "3–5", "5–10", "10+"],
-    lastOpts: ["Currently", "Last month", "Last year", "Several years ago", "Long ago"],
     requiredAll: "Please answer every question before submitting.",
     pickLevel: "Please pick a level.",
     pickSkill: "Please pick at least one skill.",
@@ -100,8 +96,6 @@ const t = {
       selfPh: "Válassz szintet",
       focus: "Fő fókuszterület",
       focusPh: "Mire használnád az angolt?",
-      years: "Évek óta tanulsz angolt",
-      last: "Mikor használtad utoljára aktívan?",
       skills: "Melyik készségeden fejlesztenél leginkább?",
       start: "Teszt indítása",
     },
@@ -127,8 +121,6 @@ const t = {
       B2: "Középfok+", C1: "Haladó", C2: "Mestermű",
     } as Record<Level, string>,
     skillLabels: { reading: "Olvasás", writing: "Írás", speaking: "Beszéd", listening: "Hallás" } as Record<Skill, string>,
-    yearsOpts: ["< 1", "1–3", "3–5", "5–10", "10+"],
-    lastOpts: ["Most is", "Múlt hónap", "Tavaly", "Több éve", "Nagyon régen"],
     requiredAll: "Kérlek válaszolj minden kérdésre a beküldés előtt.",
     pickLevel: "Válassz egy szintet.",
     pickSkill: "Válassz legalább egy készséget.",
@@ -145,8 +137,6 @@ const t = {
       selfPh: "Niveau wählen",
       focus: "Hauptfokus",
       focusPh: "Wofür möchtest du Englisch nutzen?",
-      years: "Jahre, die du Englisch lernst",
-      last: "Wann hast du Englisch zuletzt aktiv genutzt?",
       skills: "Welche Fähigkeiten möchtest du verbessern?",
       start: "Test starten",
     },
@@ -172,8 +162,6 @@ const t = {
       B2: "Obere Mittelstufe", C1: "Fortgeschritten", C2: "Muttersprachlich",
     } as Record<Level, string>,
     skillLabels: { reading: "Lesen", writing: "Schreiben", speaking: "Sprechen", listening: "Hören" } as Record<Skill, string>,
-    yearsOpts: ["< 1", "1–3", "3–5", "5–10", "10+"],
-    lastOpts: ["Aktuell", "Letzten Monat", "Letztes Jahr", "Vor mehreren Jahren", "Vor sehr langer Zeit"],
     requiredAll: "Bitte beantworte alle Fragen vor dem Absenden.",
     pickLevel: "Bitte wähle ein Niveau.",
     pickSkill: "Bitte wähle mindestens eine Fähigkeit.",
@@ -213,8 +201,6 @@ function PlacementTest() {
 
   const [selfLevel, setSelfLevel] = useState<Level | "">("");
   const [focus, setFocus] = useState("");
-  const [years, setYears] = useState("");
-  const [lastUsed, setLastUsed] = useState("");
   const [skills, setSkills] = useState<Skill[]>([]);
 
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -288,8 +274,6 @@ function PlacementTest() {
           leadId,
           intake: {
             selfLevel, focus: focus || null,
-            yearsStudied: years || "unspecified",
-            lastUsed: lastUsed || "unspecified",
             skills, language: lang,
           },
         }),
@@ -432,26 +416,6 @@ function PlacementTest() {
               <div className="space-y-2">
                 <Label htmlFor="focus">{lc.intake.focus}</Label>
                 <Input id="focus" value={focus} onChange={(e) => setFocus(e.target.value)} maxLength={120} placeholder={lc.intake.focusPh} className="h-11" />
-              </div>
-              <div className="grid gap-5 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>{lc.intake.years}</Label>
-                  <Select value={years} onValueChange={setYears}>
-                    <SelectTrigger className="h-11"><SelectValue placeholder="—" /></SelectTrigger>
-                    <SelectContent>
-                      {lc.yearsOpts.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>{lc.intake.last}</Label>
-                  <Select value={lastUsed} onValueChange={setLastUsed}>
-                    <SelectTrigger className="h-11"><SelectValue placeholder="—" /></SelectTrigger>
-                    <SelectContent>
-                      {lc.lastOpts.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
               </div>
               <div className="space-y-3">
                 <Label>{lc.intake.skills}</Label>
