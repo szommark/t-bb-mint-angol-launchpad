@@ -245,8 +245,11 @@ function PlacementTest() {
           setStep("result");
           return;
         }
-        if (Array.isArray(data.questions) && data.questions.length > 0) {
-          setQuestions(data.questions);
+        if (data.current) {
+          setCurrent(data.current);
+          setAnsweredCount(data.answeredCount ?? 0);
+          setTotalPlanned(data.totalPlanned ?? 20);
+          setSelected(null);
           setStep("test");
           return;
         }
@@ -280,9 +283,11 @@ function PlacementTest() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ?? "Failed");
-      setQuestions(data.questions);
-      setQIdx(0);
-      setAnswers({});
+      setCurrent(data.current);
+      setAnsweredCount(data.answeredCount ?? 0);
+      setTotalPlanned(data.totalPlanned ?? 20);
+      setSelected(null);
+      try { localStorage.removeItem(deadlineKey(leadId)); } catch { /* noop */ }
       setStep("test");
     } catch (e) {
       console.error(e);
@@ -291,18 +296,52 @@ function PlacementTest() {
     }
   };
 
+  const advance = async () => {
+    if (!current || selected === null || advancing) return;
+    setAdvancing(true);
+    try {
+      const res = await fetch("/api/public/placement/next", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders },
+        body: JSON.stringify({ leadId, questionId: current.id, selectedIndex: selected }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "Failed");
+      if (data.done) {
+        submittedRef.current = true;
+        try { localStorage.removeItem(deadlineKey(leadId)); } catch { /* noop */ }
+        setResult({
+          level: data.level,
+          totalCorrect: data.totalCorrect,
+          totalQ: data.totalQ,
+          summary: data.summary,
+          review: Array.isArray(data.review) ? data.review : [],
+          byLevel: data.byLevel ?? {},
+        });
+        setStep("result");
+        return;
+      }
+      setCurrent(data.current);
+      setAnsweredCount(data.answeredCount ?? 0);
+      setTotalPlanned(data.totalPlanned ?? totalPlanned);
+      setSelected(null);
+    } catch (e) {
+      console.error(e);
+      toast.error(e instanceof Error ? e.message : "Could not load next question.");
+    } finally {
+      setAdvancing(false);
+    }
+  };
+
   const submitTest = async () => {
     if (submittedRef.current) return;
     submittedRef.current = true;
-    const currentAnswers = answersRef.current;
-    const unanswered = questions.length - Object.keys(currentAnswers).length;
-    if (unanswered > 0) toast.message(lc.unansweredNote(unanswered));
     setSubmitting(true);
     try {
       const res = await fetch("/api/public/placement/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...authHeaders },
-        body: JSON.stringify({ leadId, answers: currentAnswers }),
+        body: JSON.stringify({ leadId }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ?? "Failed");
@@ -327,7 +366,7 @@ function PlacementTest() {
 
   // Overall test timer with refresh-safe deadline.
   useEffect(() => {
-    if (step !== "test" || questions.length === 0) return;
+    if (step !== "test" || !current) return;
     let deadline: number;
     try {
       const stored = localStorage.getItem(deadlineKey(leadId));
@@ -356,7 +395,7 @@ function PlacementTest() {
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, questions.length, leadId]);
+  }, [step, current, leadId]);
 
   // Clear deadline once results are shown (covers resume path too).
   useEffect(() => {
@@ -366,8 +405,8 @@ function PlacementTest() {
   }, [step, leadId]);
 
   const progress = useMemo(
-    () => (questions.length ? Math.round(((qIdx + 1) / questions.length) * 100) : 0),
-    [qIdx, questions.length],
+    () => (totalPlanned ? Math.round((answeredCount / totalPlanned) * 100) : 0),
+    [answeredCount, totalPlanned],
   );
 
   return (
