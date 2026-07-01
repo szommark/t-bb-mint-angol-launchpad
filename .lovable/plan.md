@@ -1,39 +1,71 @@
-## Hero Banner Revamp
+## Goals
 
-Replace the right-column "Trusted by leaders" stats card with a **dynamic photo collage** and animate the three headline lines, while preserving the dark navy + teal palette, typography, eyebrow, subtitle, CTAs, and trust strip.
+1. Stop serving the same cached test to every user. Intake (self-level + focus + skills) drives which questions the user sees, and changing intake regenerates the set.
+2. Replace the fixed 20-slot even distribution with a level-weighted blueprint anchored on the user's self-assessed level.
+3. Deliver the test one question at a time and adapt difficulty as the user answers, moving at most one CEFR level per step.
 
-### 1. Right column — image collage (`src/routes/index.tsx`)
-Swap the stats panel for a layered collage of 4 photos representing the three messages:
-- **Card A (large, top-left)** — diverse friends chatting in a bright café (Connect)
-- **Card B (medium, top-right, slightly raised)** — confident young professional in a video call on laptop (Speak)
-- **Card C (medium, bottom-left, slightly lowered)** — adult learner on tablet/phone, modern lifestyle (Learn trendiest)
-- **Card D (small floating accent, overlapping)** — traveler with smartphone / global moment
+## Level weighting rules (applied to N=20 slots)
 
-Styling: rounded-2xl, soft white/10 borders, layered drop shadows (`--shadow-elegant`), subtle rotation (-2°/+2°) on outer cards, teal-accent glow blob behind. A small floating "chip" badge ("🌍 50+ countries" or "⚡ Live conversation") on one card for premium polish. Mobile: collapses to a clean 2×2 grid below the text, no rotation.
+- **A1 / A2** — 60% at or below stated level, 30% one level above, 10% two levels above. Never more than +2.
+- **B1 / B2** — 20% one below, 50% at level, 30% one above.
+- **C1 / C2** — 20% two below, 30% one below, 50% at level.
 
-### 2. Headline animation
-Add a CSS-only entrance: each of the three `<span>` lines fades + slides up in sequence (0ms, 150ms, 300ms delays) using a new `@keyframes hero-line-in` utility in `src/styles.css`. The teal-gradient third line gets a subtle continuous shimmer (background-position animation on the existing gradient) to make it the focal accent. No JS, no new libs.
+These weights build the initial blueprint. The stated level always has the highest concentration. Skills selected in intake become the pool of allowed skill tags (skill filter). Focus area is used only as a tiebreaker in bank ordering and as flavor text in the AI prompt.
 
-### 3. Background polish
-Keep existing `--gradient-hero` + radial overlays. Remove the existing decorative `hero-banner-connect.png` globe (now redundant with collage). Add one extra very-soft teal radial blob behind the collage for depth.
+## Adaptive delivery
 
-### 4. Images
-Generate 4 on-brand photos into `src/assets/`:
-- `hero-collage-cafe.jpg` — diverse young adults laughing in modern café conversation
-- `hero-collage-call.jpg` — professional woman on laptop video call, bright workspace
-- `hero-collage-mobile.jpg` — stylish adult learning on smartphone, urban lifestyle
-- `hero-collage-travel.jpg` — traveler with phone, airport/city scene
+Change the flow from "generate 20, show all, submit at end" to "serve one, submit answer, serve next":
 
-Bright, authentic, natural light, candid expressions — matched warm tone so they sit cohesively against the dark navy.
+- Test session tracks a `currentLevel` starting at the user's self-assessed level.
+- After each answer, `currentLevel` adjusts by at most one CEFR step:
+  - 2 consecutive correct at `currentLevel` or above → step up one level (capped at C2 and at the max allowed by the weighting rule above, e.g. A1 users cap at A2 initially, then A3-equivalent B1 only after early success — never more than +2 from stated level for beginners, unbounded upward for B/C once earned).
+  - 2 consecutive wrong → step down one level (floor A1).
+- Each served question is chosen for the current adaptive level and one of the intake skills, with the same bank-first / AI-fallback logic used today.
+- Blueprint still governs the overall level mix as a soft budget: the adaptive controller picks the next level, then a slot from the blueprint at that level is consumed. When budgets clash, the adaptive choice wins but the swap is logged so the totals stay near the weighted targets.
 
-### 5. CTA copy (translations)
-Update `ctaPrimary` to **"Start Your Journey"** / **"Indítsd az utad"** / **"Starte deine Reise"** across `en`/`hu`/`de`. Keep `ctaSecondary` ("Explore Our Courses" → already matches "Explore Courses"). Behavior unchanged: primary scrolls to placement form, secondary scrolls to courses.
+## Cache and regeneration
 
-### Out of scope
-Nav, language switcher, value section, courses, form, about, testimonials, footer, routing, backend, design tokens (no new primary colors). The "Trusted by leaders" stats card is removed from the hero (stats can move to a later section in a follow-up if desired — not part of this task).
+- On intake submit, compare submitted `{selfLevel, focus, skills}` to the intake stored on the lead. If any field differs, discard `test_questions`, `test_answers`, `cefr_level`, `score_summary`, and `completed_at`, then build a fresh set.
+- If intake matches exactly and the lead already has an unfinished cached set, resume it. Completed tests are never overwritten (results screen stays valid).
 
-### Technical notes
-- Pure frontend/presentation change in `src/routes/index.tsx` + `src/styles.css` + 4 new image assets.
-- Animation via Tailwind v4 `@utility` keyframes in `src/styles.css` (no Motion/GSAP dependency).
-- All images decorative → `alt=""` with descriptive aria where meaningful.
-- No new packages.
+## Question selection from the bank
+
+- Filter: `skill IN (intake.skills)` AND `level = <slot level>`.
+- Order: `times_used ASC`, then `created_at ASC`. Focus area only breaks ties — if the bank stores a topic tag later we can use it, but today focus stays as AI-prompt flavor.
+- Exclude any bank question already used in this test (dedupe by `id`).
+- If no matching row exists for a slot, generate that specific slot with AI (level + skill + focus as prompt inputs), insert into `questions`, and use it. Never fall back to a wrong-skill question.
+
+## Data / API changes
+
+Client contract shifts to one-question-at-a-time:
+
+- `POST /api/public/placement/start` — validates intake, resets cache when intake changes, computes the weighted blueprint, and returns `{ questionCount, first: <question> }` plus the intake stored on the lead.
+- New `POST /api/public/placement/next` — body `{ leadId, questionId, selectedIndex }`. Records the answer, updates `currentLevel` per the adaptive rule, picks the next slot (bank-first, AI fallback), and returns either the next question or `{ done: true }` when the blueprint is exhausted or the timer elapsed.
+- `POST /api/public/placement/submit` — kept for the "done" path and for auto-submit on timeout; it now finalizes results using the answers accumulated on the lead rather than a client-sent map.
+- `GET /api/public/placement/state` — unchanged shape, but returns adaptive progress (`answered`, `total`, `currentQuestion`) so resume works after refresh.
+
+Lead columns already cover this; no schema change beyond storing `adaptive_state` inside the existing `test_answers` jsonb (progress + currentLevel + servedQuestionIds). No new tables. `questions`, `test_attempts`, `attempt_answers` continue to work as today — attempt logging on submit still inserts one row per answered question.
+
+Sanitized question payload sent to the client stays `{ id, prompt, options, cefr, skill }` — no correct index, no explanation, no `bankId`.
+
+## Frontend changes (`src/routes/placement-test.$leadId.tsx`)
+
+- Intake form: on submit, always POST intake; server decides whether to reuse or regenerate.
+- Test view: renders one question at a time using the `current` payload from `start` / `next`. Progress chip shows `answered / total`. Timer + auto-submit behavior is preserved.
+- Answer handler calls `/placement/next`; when it returns `done`, the client calls `/placement/submit` (or the server auto-finalizes and returns the result directly — TBD in build; default to server-finalizes to avoid client trust).
+- Results screen (score, per-level bars, review) is unchanged and reads from `state` as today.
+
+## Files touched
+
+- `src/routes/api/public/placement/start.ts` — intake diff + reset, weighted blueprint, serve only the first question.
+- `src/routes/api/public/placement/next.ts` — new file; adaptive controller + bank/AI selection for the next question.
+- `src/routes/api/public/placement/submit.ts` — accept server-side answers, keep attempt logging.
+- `src/routes/api/public/placement/state.ts` — expose adaptive progress alongside existing fields.
+- `src/lib/placement-review.server.ts` — helpers for weighted blueprint + adaptive step logic (shared between start and next).
+- `src/routes/placement-test.$leadId.tsx` — one-at-a-time UI, updated fetch flow, resume handling.
+
+## Out of scope
+
+- No schema migration (reuse `test_answers` jsonb for adaptive state).
+- No changes to scoring formula, CEFR derivation, per-level bars, or the review section.
+- No changes to auth, RLS, or the lead session-token flow.

@@ -16,6 +16,7 @@ import { Route as ApiPublicLeadsRouteImport } from './routes/api/public/leads'
 import { Route as ApiPublicPlacementSubmitRouteImport } from './routes/api/public/placement/submit'
 import { Route as ApiPublicPlacementStateRouteImport } from './routes/api/public/placement/state'
 import { Route as ApiPublicPlacementStartRouteImport } from './routes/api/public/placement/start'
+import { Route as ApiPublicPlacementNextRouteImport } from './routes/api/public/placement/next'
 
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
@@ -53,12 +54,18 @@ const ApiPublicPlacementStartRoute = ApiPublicPlacementStartRouteImport.update({
   path: '/api/public/placement/start',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPlacementNextRoute = ApiPublicPlacementNextRouteImport.update({
+  id: '/api/public/placement/next',
+  path: '/api/public/placement/next',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/privacy': typeof PrivacyRoute
   '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
+  '/api/public/placement/next': typeof ApiPublicPlacementNextRoute
   '/api/public/placement/start': typeof ApiPublicPlacementStartRoute
   '/api/public/placement/state': typeof ApiPublicPlacementStateRoute
   '/api/public/placement/submit': typeof ApiPublicPlacementSubmitRoute
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
+  '/api/public/placement/next': typeof ApiPublicPlacementNextRoute
   '/api/public/placement/start': typeof ApiPublicPlacementStartRoute
   '/api/public/placement/state': typeof ApiPublicPlacementStateRoute
   '/api/public/placement/submit': typeof ApiPublicPlacementSubmitRoute
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
+  '/api/public/placement/next': typeof ApiPublicPlacementNextRoute
   '/api/public/placement/start': typeof ApiPublicPlacementStartRoute
   '/api/public/placement/state': typeof ApiPublicPlacementStateRoute
   '/api/public/placement/submit': typeof ApiPublicPlacementSubmitRoute
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/placement-test/$leadId'
     | '/api/public/leads'
+    | '/api/public/placement/next'
     | '/api/public/placement/start'
     | '/api/public/placement/state'
     | '/api/public/placement/submit'
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/placement-test/$leadId'
     | '/api/public/leads'
+    | '/api/public/placement/next'
     | '/api/public/placement/start'
     | '/api/public/placement/state'
     | '/api/public/placement/submit'
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/placement-test/$leadId'
     | '/api/public/leads'
+    | '/api/public/placement/next'
     | '/api/public/placement/start'
     | '/api/public/placement/state'
     | '/api/public/placement/submit'
@@ -117,6 +129,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   PlacementTestLeadIdRoute: typeof PlacementTestLeadIdRoute
   ApiPublicLeadsRoute: typeof ApiPublicLeadsRoute
+  ApiPublicPlacementNextRoute: typeof ApiPublicPlacementNextRoute
   ApiPublicPlacementStartRoute: typeof ApiPublicPlacementStartRoute
   ApiPublicPlacementStateRoute: typeof ApiPublicPlacementStateRoute
   ApiPublicPlacementSubmitRoute: typeof ApiPublicPlacementSubmitRoute
@@ -173,6 +186,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPlacementStartRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/placement/next': {
+      id: '/api/public/placement/next'
+      path: '/api/public/placement/next'
+      fullPath: '/api/public/placement/next'
+      preLoaderRoute: typeof ApiPublicPlacementNextRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -181,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   PlacementTestLeadIdRoute: PlacementTestLeadIdRoute,
   ApiPublicLeadsRoute: ApiPublicLeadsRoute,
+  ApiPublicPlacementNextRoute: ApiPublicPlacementNextRoute,
   ApiPublicPlacementStartRoute: ApiPublicPlacementStartRoute,
   ApiPublicPlacementStateRoute: ApiPublicPlacementStateRoute,
   ApiPublicPlacementSubmitRoute: ApiPublicPlacementSubmitRoute,

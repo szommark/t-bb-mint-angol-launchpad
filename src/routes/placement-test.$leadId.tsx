@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, Sparkles, Clock } from "lucide-react";
+import { ArrowRight, CheckCircle2, Loader2, Sparkles, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -203,15 +203,15 @@ function PlacementTest() {
   const [focus, setFocus] = useState("");
   const [skills, setSkills] = useState<Skill[]>([]);
 
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [qIdx, setQIdx] = useState(0);
+  const [current, setCurrent] = useState<Question | null>(null);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [answeredCount, setAnsweredCount] = useState(0);
+  const [totalPlanned, setTotalPlanned] = useState(20);
+  const [advancing, setAdvancing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
   const submittedRef = useRef(false);
-  const answersRef = useRef(answers);
-  useEffect(() => { answersRef.current = answers; }, [answers]);
 
   const lc = t[lang];
 
@@ -245,8 +245,11 @@ function PlacementTest() {
           setStep("result");
           return;
         }
-        if (Array.isArray(data.questions) && data.questions.length > 0) {
-          setQuestions(data.questions);
+        if (data.current) {
+          setCurrent(data.current);
+          setAnsweredCount(data.answeredCount ?? 0);
+          setTotalPlanned(data.totalPlanned ?? 20);
+          setSelected(null);
           setStep("test");
           return;
         }
@@ -280,9 +283,11 @@ function PlacementTest() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ?? "Failed");
-      setQuestions(data.questions);
-      setQIdx(0);
-      setAnswers({});
+      setCurrent(data.current);
+      setAnsweredCount(data.answeredCount ?? 0);
+      setTotalPlanned(data.totalPlanned ?? 20);
+      setSelected(null);
+      try { localStorage.removeItem(deadlineKey(leadId)); } catch { /* noop */ }
       setStep("test");
     } catch (e) {
       console.error(e);
@@ -291,18 +296,52 @@ function PlacementTest() {
     }
   };
 
+  const advance = async () => {
+    if (!current || selected === null || advancing) return;
+    setAdvancing(true);
+    try {
+      const res = await fetch("/api/public/placement/next", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders },
+        body: JSON.stringify({ leadId, questionId: current.id, selectedIndex: selected }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "Failed");
+      if (data.done) {
+        submittedRef.current = true;
+        try { localStorage.removeItem(deadlineKey(leadId)); } catch { /* noop */ }
+        setResult({
+          level: data.level,
+          totalCorrect: data.totalCorrect,
+          totalQ: data.totalQ,
+          summary: data.summary,
+          review: Array.isArray(data.review) ? data.review : [],
+          byLevel: data.byLevel ?? {},
+        });
+        setStep("result");
+        return;
+      }
+      setCurrent(data.current);
+      setAnsweredCount(data.answeredCount ?? 0);
+      setTotalPlanned(data.totalPlanned ?? totalPlanned);
+      setSelected(null);
+    } catch (e) {
+      console.error(e);
+      toast.error(e instanceof Error ? e.message : "Could not load next question.");
+    } finally {
+      setAdvancing(false);
+    }
+  };
+
   const submitTest = async () => {
     if (submittedRef.current) return;
     submittedRef.current = true;
-    const currentAnswers = answersRef.current;
-    const unanswered = questions.length - Object.keys(currentAnswers).length;
-    if (unanswered > 0) toast.message(lc.unansweredNote(unanswered));
     setSubmitting(true);
     try {
       const res = await fetch("/api/public/placement/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...authHeaders },
-        body: JSON.stringify({ leadId, answers: currentAnswers }),
+        body: JSON.stringify({ leadId }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ?? "Failed");
@@ -327,7 +366,7 @@ function PlacementTest() {
 
   // Overall test timer with refresh-safe deadline.
   useEffect(() => {
-    if (step !== "test" || questions.length === 0) return;
+    if (step !== "test" || !current) return;
     let deadline: number;
     try {
       const stored = localStorage.getItem(deadlineKey(leadId));
@@ -356,7 +395,7 @@ function PlacementTest() {
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, questions.length, leadId]);
+  }, [step, current, leadId]);
 
   // Clear deadline once results are shown (covers resume path too).
   useEffect(() => {
@@ -366,8 +405,8 @@ function PlacementTest() {
   }, [step, leadId]);
 
   const progress = useMemo(
-    () => (questions.length ? Math.round(((qIdx + 1) / questions.length) * 100) : 0),
-    [qIdx, questions.length],
+    () => (totalPlanned ? Math.round((answeredCount / totalPlanned) * 100) : 0),
+    [answeredCount, totalPlanned],
   );
 
   return (
@@ -446,14 +485,15 @@ function PlacementTest() {
           </div>
         )}
 
-        {step === "test" && questions.length > 0 && (() => {
-          const q = questions[qIdx];
-          const sel = answers[q.id];
-          const isLast = qIdx === questions.length - 1;
+        {step === "test" && current && (() => {
+          const q = current;
+          const sel = selected;
+          const displayIdx = Math.min(answeredCount + 1, totalPlanned);
+          const isLast = answeredCount + 1 >= totalPlanned;
           return (
             <div className="rounded-3xl border border-border bg-card p-7 shadow-[var(--shadow-card)] sm:p-9">
               <div className="mb-6 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                <span>{lc.test.q} {qIdx + 1} / {questions.length}</span>
+                <span>{lc.test.q} {displayIdx} / {totalPlanned}</span>
                 <span className="flex items-center gap-3">
                   {remaining !== null && (
                     <span
@@ -478,11 +518,11 @@ function PlacementTest() {
               <Progress value={progress} className="mb-8 h-1.5" />
               <h2 className="text-lg font-semibold leading-snug text-foreground sm:text-xl">{q.prompt}</h2>
               <RadioGroup
-                value={sel !== undefined ? String(sel) : ""}
-                onValueChange={(v) => setAnswers((a) => ({ ...a, [q.id]: Number(v) }))}
+                value={sel !== null ? String(sel) : ""}
+                onValueChange={(v) => setSelected(Number(v))}
                 className="mt-6 space-y-3"
               >
-                {q.options.map((opt, i) => (
+                {q.options.map((opt: string, i: number) => (
                   <label key={i}
                     className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors ${sel === i ? "border-[var(--teal-accent)] bg-[var(--teal-accent)]/5" : "border-border hover:bg-muted/40"}`}>
                     <RadioGroupItem value={String(i)} className="mt-0.5" />
@@ -490,22 +530,20 @@ function PlacementTest() {
                   </label>
                 ))}
               </RadioGroup>
-              <div className="mt-8 flex items-center justify-between">
-                <Button variant="outline" onClick={() => setQIdx((i) => Math.max(0, i - 1))} disabled={qIdx === 0}>
-                  <ArrowLeft className="mr-1.5 h-4 w-4" /> {lc.test.prev}
+              <div className="mt-8 flex items-center justify-end">
+                <Button
+                  onClick={advance}
+                  disabled={sel === null || advancing || submitting}
+                  className="bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)]"
+                >
+                  {advancing || submitting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : isLast ? (
+                    <>{lc.test.submit} <CheckCircle2 className="ml-1.5 h-4 w-4" /></>
+                  ) : (
+                    <>{lc.test.next} <ArrowRight className="ml-1.5 h-4 w-4" /></>
+                  )}
                 </Button>
-                {isLast ? (
-                  <Button onClick={submitTest} disabled={submitting}
-                    className="bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)]">
-                    {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <>{lc.test.submit} <CheckCircle2 className="ml-1.5 h-4 w-4" /></>}
-                  </Button>
-                ) : (
-                  <Button onClick={() => setQIdx((i) => Math.min(questions.length - 1, i + 1))}
-                    disabled={sel === undefined}
-                    className="bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)]">
-                    {lc.test.next} <ArrowRight className="ml-1.5 h-4 w-4" />
-                  </Button>
-                )}
               </div>
             </div>
           );
