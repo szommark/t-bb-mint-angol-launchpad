@@ -485,14 +485,15 @@ function PlacementTest() {
           </div>
         )}
 
-        {step === "test" && questions.length > 0 && (() => {
-          const q = questions[qIdx];
-          const sel = answers[q.id];
-          const isLast = qIdx === questions.length - 1;
+        {step === "test" && current && (() => {
+          const q = current;
+          const sel = selected;
+          const displayIdx = Math.min(answeredCount + 1, totalPlanned);
+          const isLast = answeredCount + 1 >= totalPlanned;
           return (
             <div className="rounded-3xl border border-border bg-card p-7 shadow-[var(--shadow-card)] sm:p-9">
               <div className="mb-6 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                <span>{lc.test.q} {qIdx + 1} / {questions.length}</span>
+                <span>{lc.test.q} {displayIdx} / {totalPlanned}</span>
                 <span className="flex items-center gap-3">
                   {remaining !== null && (
                     <span
@@ -517,11 +518,11 @@ function PlacementTest() {
               <Progress value={progress} className="mb-8 h-1.5" />
               <h2 className="text-lg font-semibold leading-snug text-foreground sm:text-xl">{q.prompt}</h2>
               <RadioGroup
-                value={sel !== undefined ? String(sel) : ""}
-                onValueChange={(v) => setAnswers((a) => ({ ...a, [q.id]: Number(v) }))}
+                value={sel !== null ? String(sel) : ""}
+                onValueChange={(v) => setSelected(Number(v))}
                 className="mt-6 space-y-3"
               >
-                {q.options.map((opt, i) => (
+                {q.options.map((opt: string, i: number) => (
                   <label key={i}
                     className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors ${sel === i ? "border-[var(--teal-accent)] bg-[var(--teal-accent)]/5" : "border-border hover:bg-muted/40"}`}>
                     <RadioGroupItem value={String(i)} className="mt-0.5" />
@@ -529,22 +530,20 @@ function PlacementTest() {
                   </label>
                 ))}
               </RadioGroup>
-              <div className="mt-8 flex items-center justify-between">
-                <Button variant="outline" onClick={() => setQIdx((i) => Math.max(0, i - 1))} disabled={qIdx === 0}>
-                  <ArrowLeft className="mr-1.5 h-4 w-4" /> {lc.test.prev}
+              <div className="mt-8 flex items-center justify-end">
+                <Button
+                  onClick={advance}
+                  disabled={sel === null || advancing || submitting}
+                  className="bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)]"
+                >
+                  {advancing || submitting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : isLast ? (
+                    <>{lc.test.submit} <CheckCircle2 className="ml-1.5 h-4 w-4" /></>
+                  ) : (
+                    <>{lc.test.next} <ArrowRight className="ml-1.5 h-4 w-4" /></>
+                  )}
                 </Button>
-                {isLast ? (
-                  <Button onClick={submitTest} disabled={submitting}
-                    className="bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)]">
-                    {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <>{lc.test.submit} <CheckCircle2 className="ml-1.5 h-4 w-4" /></>}
-                  </Button>
-                ) : (
-                  <Button onClick={() => setQIdx((i) => Math.min(questions.length - 1, i + 1))}
-                    disabled={sel === undefined}
-                    className="bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)]">
-                    {lc.test.next} <ArrowRight className="ml-1.5 h-4 w-4" />
-                  </Button>
-                )}
               </div>
             </div>
           );
