@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, Sparkles, Clock } from "lucide-react";
+import { ArrowRight, CheckCircle2, Loader2, Sparkles, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -203,15 +203,15 @@ function PlacementTest() {
   const [focus, setFocus] = useState("");
   const [skills, setSkills] = useState<Skill[]>([]);
 
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [qIdx, setQIdx] = useState(0);
+  const [current, setCurrent] = useState<Question | null>(null);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [answeredCount, setAnsweredCount] = useState(0);
+  const [totalPlanned, setTotalPlanned] = useState(20);
+  const [advancing, setAdvancing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
   const submittedRef = useRef(false);
-  const answersRef = useRef(answers);
-  useEffect(() => { answersRef.current = answers; }, [answers]);
 
   const lc = t[lang];
 
