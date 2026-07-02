@@ -1,71 +1,32 @@
-## Goals
+## Temporary test config: 10 questions, 5-minute timer
 
-1. Stop serving the same cached test to every user. Intake (self-level + focus + skills) drives which questions the user sees, and changing intake regenerates the set.
-2. Replace the fixed 20-slot even distribution with a level-weighted blueprint anchored on the user's self-assessed level.
-3. Deliver the test one question at a time and adapt difficulty as the user answers, moving at most one CEFR level per step.
+Make both values single-source constants so a one-line revert restores 20/20.
 
-## Level weighting rules (applied to N=20 slots)
+### Constants (top of files, clearly marked TEMP)
 
-- **A1 / A2** — 60% at or below stated level, 30% one level above, 10% two levels above. Never more than +2.
-- **B1 / B2** — 20% one below, 50% at level, 30% one above.
-- **C1 / C2** — 20% two below, 30% one below, 50% at level.
+- `src/lib/placement-blueprint.server.ts`
+  - `TOTAL_PLANNED = 10` (was 20).
+  - Rewrite `buildBudget(selfLevel)` so each case sums to `TOTAL_PLANNED`, preserving the same weighting shape:
+    - A1: A1 6, A2 3, B1 1
+    - A2: A1 2, A2 4, B1 3, B2 1
+    - B1: A2 2, B1 5, B2 3
+    - B2: B1 2, B2 5, C1 3
+    - C1: B1 2, B2 3, C1 5
+    - C2: B2 2, C1 3, C2 5
+  - Adaptive step logic, `chooseSlotLevel`, `reachableLevels`, and per-level accuracy bars are unaffected — they operate on whatever budget/questions exist.
 
-These weights build the initial blueprint. The stated level always has the highest concentration. Skills selected in intake become the pool of allowed skill tags (skill filter). Focus area is used only as a tiebreaker in bank ordering and as flavor text in the AI prompt.
+- `src/routes/placement-test.$leadId.tsx`
+  - `TEST_DURATION_SECONDS = 300` (was 600).
+  - `useState(20)` fallbacks → `useState(10)`; `data.totalPlanned ?? 20` → `?? 10` (2 spots). These are only pre-fetch fallbacks; server value still wins.
+  - Intake subtitle copy in all three languages: "20 quick questions … 10 minutes" → "10 quick questions … 5 minutes" (EN / HU / DE).
 
-## Adaptive delivery
+### Not touched
 
-Change the flow from "generate 20, show all, submit at end" to "serve one, submit answer, serve next":
+- Results screen score already renders `totalCorrect / totalQ` from server data — automatically shows `X/10`.
+- Progress chip uses `answeredCount / totalPlanned` from server — automatic.
+- `/start`, `/next`, `/submit`, `/state` need no edits: they read `TOTAL_PLANNED` and the state's `totalPlanned` field.
+- Per-level bars use `computeByLevel` over answered questions — works for any count.
 
-- Test session tracks a `currentLevel` starting at the user's self-assessed level.
-- After each answer, `currentLevel` adjusts by at most one CEFR step:
-  - 2 consecutive correct at `currentLevel` or above → step up one level (capped at C2 and at the max allowed by the weighting rule above, e.g. A1 users cap at A2 initially, then A3-equivalent B1 only after early success — never more than +2 from stated level for beginners, unbounded upward for B/C once earned).
-  - 2 consecutive wrong → step down one level (floor A1).
-- Each served question is chosen for the current adaptive level and one of the intake skills, with the same bank-first / AI-fallback logic used today.
-- Blueprint still governs the overall level mix as a soft budget: the adaptive controller picks the next level, then a slot from the blueprint at that level is consumed. When budgets clash, the adaptive choice wins but the swap is logged so the totals stay near the weighted targets.
+### Revert
 
-## Cache and regeneration
-
-- On intake submit, compare submitted `{selfLevel, focus, skills}` to the intake stored on the lead. If any field differs, discard `test_questions`, `test_answers`, `cefr_level`, `score_summary`, and `completed_at`, then build a fresh set.
-- If intake matches exactly and the lead already has an unfinished cached set, resume it. Completed tests are never overwritten (results screen stays valid).
-
-## Question selection from the bank
-
-- Filter: `skill IN (intake.skills)` AND `level = <slot level>`.
-- Order: `times_used ASC`, then `created_at ASC`. Focus area only breaks ties — if the bank stores a topic tag later we can use it, but today focus stays as AI-prompt flavor.
-- Exclude any bank question already used in this test (dedupe by `id`).
-- If no matching row exists for a slot, generate that specific slot with AI (level + skill + focus as prompt inputs), insert into `questions`, and use it. Never fall back to a wrong-skill question.
-
-## Data / API changes
-
-Client contract shifts to one-question-at-a-time:
-
-- `POST /api/public/placement/start` — validates intake, resets cache when intake changes, computes the weighted blueprint, and returns `{ questionCount, first: <question> }` plus the intake stored on the lead.
-- New `POST /api/public/placement/next` — body `{ leadId, questionId, selectedIndex }`. Records the answer, updates `currentLevel` per the adaptive rule, picks the next slot (bank-first, AI fallback), and returns either the next question or `{ done: true }` when the blueprint is exhausted or the timer elapsed.
-- `POST /api/public/placement/submit` — kept for the "done" path and for auto-submit on timeout; it now finalizes results using the answers accumulated on the lead rather than a client-sent map.
-- `GET /api/public/placement/state` — unchanged shape, but returns adaptive progress (`answered`, `total`, `currentQuestion`) so resume works after refresh.
-
-Lead columns already cover this; no schema change beyond storing `adaptive_state` inside the existing `test_answers` jsonb (progress + currentLevel + servedQuestionIds). No new tables. `questions`, `test_attempts`, `attempt_answers` continue to work as today — attempt logging on submit still inserts one row per answered question.
-
-Sanitized question payload sent to the client stays `{ id, prompt, options, cefr, skill }` — no correct index, no explanation, no `bankId`.
-
-## Frontend changes (`src/routes/placement-test.$leadId.tsx`)
-
-- Intake form: on submit, always POST intake; server decides whether to reuse or regenerate.
-- Test view: renders one question at a time using the `current` payload from `start` / `next`. Progress chip shows `answered / total`. Timer + auto-submit behavior is preserved.
-- Answer handler calls `/placement/next`; when it returns `done`, the client calls `/placement/submit` (or the server auto-finalizes and returns the result directly — TBD in build; default to server-finalizes to avoid client trust).
-- Results screen (score, per-level bars, review) is unchanged and reads from `state` as today.
-
-## Files touched
-
-- `src/routes/api/public/placement/start.ts` — intake diff + reset, weighted blueprint, serve only the first question.
-- `src/routes/api/public/placement/next.ts` — new file; adaptive controller + bank/AI selection for the next question.
-- `src/routes/api/public/placement/submit.ts` — accept server-side answers, keep attempt logging.
-- `src/routes/api/public/placement/state.ts` — expose adaptive progress alongside existing fields.
-- `src/lib/placement-review.server.ts` — helpers for weighted blueprint + adaptive step logic (shared between start and next).
-- `src/routes/placement-test.$leadId.tsx` — one-at-a-time UI, updated fetch flow, resume handling.
-
-## Out of scope
-
-- No schema migration (reuse `test_answers` jsonb for adaptive state).
-- No changes to scoring formula, CEFR derivation, per-level bars, or the review section.
-- No changes to auth, RLS, or the lead session-token flow.
+Change `TOTAL_PLANNED` back to 20, restore original `buildBudget` numbers, set `TEST_DURATION_SECONDS = 600`, and revert the 3 subtitle strings. I'll leave `// TEMP:` comments next to each so they're easy to find.
