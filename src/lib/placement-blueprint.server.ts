@@ -9,7 +9,9 @@ export const LEVEL_INDEX: Record<Level, number> = {
   A1: 0, A2: 1, B1: 2, B2: 3, C1: 4, C2: 5,
 };
 
-export const TOTAL_PLANNED = 20;
+// TEMP: reduced from 20 to 10 for testing. Revert to 20 and restore
+// original buildBudget numbers below to restore the full-length test.
+export const TOTAL_PLANNED = 10;
 
 // Map an intake-selected skill to the bank skill tags it should draw from.
 const INTAKE_TO_BANK: Record<IntakeSkill, BankSkill[]> = {
@@ -30,19 +32,21 @@ export function allowedBankSkills(intakeSkills: IntakeSkill[]): BankSkill[] {
 // always carries the highest concentration.
 export function buildBudget(selfLevel: Level): Record<Level, number> {
   const b: Record<Level, number> = { A1: 0, A2: 0, B1: 0, B2: 0, C1: 0, C2: 0 };
+  // TEMP: scaled to sum to 10. Original 20-slot budgets:
+  //   A1: 12/6/2 | A2: 4/8/6/2 | B1: 4/10/6 | B2: 4/10/6 | C1: 4/6/10 | C2: 4/6/10
   switch (selfLevel) {
     case "A1":
-      b.A1 = 12; b.A2 = 6; b.B1 = 2; break;
+      b.A1 = 6; b.A2 = 3; b.B1 = 1; break;
     case "A2":
-      b.A1 = 4; b.A2 = 8; b.B1 = 6; b.B2 = 2; break;
+      b.A1 = 2; b.A2 = 4; b.B1 = 3; b.B2 = 1; break;
     case "B1":
-      b.A2 = 4; b.B1 = 10; b.B2 = 6; break;
+      b.A2 = 2; b.B1 = 5; b.B2 = 3; break;
     case "B2":
-      b.B1 = 4; b.B2 = 10; b.C1 = 6; break;
+      b.B1 = 2; b.B2 = 5; b.C1 = 3; break;
     case "C1":
-      b.B1 = 4; b.B2 = 6; b.C1 = 10; break;
+      b.B1 = 2; b.B2 = 3; b.C1 = 5; break;
     case "C2":
-      b.B2 = 4; b.C1 = 6; b.C2 = 10; break;
+      b.B2 = 2; b.C1 = 3; b.C2 = 5; break;
   }
   return b;
 }
