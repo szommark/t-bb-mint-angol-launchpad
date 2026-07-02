@@ -207,7 +207,7 @@ function PlacementTest() {
   const [current, setCurrent] = useState<Question | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
   const [answeredCount, setAnsweredCount] = useState(0);
-  const [totalPlanned, setTotalPlanned] = useState(20);
+  const [totalPlanned, setTotalPlanned] = useState(10);
   const [advancing, setAdvancing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
@@ -249,7 +249,7 @@ function PlacementTest() {
         if (data.current) {
           setCurrent(data.current);
           setAnsweredCount(data.answeredCount ?? 0);
-          setTotalPlanned(data.totalPlanned ?? 20);
+          setTotalPlanned(data.totalPlanned ?? 10);
           setSelected(null);
           setStep("test");
           return;
@@ -286,7 +286,7 @@ function PlacementTest() {
       if (!res.ok) throw new Error(data?.error ?? "Failed");
       setCurrent(data.current);
       setAnsweredCount(data.answeredCount ?? 0);
-      setTotalPlanned(data.totalPlanned ?? 20);
+      setTotalPlanned(data.totalPlanned ?? 10);
       setSelected(null);
       try { localStorage.removeItem(deadlineKey(leadId)); } catch { /* noop */ }
       setStep("test");
