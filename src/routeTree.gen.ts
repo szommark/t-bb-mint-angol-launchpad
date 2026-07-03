@@ -9,18 +9,43 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as FreePlacementTestRouteImport } from './routes/free-placement-test'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlacementTestLeadIdRouteImport } from './routes/placement-test.$leadId'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as ApiPublicLeadsRouteImport } from './routes/api/public/leads'
 import { Route as ApiPublicPlacementSubmitRouteImport } from './routes/api/public/placement/submit'
 import { Route as ApiPublicPlacementStateRouteImport } from './routes/api/public/placement/state'
 import { Route as ApiPublicPlacementStartRouteImport } from './routes/api/public/placement/start'
 import { Route as ApiPublicPlacementNextRouteImport } from './routes/api/public/placement/next'
+import { Route as AuthenticatedDashboardAttemptsAttemptIdRouteImport } from './routes/_authenticated/dashboard.attempts.$attemptId'
 
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FreePlacementTestRoute = FreePlacementTestRouteImport.update({
+  id: '/free-placement-test',
+  path: '/free-placement-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -32,6 +57,11 @@ const PlacementTestLeadIdRoute = PlacementTestLeadIdRouteImport.update({
   id: '/placement-test/$leadId',
   path: '/placement-test/$leadId',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const ApiPublicLeadsRoute = ApiPublicLeadsRouteImport.update({
   id: '/api/public/leads',
@@ -59,12 +89,23 @@ const ApiPublicPlacementNextRoute = ApiPublicPlacementNextRouteImport.update({
   path: '/api/public/placement/next',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedDashboardAttemptsAttemptIdRoute =
+  AuthenticatedDashboardAttemptsAttemptIdRouteImport.update({
+    id: '/attempts/$attemptId',
+    path: '/attempts/$attemptId',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/free-placement-test': typeof FreePlacementTestRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
+  '/dashboard/attempts/$attemptId': typeof AuthenticatedDashboardAttemptsAttemptIdRoute
   '/api/public/placement/next': typeof ApiPublicPlacementNextRoute
   '/api/public/placement/start': typeof ApiPublicPlacementStartRoute
   '/api/public/placement/state': typeof ApiPublicPlacementStateRoute
@@ -72,9 +113,14 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/free-placement-test': typeof FreePlacementTestRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
+  '/dashboard/attempts/$attemptId': typeof AuthenticatedDashboardAttemptsAttemptIdRoute
   '/api/public/placement/next': typeof ApiPublicPlacementNextRoute
   '/api/public/placement/start': typeof ApiPublicPlacementStartRoute
   '/api/public/placement/state': typeof ApiPublicPlacementStateRoute
@@ -83,9 +129,15 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/free-placement-test': typeof FreePlacementTestRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
+  '/_authenticated/dashboard/attempts/$attemptId': typeof AuthenticatedDashboardAttemptsAttemptIdRoute
   '/api/public/placement/next': typeof ApiPublicPlacementNextRoute
   '/api/public/placement/start': typeof ApiPublicPlacementStartRoute
   '/api/public/placement/state': typeof ApiPublicPlacementStateRoute
@@ -95,9 +147,14 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
+    | '/free-placement-test'
     | '/privacy'
+    | '/reset-password'
+    | '/dashboard'
     | '/placement-test/$leadId'
     | '/api/public/leads'
+    | '/dashboard/attempts/$attemptId'
     | '/api/public/placement/next'
     | '/api/public/placement/start'
     | '/api/public/placement/state'
@@ -105,9 +162,14 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
+    | '/free-placement-test'
     | '/privacy'
+    | '/reset-password'
+    | '/dashboard'
     | '/placement-test/$leadId'
     | '/api/public/leads'
+    | '/dashboard/attempts/$attemptId'
     | '/api/public/placement/next'
     | '/api/public/placement/start'
     | '/api/public/placement/state'
@@ -115,9 +177,15 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/free-placement-test'
     | '/privacy'
+    | '/reset-password'
+    | '/_authenticated/dashboard'
     | '/placement-test/$leadId'
     | '/api/public/leads'
+    | '/_authenticated/dashboard/attempts/$attemptId'
     | '/api/public/placement/next'
     | '/api/public/placement/start'
     | '/api/public/placement/state'
@@ -126,7 +194,11 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  FreePlacementTestRoute: typeof FreePlacementTestRoute
   PrivacyRoute: typeof PrivacyRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   PlacementTestLeadIdRoute: typeof PlacementTestLeadIdRoute
   ApiPublicLeadsRoute: typeof ApiPublicLeadsRoute
   ApiPublicPlacementNextRoute: typeof ApiPublicPlacementNextRoute
@@ -137,11 +209,39 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/free-placement-test': {
+      id: '/free-placement-test'
+      path: '/free-placement-test'
+      fullPath: '/free-placement-test'
+      preLoaderRoute: typeof FreePlacementTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -157,6 +257,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/placement-test/$leadId'
       preLoaderRoute: typeof PlacementTestLeadIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/public/leads': {
       id: '/api/public/leads'
@@ -193,12 +300,49 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPlacementNextRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/dashboard/attempts/$attemptId': {
+      id: '/_authenticated/dashboard/attempts/$attemptId'
+      path: '/attempts/$attemptId'
+      fullPath: '/dashboard/attempts/$attemptId'
+      preLoaderRoute: typeof AuthenticatedDashboardAttemptsAttemptIdRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
   }
 }
 
+interface AuthenticatedDashboardRouteChildren {
+  AuthenticatedDashboardAttemptsAttemptIdRoute: typeof AuthenticatedDashboardAttemptsAttemptIdRoute
+}
+
+const AuthenticatedDashboardRouteChildren: AuthenticatedDashboardRouteChildren =
+  {
+    AuthenticatedDashboardAttemptsAttemptIdRoute:
+      AuthenticatedDashboardAttemptsAttemptIdRoute,
+  }
+
+const AuthenticatedDashboardRouteWithChildren =
+  AuthenticatedDashboardRoute._addFileChildren(
+    AuthenticatedDashboardRouteChildren,
+  )
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRouteWithChildren
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRouteWithChildren,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  FreePlacementTestRoute: FreePlacementTestRoute,
   PrivacyRoute: PrivacyRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   PlacementTestLeadIdRoute: PlacementTestLeadIdRoute,
   ApiPublicLeadsRoute: ApiPublicLeadsRoute,
   ApiPublicPlacementNextRoute: ApiPublicPlacementNextRoute,
@@ -209,13 +353,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

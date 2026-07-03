@@ -58,7 +58,7 @@ export const Route = createFileRoute("/api/public/placement/start")({
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
         const { data: lead, error: leadErr } = await supabaseAdmin
-          .from("leads")
+          .from("anonymous_sessions")
           .select("id, session_token_hash")
           .eq("id", leadId)
           .maybeSingle();
@@ -105,7 +105,7 @@ export const Route = createFileRoute("/api/public/placement/start")({
         };
 
         const { error: updErr } = await supabaseAdmin
-          .from("leads")
+          .from("anonymous_sessions")
           .update({
             intake: safeIntake,
             test_questions: [first],

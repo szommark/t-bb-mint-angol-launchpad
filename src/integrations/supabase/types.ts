@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      anonymous_sessions: {
+        Row: {
+          cefr_level: string | null
+          claimed_by_user_id: string | null
+          completed_at: string | null
+          created_at: string
+          email: string | null
+          focus: string | null
+          id: string
+          intake: Json | null
+          language: string
+          name: string
+          score_summary: string | null
+          session_token_hash: string | null
+          test_answers: Json | null
+          test_questions: Json | null
+        }
+        Insert: {
+          cefr_level?: string | null
+          claimed_by_user_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          email?: string | null
+          focus?: string | null
+          id?: string
+          intake?: Json | null
+          language?: string
+          name?: string
+          score_summary?: string | null
+          session_token_hash?: string | null
+          test_answers?: Json | null
+          test_questions?: Json | null
+        }
+        Update: {
+          cefr_level?: string | null
+          claimed_by_user_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          email?: string | null
+          focus?: string | null
+          id?: string
+          intake?: Json | null
+          language?: string
+          name?: string
+          score_summary?: string | null
+          session_token_hash?: string | null
+          test_answers?: Json | null
+          test_questions?: Json | null
+        }
+        Relationships: []
+      }
       attempt_answers: {
         Row: {
           attempt_id: string
@@ -53,36 +104,38 @@ export type Database = {
           },
         ]
       }
-      leads: {
+      profiles: {
         Row: {
           cefr_level: string | null
           completed_at: string | null
           created_at: string
           email: string
           focus: string | null
-          id: string
           intake: Json | null
           language: string
           name: string
+          preferred_skills: string[]
           score_summary: string | null
-          session_token_hash: string | null
           test_answers: Json | null
           test_questions: Json | null
+          updated_at: string
+          user_id: string
         }
         Insert: {
           cefr_level?: string | null
           completed_at?: string | null
           created_at?: string
-          email: string
+          email?: string
           focus?: string | null
-          id?: string
           intake?: Json | null
           language?: string
-          name: string
+          name?: string
+          preferred_skills?: string[]
           score_summary?: string | null
-          session_token_hash?: string | null
           test_answers?: Json | null
           test_questions?: Json | null
+          updated_at?: string
+          user_id: string
         }
         Update: {
           cefr_level?: string | null
@@ -90,14 +143,15 @@ export type Database = {
           created_at?: string
           email?: string
           focus?: string | null
-          id?: string
           intake?: Json | null
           language?: string
           name?: string
+          preferred_skills?: string[]
           score_summary?: string | null
-          session_token_hash?: string | null
           test_answers?: Json | null
           test_questions?: Json | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -139,35 +193,38 @@ export type Database = {
       }
       test_attempts: {
         Row: {
+          anonymous_session_id: string | null
           created_at: string
           final_level: string
           id: string
-          lead_id: string
           score: number
           total_questions: number
+          user_id: string | null
         }
         Insert: {
+          anonymous_session_id?: string | null
           created_at?: string
           final_level: string
           id?: string
-          lead_id: string
           score: number
           total_questions?: number
+          user_id?: string | null
         }
         Update: {
+          anonymous_session_id?: string | null
           created_at?: string
           final_level?: string
           id?: string
-          lead_id?: string
           score?: number
           total_questions?: number
+          user_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "test_attempts_lead_id_fkey"
-            columns: ["lead_id"]
+            foreignKeyName: "test_attempts_anonymous_session_id_fkey"
+            columns: ["anonymous_session_id"]
             isOneToOne: false
-            referencedRelation: "leads"
+            referencedRelation: "anonymous_sessions"
             referencedColumns: ["id"]
           },
         ]

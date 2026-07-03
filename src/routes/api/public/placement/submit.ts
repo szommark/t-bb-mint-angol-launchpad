@@ -39,7 +39,7 @@ export const Route = createFileRoute("/api/public/placement/submit")({
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data: lead, error } = await supabaseAdmin
-          .from("leads")
+          .from("anonymous_sessions")
           .select("id, test_questions, test_answers, session_token_hash, completed_at, cefr_level, score_summary")
           .eq("id", leadId)
           .maybeSingle();
@@ -74,7 +74,7 @@ export const Route = createFileRoute("/api/public/placement/submit")({
         const summary = `${totalCorrect}/${totalQ} correct overall. Strongest at ${strongest} level items.`;
 
         const { error: updErr } = await supabaseAdmin
-          .from("leads")
+          .from("anonymous_sessions")
           .update({
             cefr_level: level,
             score_summary: summary,
@@ -89,7 +89,7 @@ export const Route = createFileRoute("/api/public/placement/submit")({
         try {
           const { data: attempt, error: attemptErr } = await supabaseAdmin
             .from("test_attempts")
-            .insert({ lead_id: leadId, final_level: level, score: totalCorrect, total_questions: totalQ })
+            .insert({ anonymous_session_id: leadId, final_level: level, score: totalCorrect, total_questions: totalQ })
             .select("id")
             .single();
           if (attemptErr || !attempt) throw attemptErr ?? new Error("no attempt id");

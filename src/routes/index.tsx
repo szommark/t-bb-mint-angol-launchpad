@@ -256,7 +256,10 @@ function Index() {
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            <Button onClick={() => scrollTo(formRef)} className="hidden bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)] sm:inline-flex">
+            <Button variant="ghost" onClick={() => navigate({ to: "/auth" })} className="hidden sm:inline-flex">
+              Log in
+            </Button>
+            <Button onClick={() => navigate({ to: "/free-placement-test" })} className="hidden bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)] sm:inline-flex">
               {t.nav.cta} <ArrowRight className="ml-1.5 h-4 w-4" />
             </Button>
             <button onClick={() => setMobileOpen((o) => !o)} className="rounded-md p-2 text-foreground lg:hidden">
@@ -272,7 +275,8 @@ function Index() {
                   {n.label}
                 </button>
               ))}
-              <Button onClick={() => scrollTo(formRef)} className="mt-2 bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)]">
+              <Button variant="outline" onClick={() => navigate({ to: "/auth" })} className="mt-2">Log in</Button>
+              <Button onClick={() => navigate({ to: "/free-placement-test" })} className="mt-2 bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)]">
                 {t.nav.cta}
               </Button>
             </div>
