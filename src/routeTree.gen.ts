@@ -21,6 +21,7 @@ import { Route as ApiPublicPlacementSubmitRouteImport } from './routes/api/publi
 import { Route as ApiPublicPlacementStateRouteImport } from './routes/api/public/placement/state'
 import { Route as ApiPublicPlacementStartRouteImport } from './routes/api/public/placement/start'
 import { Route as ApiPublicPlacementNextRouteImport } from './routes/api/public/placement/next'
+import { Route as AuthenticatedDashboardAttemptsAttemptIdRouteImport } from './routes/_authenticated/dashboard.attempts.$attemptId'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -82,15 +83,22 @@ const ApiPublicPlacementNextRoute = ApiPublicPlacementNextRouteImport.update({
   path: '/api/public/placement/next',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedDashboardAttemptsAttemptIdRoute =
+  AuthenticatedDashboardAttemptsAttemptIdRouteImport.update({
+    id: '/attempts/$attemptId',
+    path: '/attempts/$attemptId',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
+  '/dashboard/attempts/$attemptId': typeof AuthenticatedDashboardAttemptsAttemptIdRoute
   '/api/public/placement/next': typeof ApiPublicPlacementNextRoute
   '/api/public/placement/start': typeof ApiPublicPlacementStartRoute
   '/api/public/placement/state': typeof ApiPublicPlacementStateRoute
@@ -101,9 +109,10 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
+  '/dashboard/attempts/$attemptId': typeof AuthenticatedDashboardAttemptsAttemptIdRoute
   '/api/public/placement/next': typeof ApiPublicPlacementNextRoute
   '/api/public/placement/start': typeof ApiPublicPlacementStartRoute
   '/api/public/placement/state': typeof ApiPublicPlacementStateRoute
@@ -116,9 +125,10 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
+  '/_authenticated/dashboard/attempts/$attemptId': typeof AuthenticatedDashboardAttemptsAttemptIdRoute
   '/api/public/placement/next': typeof ApiPublicPlacementNextRoute
   '/api/public/placement/start': typeof ApiPublicPlacementStartRoute
   '/api/public/placement/state': typeof ApiPublicPlacementStateRoute
@@ -134,6 +144,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/placement-test/$leadId'
     | '/api/public/leads'
+    | '/dashboard/attempts/$attemptId'
     | '/api/public/placement/next'
     | '/api/public/placement/start'
     | '/api/public/placement/state'
@@ -147,6 +158,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/placement-test/$leadId'
     | '/api/public/leads'
+    | '/dashboard/attempts/$attemptId'
     | '/api/public/placement/next'
     | '/api/public/placement/start'
     | '/api/public/placement/state'
@@ -161,6 +173,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/placement-test/$leadId'
     | '/api/public/leads'
+    | '/_authenticated/dashboard/attempts/$attemptId'
     | '/api/public/placement/next'
     | '/api/public/placement/start'
     | '/api/public/placement/state'
@@ -267,15 +280,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPlacementNextRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/dashboard/attempts/$attemptId': {
+      id: '/_authenticated/dashboard/attempts/$attemptId'
+      path: '/attempts/$attemptId'
+      fullPath: '/dashboard/attempts/$attemptId'
+      preLoaderRoute: typeof AuthenticatedDashboardAttemptsAttemptIdRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
   }
 }
 
+interface AuthenticatedDashboardRouteChildren {
+  AuthenticatedDashboardAttemptsAttemptIdRoute: typeof AuthenticatedDashboardAttemptsAttemptIdRoute
+}
+
+const AuthenticatedDashboardRouteChildren: AuthenticatedDashboardRouteChildren =
+  {
+    AuthenticatedDashboardAttemptsAttemptIdRoute:
+      AuthenticatedDashboardAttemptsAttemptIdRoute,
+  }
+
+const AuthenticatedDashboardRouteWithChildren =
+  AuthenticatedDashboardRoute._addFileChildren(
+    AuthenticatedDashboardRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =
