@@ -9,18 +9,36 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlacementTestLeadIdRouteImport } from './routes/placement-test.$leadId'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as ApiPublicLeadsRouteImport } from './routes/api/public/leads'
 import { Route as ApiPublicPlacementSubmitRouteImport } from './routes/api/public/placement/submit'
 import { Route as ApiPublicPlacementStateRouteImport } from './routes/api/public/placement/state'
 import { Route as ApiPublicPlacementStartRouteImport } from './routes/api/public/placement/start'
 import { Route as ApiPublicPlacementNextRouteImport } from './routes/api/public/placement/next'
 
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -32,6 +50,11 @@ const PlacementTestLeadIdRoute = PlacementTestLeadIdRouteImport.update({
   id: '/placement-test/$leadId',
   path: '/placement-test/$leadId',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const ApiPublicLeadsRoute = ApiPublicLeadsRouteImport.update({
   id: '/api/public/leads',
@@ -62,7 +85,10 @@ const ApiPublicPlacementNextRoute = ApiPublicPlacementNextRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
   '/api/public/placement/next': typeof ApiPublicPlacementNextRoute
@@ -72,7 +98,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
   '/api/public/placement/next': typeof ApiPublicPlacementNextRoute
@@ -83,7 +112,11 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
   '/api/public/placement/next': typeof ApiPublicPlacementNextRoute
@@ -95,7 +128,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
     | '/privacy'
+    | '/reset-password'
+    | '/dashboard'
     | '/placement-test/$leadId'
     | '/api/public/leads'
     | '/api/public/placement/next'
@@ -105,7 +141,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
     | '/privacy'
+    | '/reset-password'
+    | '/dashboard'
     | '/placement-test/$leadId'
     | '/api/public/leads'
     | '/api/public/placement/next'
@@ -115,7 +154,11 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
+    | '/auth'
     | '/privacy'
+    | '/reset-password'
+    | '/_authenticated/dashboard'
     | '/placement-test/$leadId'
     | '/api/public/leads'
     | '/api/public/placement/next'
@@ -126,7 +169,10 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
   PrivacyRoute: typeof PrivacyRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   PlacementTestLeadIdRoute: typeof PlacementTestLeadIdRoute
   ApiPublicLeadsRoute: typeof ApiPublicLeadsRoute
   ApiPublicPlacementNextRoute: typeof ApiPublicPlacementNextRoute
@@ -137,11 +183,32 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -157,6 +224,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/placement-test/$leadId'
       preLoaderRoute: typeof PlacementTestLeadIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/public/leads': {
       id: '/api/public/leads'
@@ -196,9 +270,23 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
   PrivacyRoute: PrivacyRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   PlacementTestLeadIdRoute: PlacementTestLeadIdRoute,
   ApiPublicLeadsRoute: ApiPublicLeadsRoute,
   ApiPublicPlacementNextRoute: ApiPublicPlacementNextRoute,
