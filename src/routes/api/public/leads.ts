@@ -58,7 +58,7 @@ export const Route = createFileRoute("/api/public/leads")({
         const sessionTokenHash = createHash("sha256").update(sessionToken).digest("hex");
 
         const { data: inserted, error } = await supabaseAdmin
-          .from("leads")
+          .from("anonymous_sessions")
           .insert({
             name: data.name,
             email: data.email,
