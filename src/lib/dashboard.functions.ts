@@ -26,7 +26,7 @@ export const updateMyProfile = createServerFn({ method: "POST" })
   .inputValidator((input: z.infer<typeof UpdateProfileSchema>) => UpdateProfileSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const payload: Record<string, unknown> = {};
+    const payload: { focus?: string | null; preferred_skills?: string[]; language?: string } = {};
     if (data.focus !== undefined) payload.focus = data.focus;
     if (data.preferred_skills !== undefined) payload.preferred_skills = data.preferred_skills;
     if (data.language !== undefined) payload.language = data.language;
