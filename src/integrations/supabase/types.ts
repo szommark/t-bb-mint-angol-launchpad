@@ -104,54 +104,6 @@ export type Database = {
           },
         ]
       }
-      leads: {
-        Row: {
-          cefr_level: string | null
-          completed_at: string | null
-          created_at: string
-          email: string
-          focus: string | null
-          id: string
-          intake: Json | null
-          language: string
-          name: string
-          score_summary: string | null
-          session_token_hash: string | null
-          test_answers: Json | null
-          test_questions: Json | null
-        }
-        Insert: {
-          cefr_level?: string | null
-          completed_at?: string | null
-          created_at?: string
-          email: string
-          focus?: string | null
-          id?: string
-          intake?: Json | null
-          language?: string
-          name: string
-          score_summary?: string | null
-          session_token_hash?: string | null
-          test_answers?: Json | null
-          test_questions?: Json | null
-        }
-        Update: {
-          cefr_level?: string | null
-          completed_at?: string | null
-          created_at?: string
-          email?: string
-          focus?: string | null
-          id?: string
-          intake?: Json | null
-          language?: string
-          name?: string
-          score_summary?: string | null
-          session_token_hash?: string | null
-          test_answers?: Json | null
-          test_questions?: Json | null
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           cefr_level: string | null
@@ -245,7 +197,6 @@ export type Database = {
           created_at: string
           final_level: string
           id: string
-          lead_id: string | null
           score: number
           total_questions: number
           user_id: string | null
@@ -255,7 +206,6 @@ export type Database = {
           created_at?: string
           final_level: string
           id?: string
-          lead_id?: string | null
           score: number
           total_questions?: number
           user_id?: string | null
@@ -265,7 +215,6 @@ export type Database = {
           created_at?: string
           final_level?: string
           id?: string
-          lead_id?: string | null
           score?: number
           total_questions?: number
           user_id?: string | null
@@ -276,13 +225,6 @@ export type Database = {
             columns: ["anonymous_session_id"]
             isOneToOne: false
             referencedRelation: "anonymous_sessions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "test_attempts_lead_id_fkey"
-            columns: ["lead_id"]
-            isOneToOne: false
-            referencedRelation: "leads"
             referencedColumns: ["id"]
           },
         ]
