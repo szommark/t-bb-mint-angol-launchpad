@@ -15,7 +15,7 @@ export const Route = createFileRoute("/api/public/placement/state")({
         const token = extractLeadToken(request);
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data, error } = await supabaseAdmin
-          .from("leads")
+          .from("anonymous_sessions")
           .select("id, name, focus, language, intake, test_questions, test_answers, cefr_level, score_summary, completed_at, session_token_hash")
           .eq("id", leadId)
           .maybeSingle();
