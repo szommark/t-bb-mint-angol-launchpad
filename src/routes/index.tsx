@@ -287,9 +287,30 @@ function Index() {
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" onClick={() => navigate({ to: "/auth" })} className="hidden sm:inline-flex">
-              Log in
-            </Button>
+            {authUser ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="hidden items-center gap-2 rounded-full border border-border bg-card px-2 py-1 pr-3 text-sm font-medium transition-colors hover:bg-muted sm:inline-flex">
+                    <Avatar className="h-7 w-7">
+                      <AvatarFallback className="bg-[var(--teal-accent)] text-xs font-semibold text-primary-foreground">{initials}</AvatarFallback>
+                    </Avatar>
+                    <span className="max-w-[140px] truncate">{authUser.name}</span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => navigate({ to: "/dashboard" })}>
+                    <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={signOut}>
+                    <LogOut className="mr-2 h-4 w-4" /> Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button variant="ghost" onClick={() => navigate({ to: "/auth" })} className="hidden sm:inline-flex">
+                Log in
+              </Button>
+            )}
             <Button onClick={() => navigate({ to: "/free-placement-test" })} className="hidden bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)] sm:inline-flex">
               {t.nav.cta} <ArrowRight className="ml-1.5 h-4 w-4" />
             </Button>
@@ -306,7 +327,14 @@ function Index() {
                   {n.label}
                 </button>
               ))}
-              <Button variant="outline" onClick={() => navigate({ to: "/auth" })} className="mt-2">Log in</Button>
+              {authUser ? (
+                <>
+                  <Button variant="outline" onClick={() => navigate({ to: "/dashboard" })} className="mt-2">Dashboard</Button>
+                  <Button variant="ghost" onClick={signOut}>Sign out</Button>
+                </>
+              ) : (
+                <Button variant="outline" onClick={() => navigate({ to: "/auth" })} className="mt-2">Log in</Button>
+              )}
               <Button onClick={() => navigate({ to: "/free-placement-test" })} className="mt-2 bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)]">
                 {t.nav.cta}
               </Button>
