@@ -241,6 +241,26 @@ function Index() {
     setMobileOpen(false);
   };
 
+  const [authUser, setAuthUser] = useState<{ email: string; name: string } | null>(null);
+  useEffect(() => {
+    let mounted = true;
+    const apply = (user: { email?: string | null; user_metadata?: { name?: string } } | null) => {
+      if (!mounted) return;
+      if (user?.email) setAuthUser({ email: user.email, name: user.user_metadata?.name ?? user.email });
+      else setAuthUser(null);
+    };
+    supabase.auth.getUser().then(({ data }) => apply(data.user));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => apply(s?.user ?? null));
+    return () => { mounted = false; sub.subscription.unsubscribe(); };
+  }, []);
+  const initials = authUser
+    ? authUser.name.split(" ").map((p) => p[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || authUser.email[0].toUpperCase()
+    : "";
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    toast.success("Signed out");
+  };
+
   const nav = useMemo(() => ([
     { key: "courses", label: t.nav.courses, onClick: () => scrollTo(coursesRef) },
     { key: "about", label: t.nav.about, onClick: () => document.getElementById("about")?.scrollIntoView({ behavior: "smooth" }) },
