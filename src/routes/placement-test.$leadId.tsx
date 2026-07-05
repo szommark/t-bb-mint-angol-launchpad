@@ -301,11 +301,23 @@ function PlacementTest() {
     if (!current || selected === null || advancing) return;
     setAdvancing(true);
     try {
-      const res = await fetch("/api/public/placement/next", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...authHeaders },
-        body: JSON.stringify({ leadId, questionId: current.id, selectedIndex: selected }),
-      });
+      const doFetch = () =>
+        fetch("/api/public/placement/next", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...authHeaders },
+          body: JSON.stringify({ leadId, questionId: current.id, selectedIndex: selected }),
+        });
+      let res = await doFetch();
+      let ct = res.headers.get("content-type") ?? "";
+      // Retry once on transient upstream errors (e.g. Cloudflare 502 HTML page).
+      if (!res.ok && (res.status >= 502 || !ct.includes("application/json"))) {
+        await new Promise((r) => setTimeout(r, 800));
+        res = await doFetch();
+        ct = res.headers.get("content-type") ?? "";
+      }
+      if (!ct.includes("application/json")) {
+        throw new Error("The server is temporarily unavailable. Please try again.");
+      }
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ?? "Failed");
       if (data.done) {
