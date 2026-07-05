@@ -185,6 +185,8 @@ function Index() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ name: "", email: "", focus: "" });
+  const [focusChoice, setFocusChoice] = useState<string>("");
+  const [focusOther, setFocusOther] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
