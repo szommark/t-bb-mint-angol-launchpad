@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2, Sparkles, ArrowRight } from "lucide-react";
+import { FOCUS_OPTIONS, FOCUS_OTHER, isPresetFocus } from "@/lib/focus-options";
 
 export const Route = createFileRoute("/free-placement-test")({
   ssr: false,
@@ -46,6 +47,8 @@ function CombinedFlow() {
   // Step 2 fields
   const [selfLevel, setSelfLevel] = useState<Level | "">("");
   const [focus, setFocus] = useState("");
+  const [focusChoice, setFocusChoice] = useState<string>("");
+  const [focusOther, setFocusOther] = useState<string>("");
   const [skills, setSkills] = useState<Skill[]>([]);
   const [starting, setStarting] = useState(false);
 
@@ -220,7 +223,36 @@ function CombinedFlow() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="fpf">Main focus area</Label>
-                  <Input id="fpf" value={focus} onChange={(e) => setFocus(e.target.value)} maxLength={120} placeholder="What do you want to use English for?" className="h-11" />
+                  <Select
+                    value={focusChoice}
+                    onValueChange={(v) => {
+                      setFocusChoice(v);
+                      if (v === FOCUS_OTHER) {
+                        setFocus(focusOther);
+                      } else {
+                        setFocus(v);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="h-11" id="fpf">
+                      <SelectValue placeholder="Select your main focus" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {FOCUS_OPTIONS.map((o) => (
+                        <SelectItem key={o} value={o}>{o}</SelectItem>
+                      ))}
+                      <SelectItem value={FOCUS_OTHER}>{FOCUS_OTHER}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {focusChoice === FOCUS_OTHER && (
+                    <Input
+                      value={focusOther}
+                      onChange={(e) => { setFocusOther(e.target.value); setFocus(e.target.value); }}
+                      maxLength={120}
+                      placeholder="Tell us your specific focus"
+                      className="h-11"
+                    />
+                  )}
                 </div>
                 <div className="space-y-3">
                   <Label>Skills you most want to improve</Label>
