@@ -63,6 +63,14 @@ function CombinedFlow() {
         if (p) {
           if (p.name && !profileName) setProfileName(p.name);
           setFocus(p.focus ?? "");
+          if (p.focus) {
+            if (isPresetFocus(p.focus)) {
+              setFocusChoice(p.focus);
+            } else {
+              setFocusChoice(FOCUS_OTHER);
+              setFocusOther(p.focus);
+            }
+          }
           if (Array.isArray(p.preferred_skills)) {
             setSkills(p.preferred_skills.filter((s: string): s is Skill => ALL_SKILLS.includes(s as Skill)));
           }
