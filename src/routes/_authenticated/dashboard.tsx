@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FOCUS_OPTIONS, FOCUS_OTHER, isPresetFocus } from "@/lib/focus-options";
 import { toast } from "sonner";
 import { Loader2, ArrowRight, LogOut } from "lucide-react";
 
@@ -34,6 +36,8 @@ function Dashboard() {
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState<{ name: string; email: string; focus: string | null; preferred_skills: string[] } | null>(null);
   const [focus, setFocus] = useState("");
+  const [focusChoice, setFocusChoice] = useState<string>("");
+  const [focusOther, setFocusOther] = useState<string>("");
   const [skills, setSkills] = useState<Skill[]>([]);
   type Attempt = { id: string; created_at: string; final_level: string; score: number; total_questions: number };
   const [attempts, setAttempts] = useState<Attempt[]>([]);
@@ -45,6 +49,10 @@ function Dashboard() {
         if (p) {
           setProfile({ name: p.name, email: p.email, focus: p.focus ?? null, preferred_skills: p.preferred_skills ?? [] });
           setFocus(p.focus ?? "");
+          if (p.focus) {
+            if (isPresetFocus(p.focus)) { setFocusChoice(p.focus); }
+            else { setFocusChoice(FOCUS_OTHER); setFocusOther(p.focus); }
+          }
           setSkills((p.preferred_skills ?? []).filter((s: string): s is Skill => ALL_SKILLS.includes(s as Skill)));
         }
         setAttempts(a as Attempt[]);
@@ -124,7 +132,30 @@ function Dashboard() {
                 </div>
                 <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="focus">Preferred focus area</Label>
-                  <Input id="focus" value={focus} onChange={(e) => setFocus(e.target.value)} maxLength={120} placeholder="What do you want to use English for?" />
+                  <Select
+                    value={focusChoice}
+                    onValueChange={(v) => {
+                      setFocusChoice(v);
+                      if (v === FOCUS_OTHER) setFocus(focusOther);
+                      else setFocus(v);
+                    }}
+                  >
+                    <SelectTrigger id="focus"><SelectValue placeholder="Select your main focus" /></SelectTrigger>
+                    <SelectContent>
+                      {FOCUS_OPTIONS.map((o) => (
+                        <SelectItem key={o} value={o}>{o}</SelectItem>
+                      ))}
+                      <SelectItem value={FOCUS_OTHER}>{FOCUS_OTHER}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {focusChoice === FOCUS_OTHER && (
+                    <Input
+                      value={focusOther}
+                      onChange={(e) => { setFocusOther(e.target.value); setFocus(e.target.value); }}
+                      maxLength={120}
+                      placeholder="Tell us your specific focus"
+                    />
+                  )}
                 </div>
                 <div className="space-y-3 sm:col-span-2">
                   <Label>Skills to improve</Label>

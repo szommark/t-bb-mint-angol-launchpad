@@ -59,7 +59,9 @@ const translations = {
       name: "Full name", email: "Email", password: "Password",
       focus: "What is your main focus area?",
       focusPh: "Select a focus area",
-      focusOptions: ["General English", "Professional / Business English", "Fast Track", "Speaking confidence", "Executive 1-on-1"],
+      focusOptions: ["Business English", "English for AI & Prompting", "English for Job Interviews & CVs", "Conversational / Everyday English", "English for Presentations & Public Speaking", "English for Social Media & Content Creation", "Travel English", "Academic English / IELTS Preparation"],
+      focusOther: "Other (specify)",
+      focusOtherPh: "Tell us your specific focus",
       submit: "Get my placement",
     },
     about: { kicker: "About us", title: "Meet your instructors" },
@@ -91,7 +93,9 @@ const translations = {
       name: "Teljes név", email: "Email", password: "Jelszó",
       focus: "Mi a fő fókuszterületed?",
       focusPh: "Válassz fókuszt",
-      focusOptions: ["Általános angol", "Szakmai / üzleti angol", "Fast Track", "Beszédbiztonság", "Vezetői 1-az-1-ben"],
+      focusOptions: ["Üzleti angol", "Angol AI-hoz és prompt-íráshoz", "Angol állásinterjúkhoz és önéletrajzhoz", "Társalgási / hétköznapi angol", "Angol prezentációkhoz és előadásokhoz", "Angol közösségi médiához és tartalomkészítéshez", "Utazási angol", "Akadémiai angol / IELTS felkészítő"],
+      focusOther: "Egyéb (add meg)",
+      focusOtherPh: "Írd le a saját fókuszod",
       submit: "Szintfelmérés indítása",
     },
     about: { kicker: "Rólunk", title: "Ismerd meg az oktatókat" },
@@ -123,7 +127,9 @@ const translations = {
       name: "Voller Name", email: "E-Mail", password: "Passwort",
       focus: "Was ist dein Hauptfokus?",
       focusPh: "Fokus wählen",
-      focusOptions: ["Allgemeines Englisch", "Business-Englisch", "Fast Track", "Sprechsicherheit", "Executive 1-zu-1"],
+      focusOptions: ["Business-Englisch", "Englisch für KI & Prompting", "Englisch für Bewerbungen & Lebenslauf", "Konversation / Alltagsenglisch", "Englisch für Präsentationen & Auftritte", "Englisch für Social Media & Content", "Reise-Englisch", "Akademisches Englisch / IELTS-Vorbereitung"],
+      focusOther: "Sonstiges (angeben)",
+      focusOtherPh: "Beschreibe deinen Fokus",
       submit: "Einstufung erhalten",
     },
     about: { kicker: "Über uns", title: "Lerne deine Trainer kennen" },
@@ -179,6 +185,8 @@ function Index() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ name: "", email: "", focus: "" });
+  const [focusChoice, setFocusChoice] = useState<string>("");
+  const [focusOther, setFocusOther] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -467,7 +475,17 @@ function Index() {
               </div>
               <div className="space-y-2">
                 <Label>{t.form.focus}</Label>
-                <Select value={form.focus} onValueChange={(v) => setForm((f) => ({ ...f, focus: v }))}>
+                <Select
+                  value={focusChoice}
+                  onValueChange={(v) => {
+                    setFocusChoice(v);
+                    if (v === t.form.focusOther) {
+                      setForm((f) => ({ ...f, focus: focusOther }));
+                    } else {
+                      setForm((f) => ({ ...f, focus: v }));
+                    }
+                  }}
+                >
                   <SelectTrigger className="h-11">
                     <SelectValue placeholder={t.form.focusPh} />
                   </SelectTrigger>
@@ -475,8 +493,21 @@ function Index() {
                     {t.form.focusOptions.map((o) => (
                       <SelectItem key={o} value={o}>{o}</SelectItem>
                     ))}
+                    <SelectItem value={t.form.focusOther}>{t.form.focusOther}</SelectItem>
                   </SelectContent>
                 </Select>
+                {focusChoice === t.form.focusOther && (
+                  <Input
+                    value={focusOther}
+                    onChange={(e) => {
+                      setFocusOther(e.target.value);
+                      setForm((f) => ({ ...f, focus: e.target.value }));
+                    }}
+                    maxLength={120}
+                    placeholder={t.form.focusOtherPh}
+                    className="h-11"
+                  />
+                )}
               </div>
               <Button type="submit" disabled={submitting}
                 className="h-12 w-full bg-[var(--teal-accent)] text-base font-semibold text-primary-foreground hover:bg-[var(--teal-accent-strong)] disabled:opacity-60">
