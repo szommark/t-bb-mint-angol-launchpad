@@ -475,7 +475,17 @@ function Index() {
               </div>
               <div className="space-y-2">
                 <Label>{t.form.focus}</Label>
-                <Select value={form.focus} onValueChange={(v) => setForm((f) => ({ ...f, focus: v }))}>
+                <Select
+                  value={focusChoice}
+                  onValueChange={(v) => {
+                    setFocusChoice(v);
+                    if (v === t.form.focusOther) {
+                      setForm((f) => ({ ...f, focus: focusOther }));
+                    } else {
+                      setForm((f) => ({ ...f, focus: v }));
+                    }
+                  }}
+                >
                   <SelectTrigger className="h-11">
                     <SelectValue placeholder={t.form.focusPh} />
                   </SelectTrigger>
@@ -483,8 +493,21 @@ function Index() {
                     {t.form.focusOptions.map((o) => (
                       <SelectItem key={o} value={o}>{o}</SelectItem>
                     ))}
+                    <SelectItem value={t.form.focusOther}>{t.form.focusOther}</SelectItem>
                   </SelectContent>
                 </Select>
+                {focusChoice === t.form.focusOther && (
+                  <Input
+                    value={focusOther}
+                    onChange={(e) => {
+                      setFocusOther(e.target.value);
+                      setForm((f) => ({ ...f, focus: e.target.value }));
+                    }}
+                    maxLength={120}
+                    placeholder={t.form.focusOtherPh}
+                    className="h-11"
+                  />
+                )}
               </div>
               <Button type="submit" disabled={submitting}
                 className="h-12 w-full bg-[var(--teal-accent)] text-base font-semibold text-primary-foreground hover:bg-[var(--teal-accent-strong)] disabled:opacity-60">
