@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import {
   Brain, GraduationCap, Zap, MessagesSquare, BookOpen, Briefcase, Crown,
   ArrowRight, Check, Globe, Menu, X, Mail, Phone, ChevronUp, Star, Sparkles,
+  LayoutDashboard, LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,8 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import heroCafeImg from "@/assets/hero-collage-cafe.jpg";
 import heroCallImg from "@/assets/hero-collage-call.jpg";
@@ -238,6 +241,26 @@ function Index() {
     setMobileOpen(false);
   };
 
+  const [authUser, setAuthUser] = useState<{ email: string; name: string } | null>(null);
+  useEffect(() => {
+    let mounted = true;
+    const apply = (user: { email?: string | null; user_metadata?: { name?: string } } | null) => {
+      if (!mounted) return;
+      if (user?.email) setAuthUser({ email: user.email, name: user.user_metadata?.name ?? user.email });
+      else setAuthUser(null);
+    };
+    supabase.auth.getUser().then(({ data }) => apply(data.user));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => apply(s?.user ?? null));
+    return () => { mounted = false; sub.subscription.unsubscribe(); };
+  }, []);
+  const initials = authUser
+    ? authUser.name.split(" ").map((p) => p[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || authUser.email[0].toUpperCase()
+    : "";
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    toast.success("Signed out");
+  };
+
   const nav = useMemo(() => ([
     { key: "courses", label: t.nav.courses, onClick: () => scrollTo(coursesRef) },
     { key: "about", label: t.nav.about, onClick: () => document.getElementById("about")?.scrollIntoView({ behavior: "smooth" }) },
@@ -264,9 +287,30 @@ function Index() {
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" onClick={() => navigate({ to: "/auth" })} className="hidden sm:inline-flex">
-              Log in
-            </Button>
+            {authUser ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="hidden items-center gap-2 rounded-full border border-border bg-card px-2 py-1 pr-3 text-sm font-medium transition-colors hover:bg-muted sm:inline-flex">
+                    <Avatar className="h-7 w-7">
+                      <AvatarFallback className="bg-[var(--teal-accent)] text-xs font-semibold text-primary-foreground">{initials}</AvatarFallback>
+                    </Avatar>
+                    <span className="max-w-[140px] truncate">{authUser.name}</span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => navigate({ to: "/dashboard" })}>
+                    <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={signOut}>
+                    <LogOut className="mr-2 h-4 w-4" /> Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button variant="ghost" onClick={() => navigate({ to: "/auth" })} className="hidden sm:inline-flex">
+                Log in
+              </Button>
+            )}
             <Button onClick={() => navigate({ to: "/free-placement-test" })} className="hidden bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)] sm:inline-flex">
               {t.nav.cta} <ArrowRight className="ml-1.5 h-4 w-4" />
             </Button>
@@ -283,7 +327,14 @@ function Index() {
                   {n.label}
                 </button>
               ))}
-              <Button variant="outline" onClick={() => navigate({ to: "/auth" })} className="mt-2">Log in</Button>
+              {authUser ? (
+                <>
+                  <Button variant="outline" onClick={() => navigate({ to: "/dashboard" })} className="mt-2">Dashboard</Button>
+                  <Button variant="ghost" onClick={signOut}>Sign out</Button>
+                </>
+              ) : (
+                <Button variant="outline" onClick={() => navigate({ to: "/auth" })} className="mt-2">Log in</Button>
+              )}
               <Button onClick={() => navigate({ to: "/free-placement-test" })} className="mt-2 bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)]">
                 {t.nav.cta}
               </Button>
