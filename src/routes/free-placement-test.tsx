@@ -4,18 +4,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2, Sparkles, ArrowRight } from "lucide-react";
-import { FOCUS_OPTIONS, FOCUS_OTHER, isPresetFocus } from "@/lib/focus-options";
+import { FOCUS_OPTIONS, FOCUS_OTHER, isPresetFocus, skillsForFocus, levelForFocus } from "@/lib/focus-options";
 
 export const Route = createFileRoute("/free-placement-test")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Free English Placement Test — Több mint angol" },
-      { name: "description", content: "Create your account and take a personalised placement test in about 5 minutes." },
+      { title: "Ingyenes angol szintfelmérő — Több mint angol" },
+      { name: "description", content: "Hozd létre a fiókod, és tölts ki egy személyre szabott szintfelmérő tesztet kb. 5 perc alatt." },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -23,11 +22,8 @@ export const Route = createFileRoute("/free-placement-test")({
 });
 
 type Level = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
-type Skill = "reading" | "writing" | "speaking" | "listening";
-const ALL_SKILLS: Skill[] = ["reading", "writing", "speaking", "listening"];
-const SKILL_LABEL: Record<Skill, string> = { reading: "Reading", writing: "Writing", speaking: "Speaking", listening: "Listening" };
 const LEVEL_LABEL: Record<Level, string> = {
-  A1: "Beginner", A2: "Elementary", B1: "Intermediate", B2: "Upper-Intermediate", C1: "Advanced", C2: "Proficient",
+  A1: "Kezdő", A2: "Alapszintű", B1: "Középszintű", B2: "Középszintű felső", C1: "Haladó", C2: "Anyanyelvi szintű",
 };
 
 function CombinedFlow() {
@@ -45,12 +41,18 @@ function CombinedFlow() {
   const [registering, setRegistering] = useState(false);
 
   // Step 2 fields
-  const [selfLevel, setSelfLevel] = useState<Level | "">("");
+  const [manualLevel, setManualLevel] = useState<Level | "">("");
+  const [hasPriorAttempt, setHasPriorAttempt] = useState(false);
+  const [priorAttemptLevel, setPriorAttemptLevel] = useState<Level | "">("");
   const [focus, setFocus] = useState("");
   const [focusChoice, setFocusChoice] = useState<string>("");
   const [focusOther, setFocusOther] = useState<string>("");
-  const [skills, setSkills] = useState<Skill[]>([]);
   const [starting, setStarting] = useState(false);
+
+  // An exam-prep focus targets one specific level, which takes priority
+  // over a returning user's last result, which takes priority over manual pick.
+  const forcedLevel = levelForFocus(focus) as Level | null;
+  const selfLevel = forcedLevel || priorAttemptLevel || manualLevel;
 
   useEffect(() => {
     (async () => {
@@ -59,7 +61,7 @@ function CombinedFlow() {
         setProfileName((data.user.user_metadata?.name as string) ?? "");
         setProfileEmail(data.user.email ?? "");
         // Prefill intake from profile
-        const { data: p } = await supabase.from("profiles").select("focus, preferred_skills, name").eq("user_id", data.user.id).maybeSingle();
+        const { data: p } = await supabase.from("profiles").select("focus, name").eq("user_id", data.user.id).maybeSingle();
         if (p) {
           if (p.name && !profileName) setProfileName(p.name);
           setFocus(p.focus ?? "");
@@ -71,9 +73,18 @@ function CombinedFlow() {
               setFocusOther(p.focus);
             }
           }
-          if (Array.isArray(p.preferred_skills)) {
-            setSkills(p.preferred_skills.filter((s: string): s is Skill => ALL_SKILLS.includes(s as Skill)));
+        }
+        // A returning user who already completed a test skips self-assessment —
+        // reuse their most recent result as the starting level.
+        try {
+          const { listMyAttempts } = await import("@/lib/dashboard.functions");
+          const attempts = await listMyAttempts();
+          if (attempts.length > 0) {
+            setHasPriorAttempt(true);
+            setPriorAttemptLevel(attempts[0].final_level as Level);
           }
+        } catch (e) {
+          console.warn("could not load prior attempts", e);
         }
         setStep("intake");
       }
@@ -81,14 +92,11 @@ function CombinedFlow() {
     })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const toggleSkill = (s: Skill) =>
-    setSkills((cur) => (cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s]));
-
   const onRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return toast.error("Please enter your name.");
-    if (password.length < 8) return toast.error("Password must be at least 8 characters.");
-    if (password !== password2) return toast.error("Passwords don't match.");
+    if (!name.trim()) return toast.error("Kérjük, add meg a neved.");
+    if (password.length < 8) return toast.error("A jelszónak legalább 8 karakterből kell állnia.");
+    if (password !== password2) return toast.error("A jelszavak nem egyeznek.");
     setRegistering(true);
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
@@ -101,7 +109,7 @@ function CombinedFlow() {
     setRegistering(false);
     if (error) return toast.error(error.message);
     if (!data.session) {
-      toast.success("Account created — please confirm your email to continue.");
+      toast.success("Fiók létrehozva — a folytatáshoz erősítsd meg az email címed.");
       return;
     }
     setProfileName(name.trim());
@@ -110,15 +118,14 @@ function CombinedFlow() {
   };
 
   const onStart = async () => {
-    if (!selfLevel) return toast.error("Please pick a level.");
-    if (skills.length === 0) return toast.error("Please pick at least one skill.");
+    if (!selfLevel) return toast.error("Kérjük, válassz szintet.");
     setStarting(true);
     try {
       // Create an anonymous_session shell (name/email from profile), get sessionToken + leadId
       const res = await fetch("/api/public/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: profileName || "User", email: profileEmail, focus: focus || null, language: "en" }),
+        body: JSON.stringify({ name: profileName || "User", email: profileEmail, focus: focus || null, language: "hu" }),
       });
       const data = await res.json();
       if (!res.ok || !data?.id) throw new Error(data?.error ?? "Could not start test");
@@ -141,7 +148,7 @@ function CombinedFlow() {
         headers: { "Content-Type": "application/json", "X-Lead-Token": data.sessionToken },
         body: JSON.stringify({
           leadId: data.id,
-          intake: { selfLevel, focus: focus || null, skills, language: "en" },
+          intake: { selfLevel, focus: focus || null, skills: skillsForFocus(focus), language: "hu" },
         }),
       });
       const started = await startRes.json();
@@ -149,7 +156,7 @@ function CombinedFlow() {
       navigate({ to: "/placement-test/$leadId", params: { leadId: data.id } });
     } catch (e) {
       console.error(e);
-      toast.error(e instanceof Error ? e.message : "Could not start.");
+      toast.error(e instanceof Error ? e.message : "Nem sikerült elindítani.");
       setStarting(false);
     }
   };
@@ -162,7 +169,7 @@ function CombinedFlow() {
             <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--gradient-hero)] text-xs font-bold text-primary-foreground shadow-[var(--shadow-card)]">T</span>
             <span className="text-[15px] font-semibold tracking-tight">Több mint angol</span>
           </Link>
-          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Free Placement Test</div>
+          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Ingyenes szintfelmérő</div>
         </div>
       </header>
 
@@ -176,35 +183,35 @@ function CombinedFlow() {
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="mb-6 text-center">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--teal-accent)]/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--teal-accent-strong)]">
-                  <Sparkles className="h-3 w-3" /> Step 1 of 2
+                  <Sparkles className="h-3 w-3" /> 1. lépés / 2
                 </span>
-                <h1 className="mt-3 text-2xl font-semibold tracking-tight">Create your account</h1>
-                <p className="mt-2 text-sm text-muted-foreground">Save your results and track your progress over time.</p>
+                <h1 className="mt-3 text-2xl font-semibold tracking-tight">Hozd létre a fiókod</h1>
+                <p className="mt-2 text-sm text-muted-foreground">Mentsd el az eredményeidet, és kövesd nyomon a fejlődésed.</p>
               </div>
               <form onSubmit={onRegister} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="rn">Full name</Label>
+                  <Label htmlFor="rn">Teljes név</Label>
                   <Input id="rn" required value={name} onChange={(e) => setName(e.target.value)} maxLength={120} className="h-11" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="re">Email address</Label>
+                  <Label htmlFor="re">Email cím</Label>
                   <Input id="re" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-11" />
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="rp">Password</Label>
+                    <Label htmlFor="rp">Jelszó</Label>
                     <Input id="rp" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} className="h-11" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="rp2">Confirm password</Label>
+                    <Label htmlFor="rp2">Jelszó megerősítése</Label>
                     <Input id="rp2" type="password" required minLength={8} value={password2} onChange={(e) => setPassword2(e.target.value)} className="h-11" />
                   </div>
                 </div>
                 <Button type="submit" disabled={registering} className="h-11 w-full bg-[var(--teal-accent)] hover:bg-[var(--teal-accent-strong)]">
-                  {registering && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Continue to test
+                  {registering && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Tovább a teszthez
                 </Button>
                 <p className="text-center text-sm text-muted-foreground">
-                  Already have an account? <Link to="/auth" className="font-medium text-[var(--teal-accent-strong)] hover:underline">Log in</Link>
+                  Már van fiókod? <Link to="/auth" className="font-medium text-[var(--teal-accent-strong)] hover:underline">Bejelentkezés</Link>
                 </p>
               </form>
             </div>
@@ -212,25 +219,41 @@ function CombinedFlow() {
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="mb-6 text-center">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--teal-accent)]/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--teal-accent-strong)]">
-                  <Sparkles className="h-3 w-3" /> Step 2 of 2
+                  <Sparkles className="h-3 w-3" /> 2. lépés / 2
                 </span>
-                <h1 className="mt-3 text-2xl font-semibold tracking-tight">Tell us a bit about you{profileName ? `, ${profileName.split(" ")[0]}` : ""}</h1>
-                <p className="mt-2 text-sm text-muted-foreground">10 quick questions, personalised to your level. About 5 minutes.</p>
+                <h1 className="mt-3 text-2xl font-semibold tracking-tight">Mesélj magadról{profileName ? `, ${profileName.split(" ")[0]}` : ""}</h1>
+                <p className="mt-2 text-sm text-muted-foreground">10 gyors kérdés, a szintedhez igazítva. Kb. 5 perc.</p>
               </div>
               <div className="space-y-6">
+                {forcedLevel ? (
+                  <div className="space-y-2">
+                    <Label>Önértékelt szint</Label>
+                    <p className="rounded-lg border border-border bg-muted/40 px-3 py-2.5 text-sm text-muted-foreground">
+                      Ez a fókuszterület a(z) <span className="font-medium text-foreground">{forcedLevel} — {LEVEL_LABEL[forcedLevel]}</span> szintre készít fel.
+                    </p>
+                  </div>
+                ) : hasPriorAttempt ? (
+                  <div className="space-y-2">
+                    <Label>Önértékelt szint</Label>
+                    <p className="rounded-lg border border-border bg-muted/40 px-3 py-2.5 text-sm text-muted-foreground">
+                      Folytatás a legutóbbi eredményedtől: <span className="font-medium text-foreground">{selfLevel} — {LEVEL_LABEL[selfLevel as Level]}</span>
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label>Önértékelt szint</Label>
+                    <Select value={manualLevel} onValueChange={(v) => setManualLevel(v as Level)}>
+                      <SelectTrigger className="h-11"><SelectValue placeholder="Válassz szintet" /></SelectTrigger>
+                      <SelectContent>
+                        {(["A1", "A2", "B1", "B2", "C1", "C2"] as Level[]).map((l) => (
+                          <SelectItem key={l} value={l}>{l} — {LEVEL_LABEL[l]}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <div className="space-y-2">
-                  <Label>Self-assessed level</Label>
-                  <Select value={selfLevel} onValueChange={(v) => setSelfLevel(v as Level)}>
-                    <SelectTrigger className="h-11"><SelectValue placeholder="Choose a level" /></SelectTrigger>
-                    <SelectContent>
-                      {(["A1", "A2", "B1", "B2", "C1", "C2"] as Level[]).map((l) => (
-                        <SelectItem key={l} value={l}>{l} — {LEVEL_LABEL[l]}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="fpf">Main focus area</Label>
+                  <Label htmlFor="fpf">Fő fókuszterület</Label>
                   <Select
                     value={focusChoice}
                     onValueChange={(v) => {
@@ -243,7 +266,7 @@ function CombinedFlow() {
                     }}
                   >
                     <SelectTrigger className="h-11" id="fpf">
-                      <SelectValue placeholder="Select your main focus" />
+                      <SelectValue placeholder="Válaszd ki a fő fókuszod" />
                     </SelectTrigger>
                     <SelectContent>
                       {FOCUS_OPTIONS.map((o) => (
@@ -257,25 +280,14 @@ function CombinedFlow() {
                       value={focusOther}
                       onChange={(e) => { setFocusOther(e.target.value); setFocus(e.target.value); }}
                       maxLength={120}
-                      placeholder="Tell us your specific focus"
+                      placeholder="Add meg a saját fókuszod"
                       className="h-11"
                     />
                   )}
                 </div>
-                <div className="space-y-3">
-                  <Label>Skills you most want to improve</Label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {ALL_SKILLS.map((s) => (
-                      <label key={s} className="flex cursor-pointer items-center gap-2 rounded-lg border border-border p-3 text-sm hover:bg-muted">
-                        <Checkbox checked={skills.includes(s)} onCheckedChange={() => toggleSkill(s)} />
-                        {SKILL_LABEL[s]}
-                      </label>
-                    ))}
-                  </div>
-                </div>
                 <Button onClick={onStart} disabled={starting} className="h-11 w-full bg-[var(--teal-accent)] hover:bg-[var(--teal-accent-strong)]">
                   {starting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  Generate my test <ArrowRight className="ml-1.5 h-4 w-4" />
+                  Teszt generálása <ArrowRight className="ml-1.5 h-4 w-4" />
                 </Button>
               </div>
             </div>

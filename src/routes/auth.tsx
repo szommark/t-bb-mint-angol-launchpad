@@ -68,8 +68,8 @@ function AuthPage() {
     setLoading(false);
     if (error) return toast.error(error.message);
     if (data.session) {
-      toast.success("Account created!");
-      navigate({ to: "/dashboard" });
+      toast.success("Account created! Let's find your starting level.");
+      navigate({ to: "/free-placement-test" });
     } else {
       toast.success("Check your inbox to confirm your email.");
     }

@@ -10,7 +10,7 @@ import {
   type Level,
   type TestState,
 } from "@/lib/placement-blueprint.server";
-import { pickQuestionForSlot } from "@/lib/placement-selector.server";
+import { getPreviouslyAnsweredBankIds, pickQuestionForSlot } from "@/lib/placement-selector.server";
 import type { StoredQuestion } from "@/lib/placement-review.server";
 
 function sanitizeFocus(input: string | null | undefined): string {
@@ -28,7 +28,7 @@ const IntakeSchema = z.object({
     selfLevel: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
     focus: z.string().trim().max(120).optional().nullable(),
     skills: z.array(z.enum(["reading", "writing", "speaking", "listening"])).min(1).max(4),
-    language: z.enum(["en", "hu", "de"]).default("en"),
+    language: z.enum(["en", "hu", "de"]).default("hu"),
   }),
 });
 
@@ -52,14 +52,14 @@ export const Route = createFileRoute("/api/public/placement/start")({
         const { leadId, intake } = parsed.data;
         const safeIntake = { ...intake, focus: sanitizeFocus(intake.focus) || null };
 
-        const key = process.env.LOVABLE_API_KEY;
+        const key = process.env.GEMINI_API_KEY;
         if (!key) return Response.json({ error: "AI not configured" }, { status: 500 });
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
         const { data: lead, error: leadErr } = await supabaseAdmin
           .from("anonymous_sessions")
-          .select("id, session_token_hash")
+          .select("id, email, session_token_hash")
           .eq("id", leadId)
           .maybeSingle();
         if (leadErr || !lead) return Response.json({ error: "Lead not found" }, { status: 404 });
@@ -75,6 +75,10 @@ export const Route = createFileRoute("/api/public/placement/start")({
         const allowed = allowedBankSkills(skills);
         const sig = intakeSignature({ selfLevel, focus: safeIntake.focus, skills });
 
+        // Exclude questions this student has already answered in past
+        // completed attempts, so a retake doesn't repeat the same items.
+        const priorBankIds = lead.email ? await getPreviouslyAnsweredBankIds(supabaseAdmin, lead.email) : [];
+
         // Pick the first question at the self-assessed level.
         const first = await pickQuestionForSlot({
           supabaseAdmin,
@@ -82,12 +86,12 @@ export const Route = createFileRoute("/api/public/placement/start")({
           level: selfLevel,
           preferredSkill: allowed[0],
           allowedSkills: allowed,
-          usedBankIds: [],
+          usedBankIds: priorBankIds,
           focus: safeIntake.focus,
-          lovableApiKey: key,
+          googleApiKey: key,
         });
-        if (!first) {
-          return Response.json({ error: "Could not prepare the first question." }, { status: 502 });
+        if ("error" in first) {
+          return Response.json({ error: first.error }, { status: 502 });
         }
         budgets[first.cefr] = Math.max(0, budgets[first.cefr] - 1);
 
@@ -101,7 +105,7 @@ export const Route = createFileRoute("/api/public/placement/start")({
           budgets,
           intakeSig: sig,
           skillRotation: 1,
-          usedBankIds: [first.bankId],
+          usedBankIds: [...priorBankIds, first.bankId],
         };
 
         const { error: updErr } = await supabaseAdmin

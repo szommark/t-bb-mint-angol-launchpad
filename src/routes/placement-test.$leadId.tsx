@@ -6,15 +6,14 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { FOCUS_OPTIONS, FOCUS_OTHER, isPresetFocus, skillsForFocus, levelForFocus } from "@/lib/focus-options";
 
 type Lang = "en" | "hu" | "de";
 type Level = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
-type Skill = "reading" | "writing" | "speaking" | "listening";
 
 type Question = {
   id: string;
@@ -54,8 +53,8 @@ const t = {
       selfLevel: "Self-assessed level",
       selfPh: "Choose a level",
       focus: "Main focus area",
-      focusPh: "What do you want to use English for?",
-      skills: "Skills you most want to improve",
+      focusPh: "Select your main focus",
+      focusOtherPh: "Tell us your specific focus",
       start: "Generate my test",
     },
     generating: "Crafting your personalized test…",
@@ -79,13 +78,12 @@ const t = {
       A1: "Beginner", A2: "Elementary", B1: "Intermediate",
       B2: "Upper-Intermediate", C1: "Advanced", C2: "Proficient",
     } as Record<Level, string>,
-    skillLabels: { reading: "Reading", writing: "Writing", speaking: "Speaking", listening: "Listening" } as Record<Skill, string>,
     requiredAll: "Please answer every question before submitting.",
     pickLevel: "Please pick a level.",
-    pickSkill: "Please pick at least one skill.",
     timeLeft: "Time left",
     timedOut: "Time's up — submitting what you've answered.",
     unansweredNote: (n: number) => `${n} unanswered — submitting anyway.`,
+    focusLevelNote: (lvl: string, label: string) => `This focus area is designed for level ${lvl} — ${label}.`,
   },
   hu: {
     title: "Ingyenes angol szintfelmérő",
@@ -95,8 +93,8 @@ const t = {
       selfLevel: "Önbecsült szint",
       selfPh: "Válassz szintet",
       focus: "Fő fókuszterület",
-      focusPh: "Mire használnád az angolt?",
-      skills: "Melyik készségeden fejlesztenél leginkább?",
+      focusPh: "Válaszd ki a fő fókuszod",
+      focusOtherPh: "Add meg a saját fókuszod",
       start: "Teszt indítása",
     },
     generating: "Személyre szabott teszt készítése…",
@@ -120,13 +118,12 @@ const t = {
       A1: "Kezdő", A2: "Alapfok", B1: "Középhaladó",
       B2: "Középfok+", C1: "Haladó", C2: "Mestermű",
     } as Record<Level, string>,
-    skillLabels: { reading: "Olvasás", writing: "Írás", speaking: "Beszéd", listening: "Hallás" } as Record<Skill, string>,
     requiredAll: "Kérlek válaszolj minden kérdésre a beküldés előtt.",
     pickLevel: "Válassz egy szintet.",
-    pickSkill: "Válassz legalább egy készséget.",
     timeLeft: "Hátralévő idő",
     timedOut: "Lejárt az idő — a megválaszolt kérdések beküldve.",
     unansweredNote: (n: number) => `${n} megválaszolatlan kérdés — beküldés folyamatban.`,
+    focusLevelNote: (lvl: string, label: string) => `Ez a fókuszterület a(z) ${lvl} — ${label} szintre készít fel.`,
   },
   de: {
     title: "Kostenloser Englisch-Einstufungstest",
@@ -136,8 +133,8 @@ const t = {
       selfLevel: "Selbsteinschätzung",
       selfPh: "Niveau wählen",
       focus: "Hauptfokus",
-      focusPh: "Wofür möchtest du Englisch nutzen?",
-      skills: "Welche Fähigkeiten möchtest du verbessern?",
+      focusPh: "Wähle deinen Hauptfokus",
+      focusOtherPh: "Beschreibe deinen Fokus",
       start: "Test starten",
     },
     generating: "Personalisierter Test wird erstellt…",
@@ -161,13 +158,12 @@ const t = {
       A1: "Anfänger", A2: "Grundkenntnisse", B1: "Mittelstufe",
       B2: "Obere Mittelstufe", C1: "Fortgeschritten", C2: "Muttersprachlich",
     } as Record<Level, string>,
-    skillLabels: { reading: "Lesen", writing: "Schreiben", speaking: "Sprechen", listening: "Hören" } as Record<Skill, string>,
     requiredAll: "Bitte beantworte alle Fragen vor dem Absenden.",
     pickLevel: "Bitte wähle ein Niveau.",
-    pickSkill: "Bitte wähle mindestens eine Fähigkeit.",
     timeLeft: "Verbleibende Zeit",
     timedOut: "Zeit abgelaufen — beantwortete Fragen werden gesendet.",
     unansweredNote: (n: number) => `${n} unbeantwortet — wird trotzdem gesendet.`,
+    focusLevelNote: (lvl: string, label: string) => `Dieser Fokus ist auf Niveau ${lvl} — ${label} ausgelegt.`,
   },
 } as const;
 
@@ -196,13 +192,19 @@ function PlacementTest() {
   })();
   const authHeaders: Record<string, string> = sessionToken ? { "X-Lead-Token": sessionToken } : {};
 
-  const [lang, setLang] = useState<Lang>("en");
+  const [lang, setLang] = useState<Lang>("hu");
   const [name, setName] = useState("");
   const [step, setStep] = useState<Step>("loading");
 
-  const [selfLevel, setSelfLevel] = useState<Level | "">("");
+  const [manualLevel, setManualLevel] = useState<Level | "">("");
   const [focus, setFocus] = useState("");
-  const [skills, setSkills] = useState<Skill[]>([]);
+  const [focusChoice, setFocusChoice] = useState<string>("");
+  const [focusOther, setFocusOther] = useState<string>("");
+
+  // An exam-prep focus targets one specific level, taking priority over
+  // manual self-assessment.
+  const forcedLevel = levelForFocus(focus) as Level | null;
+  const selfLevel = forcedLevel || manualLevel;
 
   const [current, setCurrent] = useState<Question | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
@@ -233,7 +235,15 @@ function PlacementTest() {
         if (cancelled) return;
         if (data.language && (["en", "hu", "de"] as const).includes(data.language)) setLang(data.language);
         if (data.name) setName(data.name);
-        if (data.focus) setFocus(data.focus);
+        if (data.focus) {
+          setFocus(data.focus);
+          if (isPresetFocus(data.focus)) {
+            setFocusChoice(data.focus);
+          } else {
+            setFocusChoice(FOCUS_OTHER);
+            setFocusOther(data.focus);
+          }
+        }
         if (data.completedAt && data.cefrLevel) {
           setResult({
             level: data.cefrLevel,
@@ -263,12 +273,8 @@ function PlacementTest() {
     return () => { cancelled = true; };
   }, [leadId]);
 
-  const toggleSkill = (s: Skill) =>
-    setSkills((cur) => (cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s]));
-
   const startTest = async () => {
     if (!selfLevel) return toast.error(lc.pickLevel);
-    if (skills.length === 0) return toast.error(lc.pickSkill);
     setStep("generating");
     try {
       const res = await fetch("/api/public/placement/start", {
@@ -278,7 +284,7 @@ function PlacementTest() {
           leadId,
           intake: {
             selfLevel, focus: focus || null,
-            skills, language: lang,
+            skills: skillsForFocus(focus), language: lang,
           },
         }),
       });
@@ -455,31 +461,58 @@ function PlacementTest() {
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <Label>{lc.intake.selfLevel}</Label>
-                <Select value={selfLevel} onValueChange={(v) => setSelfLevel(v as Level)}>
-                  <SelectTrigger className="h-11"><SelectValue placeholder={lc.intake.selfPh} /></SelectTrigger>
+                <Label htmlFor="focus">{lc.intake.focus}</Label>
+                <Select
+                  value={focusChoice}
+                  onValueChange={(v) => {
+                    setFocusChoice(v);
+                    if (v === FOCUS_OTHER) {
+                      setFocus(focusOther);
+                    } else {
+                      setFocus(v);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="h-11" id="focus">
+                    <SelectValue placeholder={lc.intake.focusPh} />
+                  </SelectTrigger>
                   <SelectContent>
-                    {(["A1", "A2", "B1", "B2", "C1", "C2"] as Level[]).map((l) => (
-                      <SelectItem key={l} value={l}>{l} — {lc.levelLabel[l]}</SelectItem>
+                    {FOCUS_OPTIONS.map((o) => (
+                      <SelectItem key={o} value={o}>{o}</SelectItem>
                     ))}
+                    <SelectItem value={FOCUS_OTHER}>{FOCUS_OTHER}</SelectItem>
                   </SelectContent>
                 </Select>
+                {focusChoice === FOCUS_OTHER && (
+                  <Input
+                    value={focusOther}
+                    onChange={(e) => { setFocusOther(e.target.value); setFocus(e.target.value); }}
+                    maxLength={120}
+                    placeholder={lc.intake.focusOtherPh}
+                    className="h-11"
+                  />
+                )}
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="focus">{lc.intake.focus}</Label>
-                <Input id="focus" value={focus} onChange={(e) => setFocus(e.target.value)} maxLength={120} placeholder={lc.intake.focusPh} className="h-11" />
-              </div>
-              <div className="space-y-3">
-                <Label>{lc.intake.skills}</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  {(["reading", "writing", "speaking", "listening"] as Skill[]).map((s) => (
-                    <label key={s} className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3.5 transition-colors ${skills.includes(s) ? "border-[var(--teal-accent)] bg-[var(--teal-accent)]/5" : "border-border hover:bg-muted/40"}`}>
-                      <Checkbox checked={skills.includes(s)} onCheckedChange={() => toggleSkill(s)} />
-                      <span className="text-sm font-medium">{lc.skillLabels[s]}</span>
-                    </label>
-                  ))}
+              {forcedLevel ? (
+                <div className="space-y-2">
+                  <Label>{lc.intake.selfLevel}</Label>
+                  <p className="rounded-lg border border-border bg-muted/40 px-3 py-2.5 text-sm text-muted-foreground">
+                    {lc.focusLevelNote(forcedLevel, lc.levelLabel[forcedLevel])}
+                  </p>
                 </div>
-              </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label>{lc.intake.selfLevel}</Label>
+                  <Select value={manualLevel} onValueChange={(v) => setManualLevel(v as Level)}>
+                    <SelectTrigger className="h-11"><SelectValue placeholder={lc.intake.selfPh} /></SelectTrigger>
+                    <SelectContent>
+                      {(["A1", "A2", "B1", "B2", "C1", "C2"] as Level[]).map((l) => (
+                        <SelectItem key={l} value={l}>{l} — {lc.levelLabel[l]}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <Button onClick={startTest}
                 className="h-12 w-full bg-[var(--teal-accent)] text-base font-semibold text-primary-foreground hover:bg-[var(--teal-accent-strong)]">

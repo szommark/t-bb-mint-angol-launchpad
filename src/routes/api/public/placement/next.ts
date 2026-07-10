@@ -36,13 +36,13 @@ export const Route = createFileRoute("/api/public/placement/next")({
         if (!parsed.success) return Response.json({ error: "Validation failed" }, { status: 400 });
         const { leadId, questionId, selectedIndex } = parsed.data;
 
-        const key = process.env.LOVABLE_API_KEY;
+        const key = process.env.GEMINI_API_KEY;
         if (!key) return Response.json({ error: "AI not configured" }, { status: 500 });
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data: lead, error } = await supabaseAdmin
           .from("anonymous_sessions")
-          .select("id, intake, test_questions, test_answers, session_token_hash, completed_at")
+          .select("id, intake, test_questions, test_answers, session_token_hash, completed_at, claimed_by_user_id")
           .eq("id", leadId)
           .maybeSingle();
         if (error || !lead) return Response.json({ error: "Lead not found" }, { status: 404 });
@@ -78,13 +78,13 @@ export const Route = createFileRoute("/api/public/placement/next")({
 
         // Finalize if we've reached the plan.
         if (answeredCount >= state.totalPlanned) {
-          return await finalize(supabaseAdmin, leadId, questions, state);
+          return await finalize(supabaseAdmin, leadId, questions, state, lead.claimed_by_user_id ?? null);
         }
 
         // Pick next slot level using adaptive target + remaining budgets.
         const slotLevel = chooseSlotLevel(state.currentLevel, state.budgets);
         if (!slotLevel) {
-          return await finalize(supabaseAdmin, leadId, questions, state);
+          return await finalize(supabaseAdmin, leadId, questions, state, lead.claimed_by_user_id ?? null);
         }
         const preferredSkill = allowed[state.skillRotation % allowed.length];
         const nextIdx = questions.length + 1;
@@ -96,9 +96,9 @@ export const Route = createFileRoute("/api/public/placement/next")({
           allowedSkills: allowed,
           usedBankIds: state.usedBankIds,
           focus: intake.focus ?? null,
-          lovableApiKey: key,
+          googleApiKey: key,
         });
-        if (!next) return Response.json({ error: "Could not prepare next question." }, { status: 502 });
+        if ("error" in next) return Response.json({ error: next.error }, { status: 502 });
 
         state.budgets[next.cefr] = Math.max(0, (state.budgets[next.cefr] ?? 0) - 1);
         state.usedBankIds.push(next.bankId);
@@ -126,7 +126,7 @@ export const Route = createFileRoute("/api/public/placement/next")({
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function finalize(supabaseAdmin: any, leadId: string, questions: StoredQuestion[], state: TestState) {
+async function finalize(supabaseAdmin: any, leadId: string, questions: StoredQuestion[], state: TestState, claimedByUserId: string | null) {
   const { level, totalCorrect, totalQ, byLevel, summary } = derive(questions, state.answers);
   const { error: updErr } = await supabaseAdmin
     .from("anonymous_sessions")
@@ -142,7 +142,7 @@ async function finalize(supabaseAdmin: any, leadId: string, questions: StoredQue
     console.error("[placement/next] finalize save error", updErr);
     return Response.json({ error: "Could not save result" }, { status: 500 });
   }
-  await logAttempt(supabaseAdmin, leadId, questions, state.answers, level, totalCorrect, totalQ);
+  await logAttempt(supabaseAdmin, leadId, questions, state.answers, level, totalCorrect, totalQ, claimedByUserId);
   return Response.json({
     ok: true,
     done: true,
@@ -174,11 +174,11 @@ function derive(questions: StoredQuestion[], answers: Record<string, number>) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function logAttempt(supabaseAdmin: any, leadId: string, questions: StoredQuestion[], answers: Record<string, number>, level: string, totalCorrect: number, totalQ: number) {
+async function logAttempt(supabaseAdmin: any, leadId: string, questions: StoredQuestion[], answers: Record<string, number>, level: string, totalCorrect: number, totalQ: number, claimedByUserId: string | null) {
   try {
     const { data: attempt, error: attemptErr } = await supabaseAdmin
       .from("test_attempts")
-      .insert({ anonymous_session_id: leadId, final_level: level, score: totalCorrect, total_questions: totalQ })
+      .insert({ anonymous_session_id: leadId, final_level: level, score: totalCorrect, total_questions: totalQ, user_id: claimedByUserId })
       .select("id")
       .single();
     if (attemptErr || !attempt) throw attemptErr ?? new Error("no attempt id");

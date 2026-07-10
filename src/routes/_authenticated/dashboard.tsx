@@ -6,7 +6,6 @@ import { getMyProfile, listMyAttempts, updateMyProfile } from "@/lib/dashboard.f
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FOCUS_OPTIONS, FOCUS_OTHER, isPresetFocus } from "@/lib/focus-options";
 import { toast } from "sonner";
@@ -22,10 +21,6 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
-type Skill = "reading" | "writing" | "speaking" | "listening";
-const ALL_SKILLS: Skill[] = ["reading", "writing", "speaking", "listening"];
-const SKILL_LABEL: Record<Skill, string> = { reading: "Reading", writing: "Writing", speaking: "Speaking", listening: "Listening" };
-
 function Dashboard() {
   const navigate = useNavigate();
   const fetchProfile = useServerFn(getMyProfile);
@@ -34,11 +29,10 @@ function Dashboard() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [profile, setProfile] = useState<{ name: string; email: string; focus: string | null; preferred_skills: string[] } | null>(null);
+  const [profile, setProfile] = useState<{ name: string; email: string; focus: string | null } | null>(null);
   const [focus, setFocus] = useState("");
   const [focusChoice, setFocusChoice] = useState<string>("");
   const [focusOther, setFocusOther] = useState<string>("");
-  const [skills, setSkills] = useState<Skill[]>([]);
   type Attempt = { id: string; created_at: string; final_level: string; score: number; total_questions: number };
   const [attempts, setAttempts] = useState<Attempt[]>([]);
 
@@ -47,13 +41,12 @@ function Dashboard() {
       try {
         const [p, a] = await Promise.all([fetchProfile(), fetchAttempts()]);
         if (p) {
-          setProfile({ name: p.name, email: p.email, focus: p.focus ?? null, preferred_skills: p.preferred_skills ?? [] });
+          setProfile({ name: p.name, email: p.email, focus: p.focus ?? null });
           setFocus(p.focus ?? "");
           if (p.focus) {
             if (isPresetFocus(p.focus)) { setFocusChoice(p.focus); }
             else { setFocusChoice(FOCUS_OTHER); setFocusOther(p.focus); }
           }
-          setSkills((p.preferred_skills ?? []).filter((s: string): s is Skill => ALL_SKILLS.includes(s as Skill)));
         }
         setAttempts(a as Attempt[]);
       } catch (e) {
@@ -65,13 +58,10 @@ function Dashboard() {
     })();
   }, [fetchProfile, fetchAttempts]);
 
-  const toggleSkill = (s: Skill) =>
-    setSkills((cur) => (cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s]));
-
   const onSave = async () => {
     setSaving(true);
     try {
-      await saveProfile({ data: { focus: focus.trim() || null, preferred_skills: skills } });
+      await saveProfile({ data: { focus: focus.trim() || null } });
       toast.success("Profile saved.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not save.");
@@ -120,6 +110,34 @@ function Dashboard() {
         ) : (
           <>
             <section className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+              <h2 className="text-lg font-semibold">Your results</h2>
+              {attempts.length === 0 ? (
+                <p className="mt-4 text-sm text-muted-foreground">No tests yet — take your first placement test to see your results here.</p>
+              ) : (
+                <div className="mt-4 grid gap-4 sm:grid-cols-3">
+                  <div className="rounded-2xl border border-border bg-muted/30 p-4">
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground">Current level</p>
+                    <p className="mt-1 text-3xl font-semibold text-[var(--teal-accent-strong)]">{attempts[0].final_level}</p>
+                  </div>
+                  <div className="rounded-2xl border border-border bg-muted/30 p-4">
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground">Tests taken</p>
+                    <p className="mt-1 text-3xl font-semibold">{attempts.length}</p>
+                  </div>
+                  <div className="rounded-2xl border border-border bg-muted/30 p-4">
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground">Overall accuracy</p>
+                    <p className="mt-1 text-3xl font-semibold">
+                      {(() => {
+                        const totalCorrect = attempts.reduce((sum, a) => sum + a.score, 0);
+                        const totalQuestions = attempts.reduce((sum, a) => sum + a.total_questions, 0);
+                        return totalQuestions > 0 ? `${Math.round((totalCorrect / totalQuestions) * 100)}%` : "—";
+                      })()}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </section>
+
+            <section className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
               <h2 className="text-lg font-semibold">Profile</h2>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
@@ -156,17 +174,6 @@ function Dashboard() {
                       placeholder="Tell us your specific focus"
                     />
                   )}
-                </div>
-                <div className="space-y-3 sm:col-span-2">
-                  <Label>Skills to improve</Label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {ALL_SKILLS.map((s) => (
-                      <label key={s} className="flex cursor-pointer items-center gap-2 rounded-lg border border-border p-3 text-sm hover:bg-muted">
-                        <Checkbox checked={skills.includes(s)} onCheckedChange={() => toggleSkill(s)} />
-                        {SKILL_LABEL[s]}
-                      </label>
-                    ))}
-                  </div>
                 </div>
               </div>
               <div className="mt-6 flex justify-end">

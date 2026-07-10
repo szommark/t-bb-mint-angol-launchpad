@@ -6,7 +6,7 @@ const LeadSchema = z.object({
   name: z.string().trim().min(1).max(120),
   email: z.string().trim().email().max(255),
   focus: z.string().trim().max(120).optional().nullable(),
-  language: z.enum(["en", "hu", "de"]).default("en"),
+  language: z.enum(["en", "hu", "de"]).default("hu"),
 });
 
 const CONFIRMATIONS: Record<"en" | "hu" | "de", { subject: string; intro: string; body: string; signoff: string }> = {

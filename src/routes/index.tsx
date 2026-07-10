@@ -46,6 +46,7 @@ const translations = {
       title3: "Learn the trendiest way.",
       subtitle: "Tailor-made, coaching-oriented professional and general English language training for adults, managers, and company leaders.",
       ctaPrimary: "Start Your Journey",
+      ctaResults: "Display My Test Results",
       ctaSecondary: "Explore Courses",
     },
     value: {
@@ -62,7 +63,7 @@ const translations = {
       name: "Full name", email: "Email", password: "Password",
       focus: "What is your main focus area?",
       focusPh: "Select a focus area",
-      focusOptions: ["Business English", "English for AI & Prompting", "English for Job Interviews & CVs", "Conversational / Everyday English", "English for Presentations & Public Speaking", "English for Social Media & Content Creation", "Travel English", "Academic English / IELTS Preparation"],
+      focusOptions: ["Business English", "English for AI & Prompting", "English for Job Interviews & CVs", "Conversational / Everyday English", "English for Presentations & Public Speaking", "English for Social Media & Content Creation", "Travel English", "Academic English / IELTS Preparation", "Nyelvvizsga gyakorlás (B1)", "Nyelvvizsga gyakorlás (B2)", "Nyelvvizsga gyakorlás (C1)"],
       focusOther: "Other (specify)",
       focusOtherPh: "Tell us your specific focus",
       submit: "Get my placement",
@@ -80,6 +81,7 @@ const translations = {
       title3: "Tanulj a legtrendibb módon.",
       subtitle: "Személyre szabott, coaching szemléletű szakmai és általános angol nyelvi képzés felnőtteknek, vezetőknek és cégtulajdonosoknak.",
       ctaPrimary: "Indítsd az utad",
+      ctaResults: "Eredményeim megtekintése",
       ctaSecondary: "Kurzusok",
     },
     value: {
@@ -96,7 +98,7 @@ const translations = {
       name: "Teljes név", email: "Email", password: "Jelszó",
       focus: "Mi a fő fókuszterületed?",
       focusPh: "Válassz fókuszt",
-      focusOptions: ["Üzleti angol", "Angol AI-hoz és prompt-íráshoz", "Angol állásinterjúkhoz és önéletrajzhoz", "Társalgási / hétköznapi angol", "Angol prezentációkhoz és előadásokhoz", "Angol közösségi médiához és tartalomkészítéshez", "Utazási angol", "Akadémiai angol / IELTS felkészítő"],
+      focusOptions: ["Üzleti angol", "Angol AI-hoz és prompt-íráshoz", "Angol állásinterjúkhoz és önéletrajzhoz", "Társalgási / hétköznapi angol", "Angol prezentációkhoz és előadásokhoz", "Angol közösségi médiához és tartalomkészítéshez", "Utazási angol", "Akadémiai angol / IELTS felkészítő", "Nyelvvizsga gyakorlás (B1)", "Nyelvvizsga gyakorlás (B2)", "Nyelvvizsga gyakorlás (C1)"],
       focusOther: "Egyéb (add meg)",
       focusOtherPh: "Írd le a saját fókuszod",
       submit: "Szintfelmérés indítása",
@@ -114,6 +116,7 @@ const translations = {
       title3: "Lerne auf die trendigste Art.",
       subtitle: "Maßgeschneidertes, coaching-orientiertes Business- und Allgemeinenglisch für Erwachsene, Manager und Führungskräfte.",
       ctaPrimary: "Starte deine Reise",
+      ctaResults: "Meine Testergebnisse anzeigen",
       ctaSecondary: "Kurse entdecken",
     },
     value: {
@@ -130,7 +133,7 @@ const translations = {
       name: "Voller Name", email: "E-Mail", password: "Passwort",
       focus: "Was ist dein Hauptfokus?",
       focusPh: "Fokus wählen",
-      focusOptions: ["Business-Englisch", "Englisch für KI & Prompting", "Englisch für Bewerbungen & Lebenslauf", "Konversation / Alltagsenglisch", "Englisch für Präsentationen & Auftritte", "Englisch für Social Media & Content", "Reise-Englisch", "Akademisches Englisch / IELTS-Vorbereitung"],
+      focusOptions: ["Business-Englisch", "Englisch für KI & Prompting", "Englisch für Bewerbungen & Lebenslauf", "Konversation / Alltagsenglisch", "Englisch für Präsentationen & Auftritte", "Englisch für Social Media & Content", "Reise-Englisch", "Akademisches Englisch / IELTS-Vorbereitung", "Nyelvvizsga gyakorlás (B1)", "Nyelvvizsga gyakorlás (B2)", "Nyelvvizsga gyakorlás (C1)"],
       focusOther: "Sonstiges (angeben)",
       focusOtherPh: "Beschreibe deinen Fokus",
       submit: "Einstufung erhalten",
@@ -180,7 +183,7 @@ const langLabels: Record<Lang, { label: string; flag: string }> = {
 };
 
 function Index() {
-  const [lang, setLang] = useState<Lang>("en");
+  const [lang, setLang] = useState<Lang>("hu");
   const [mobileOpen, setMobileOpen] = useState(false);
   const t = translations[lang];
   const formRef = useRef<HTMLDivElement>(null);
@@ -383,10 +386,17 @@ function Index() {
               {t.hero.subtitle}
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-3">
-              <Button size="lg" onClick={() => scrollTo(formRef)}
-                className="h-12 bg-[var(--teal-accent)] px-6 text-[15px] font-semibold text-primary-foreground shadow-[var(--shadow-elegant)] transition-all hover:-translate-y-0.5 hover:bg-[var(--teal-accent-strong)]">
-                {t.hero.ctaPrimary} <ArrowRight className="ml-1.5 h-4 w-4" />
-              </Button>
+              {authUser ? (
+                <Button size="lg" onClick={() => navigate({ to: "/dashboard" })}
+                  className="h-12 bg-[var(--teal-accent)] px-6 text-[15px] font-semibold text-primary-foreground shadow-[var(--shadow-elegant)] transition-all hover:-translate-y-0.5 hover:bg-[var(--teal-accent-strong)]">
+                  {t.hero.ctaResults} <ArrowRight className="ml-1.5 h-4 w-4" />
+                </Button>
+              ) : (
+                <Button size="lg" onClick={() => scrollTo(formRef)}
+                  className="h-12 bg-[var(--teal-accent)] px-6 text-[15px] font-semibold text-primary-foreground shadow-[var(--shadow-elegant)] transition-all hover:-translate-y-0.5 hover:bg-[var(--teal-accent-strong)]">
+                  {t.hero.ctaPrimary} <ArrowRight className="ml-1.5 h-4 w-4" />
+                </Button>
+              )}
               <Button size="lg" variant="outline" onClick={() => scrollTo(coursesRef)}
                 className="h-12 border-white/30 bg-white/5 px-6 text-[15px] font-semibold text-white hover:bg-white/10 hover:text-white">
                 {t.hero.ctaSecondary}
