@@ -38,7 +38,7 @@ type Lang = "en" | "hu" | "de";
 
 const translations = {
   en: {
-    nav: { courses: "Courses", about: "About Us", reviews: "Reviews", blog: "Blog", contact: "Contact", cta: "Free Placement Test" },
+    nav: { courses: "Courses", about: "About Us", reviews: "Reviews", blog: "Blog", contact: "Contact", cta: "Free Placement Test", ctaLoggedIn: "New Test" },
     hero: {
       eyebrow: "Premium English for a new era",
       title1: "Connect to the world.",
@@ -73,14 +73,14 @@ const translations = {
     footer: { rights: "All rights reserved.", privacy: "Privacy Policy", imp: "Impressum", reg: "Adult education registry number: B/2020/002545" },
   },
   hu: {
-    nav: { courses: "Kurzusok", about: "Rólunk", reviews: "Vélemények", blog: "Blog", contact: "Kapcsolat", cta: "Ingyenes szintfelmérő" },
+    nav: { courses: "Kurzusok", about: "Rólunk", reviews: "Vélemények", blog: "Blog", contact: "Kapcsolat", cta: "Ingyenes szintfelmérő", ctaLoggedIn: "Új teszt" },
     hero: {
       eyebrow: "Prémium angol egy új korszakra",
       title1: "Kapcsolódj a világhoz.",
       title2: "Beszélj könnyedén.",
       title3: "Tanulj a legtrendibb módon.",
       subtitle: "Személyre szabott, coaching szemléletű szakmai és általános angol nyelvi képzés felnőtteknek, vezetőknek és cégtulajdonosoknak.",
-      ctaPrimary: "Indítsd az utad",
+      ctaPrimary: "Találd meg a szinted!",
       ctaResults: "Eredményeim megtekintése",
       ctaSecondary: "Kurzusok",
     },
@@ -108,7 +108,7 @@ const translations = {
     footer: { rights: "Minden jog fenntartva.", privacy: "Adatvédelem", imp: "Impresszum", reg: "Felnőttképzési nyilvántartási szám: B/2020/002545" },
   },
   de: {
-    nav: { courses: "Kurse", about: "Über uns", reviews: "Bewertungen", blog: "Blog", contact: "Kontakt", cta: "Kostenloser Einstufungstest" },
+    nav: { courses: "Kurse", about: "Über uns", reviews: "Bewertungen", blog: "Blog", contact: "Kontakt", cta: "Kostenloser Einstufungstest", ctaLoggedIn: "Neuer Test" },
     hero: {
       eyebrow: "Premium-Englisch für eine neue Ära",
       title1: "Verbinde dich mit der Welt.",
@@ -315,7 +315,7 @@ function Index() {
               </Button>
             )}
             <Button onClick={() => navigate({ to: "/free-placement-test" })} className="hidden bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)] sm:inline-flex">
-              {t.nav.cta} <ArrowRight className="ml-1.5 h-4 w-4" />
+              {authUser ? t.nav.ctaLoggedIn : t.nav.cta} <ArrowRight className="ml-1.5 h-4 w-4" />
             </Button>
             <button onClick={() => setMobileOpen((o) => !o)} className="rounded-md p-2 text-foreground lg:hidden">
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -339,7 +339,7 @@ function Index() {
                 <Button variant="outline" onClick={() => navigate({ to: "/auth" })} className="mt-2">Log in</Button>
               )}
               <Button onClick={() => navigate({ to: "/free-placement-test" })} className="mt-2 bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)]">
-                {t.nav.cta}
+                {authUser ? t.nav.ctaLoggedIn : t.nav.cta}
               </Button>
             </div>
           </div>
