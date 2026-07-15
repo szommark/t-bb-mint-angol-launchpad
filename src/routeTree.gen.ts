@@ -16,12 +16,17 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlacementTestLeadIdRouteImport } from './routes/placement-test.$leadId'
+import { Route as GrammarTestLeadIdRouteImport } from './routes/grammar-test.$leadId'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as ApiPublicLeadsRouteImport } from './routes/api/public/leads'
 import { Route as ApiPublicPlacementSubmitRouteImport } from './routes/api/public/placement/submit'
 import { Route as ApiPublicPlacementStateRouteImport } from './routes/api/public/placement/state'
 import { Route as ApiPublicPlacementStartRouteImport } from './routes/api/public/placement/start'
 import { Route as ApiPublicPlacementNextRouteImport } from './routes/api/public/placement/next'
+import { Route as ApiPublicGrammarSubmitRouteImport } from './routes/api/public/grammar/submit'
+import { Route as ApiPublicGrammarStateRouteImport } from './routes/api/public/grammar/state'
+import { Route as ApiPublicGrammarStartRouteImport } from './routes/api/public/grammar/start'
+import { Route as ApiPublicGrammarNextRouteImport } from './routes/api/public/grammar/next'
 import { Route as AuthenticatedDashboardAttemptsAttemptIdRouteImport } from './routes/_authenticated/dashboard.attempts.$attemptId'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -58,6 +63,11 @@ const PlacementTestLeadIdRoute = PlacementTestLeadIdRouteImport.update({
   path: '/placement-test/$leadId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GrammarTestLeadIdRoute = GrammarTestLeadIdRouteImport.update({
+  id: '/grammar-test/$leadId',
+  path: '/grammar-test/$leadId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -89,6 +99,26 @@ const ApiPublicPlacementNextRoute = ApiPublicPlacementNextRouteImport.update({
   path: '/api/public/placement/next',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicGrammarSubmitRoute = ApiPublicGrammarSubmitRouteImport.update({
+  id: '/api/public/grammar/submit',
+  path: '/api/public/grammar/submit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicGrammarStateRoute = ApiPublicGrammarStateRouteImport.update({
+  id: '/api/public/grammar/state',
+  path: '/api/public/grammar/state',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicGrammarStartRoute = ApiPublicGrammarStartRouteImport.update({
+  id: '/api/public/grammar/start',
+  path: '/api/public/grammar/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicGrammarNextRoute = ApiPublicGrammarNextRouteImport.update({
+  id: '/api/public/grammar/next',
+  path: '/api/public/grammar/next',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedDashboardAttemptsAttemptIdRoute =
   AuthenticatedDashboardAttemptsAttemptIdRouteImport.update({
     id: '/attempts/$attemptId',
@@ -103,9 +133,14 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
+  '/grammar-test/$leadId': typeof GrammarTestLeadIdRoute
   '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
   '/dashboard/attempts/$attemptId': typeof AuthenticatedDashboardAttemptsAttemptIdRoute
+  '/api/public/grammar/next': typeof ApiPublicGrammarNextRoute
+  '/api/public/grammar/start': typeof ApiPublicGrammarStartRoute
+  '/api/public/grammar/state': typeof ApiPublicGrammarStateRoute
+  '/api/public/grammar/submit': typeof ApiPublicGrammarSubmitRoute
   '/api/public/placement/next': typeof ApiPublicPlacementNextRoute
   '/api/public/placement/start': typeof ApiPublicPlacementStartRoute
   '/api/public/placement/state': typeof ApiPublicPlacementStateRoute
@@ -118,9 +153,14 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
+  '/grammar-test/$leadId': typeof GrammarTestLeadIdRoute
   '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
   '/dashboard/attempts/$attemptId': typeof AuthenticatedDashboardAttemptsAttemptIdRoute
+  '/api/public/grammar/next': typeof ApiPublicGrammarNextRoute
+  '/api/public/grammar/start': typeof ApiPublicGrammarStartRoute
+  '/api/public/grammar/state': typeof ApiPublicGrammarStateRoute
+  '/api/public/grammar/submit': typeof ApiPublicGrammarSubmitRoute
   '/api/public/placement/next': typeof ApiPublicPlacementNextRoute
   '/api/public/placement/start': typeof ApiPublicPlacementStartRoute
   '/api/public/placement/state': typeof ApiPublicPlacementStateRoute
@@ -135,9 +175,14 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteWithChildren
+  '/grammar-test/$leadId': typeof GrammarTestLeadIdRoute
   '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
   '/_authenticated/dashboard/attempts/$attemptId': typeof AuthenticatedDashboardAttemptsAttemptIdRoute
+  '/api/public/grammar/next': typeof ApiPublicGrammarNextRoute
+  '/api/public/grammar/start': typeof ApiPublicGrammarStartRoute
+  '/api/public/grammar/state': typeof ApiPublicGrammarStateRoute
+  '/api/public/grammar/submit': typeof ApiPublicGrammarSubmitRoute
   '/api/public/placement/next': typeof ApiPublicPlacementNextRoute
   '/api/public/placement/start': typeof ApiPublicPlacementStartRoute
   '/api/public/placement/state': typeof ApiPublicPlacementStateRoute
@@ -152,9 +197,14 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/dashboard'
+    | '/grammar-test/$leadId'
     | '/placement-test/$leadId'
     | '/api/public/leads'
     | '/dashboard/attempts/$attemptId'
+    | '/api/public/grammar/next'
+    | '/api/public/grammar/start'
+    | '/api/public/grammar/state'
+    | '/api/public/grammar/submit'
     | '/api/public/placement/next'
     | '/api/public/placement/start'
     | '/api/public/placement/state'
@@ -167,9 +217,14 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/dashboard'
+    | '/grammar-test/$leadId'
     | '/placement-test/$leadId'
     | '/api/public/leads'
     | '/dashboard/attempts/$attemptId'
+    | '/api/public/grammar/next'
+    | '/api/public/grammar/start'
+    | '/api/public/grammar/state'
+    | '/api/public/grammar/submit'
     | '/api/public/placement/next'
     | '/api/public/placement/start'
     | '/api/public/placement/state'
@@ -183,9 +238,14 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/_authenticated/dashboard'
+    | '/grammar-test/$leadId'
     | '/placement-test/$leadId'
     | '/api/public/leads'
     | '/_authenticated/dashboard/attempts/$attemptId'
+    | '/api/public/grammar/next'
+    | '/api/public/grammar/start'
+    | '/api/public/grammar/state'
+    | '/api/public/grammar/submit'
     | '/api/public/placement/next'
     | '/api/public/placement/start'
     | '/api/public/placement/state'
@@ -199,8 +259,13 @@ export interface RootRouteChildren {
   FreePlacementTestRoute: typeof FreePlacementTestRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  GrammarTestLeadIdRoute: typeof GrammarTestLeadIdRoute
   PlacementTestLeadIdRoute: typeof PlacementTestLeadIdRoute
   ApiPublicLeadsRoute: typeof ApiPublicLeadsRoute
+  ApiPublicGrammarNextRoute: typeof ApiPublicGrammarNextRoute
+  ApiPublicGrammarStartRoute: typeof ApiPublicGrammarStartRoute
+  ApiPublicGrammarStateRoute: typeof ApiPublicGrammarStateRoute
+  ApiPublicGrammarSubmitRoute: typeof ApiPublicGrammarSubmitRoute
   ApiPublicPlacementNextRoute: typeof ApiPublicPlacementNextRoute
   ApiPublicPlacementStartRoute: typeof ApiPublicPlacementStartRoute
   ApiPublicPlacementStateRoute: typeof ApiPublicPlacementStateRoute
@@ -258,6 +323,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlacementTestLeadIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/grammar-test/$leadId': {
+      id: '/grammar-test/$leadId'
+      path: '/grammar-test/$leadId'
+      fullPath: '/grammar-test/$leadId'
+      preLoaderRoute: typeof GrammarTestLeadIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -298,6 +370,34 @@ declare module '@tanstack/react-router' {
       path: '/api/public/placement/next'
       fullPath: '/api/public/placement/next'
       preLoaderRoute: typeof ApiPublicPlacementNextRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/grammar/submit': {
+      id: '/api/public/grammar/submit'
+      path: '/api/public/grammar/submit'
+      fullPath: '/api/public/grammar/submit'
+      preLoaderRoute: typeof ApiPublicGrammarSubmitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/grammar/state': {
+      id: '/api/public/grammar/state'
+      path: '/api/public/grammar/state'
+      fullPath: '/api/public/grammar/state'
+      preLoaderRoute: typeof ApiPublicGrammarStateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/grammar/start': {
+      id: '/api/public/grammar/start'
+      path: '/api/public/grammar/start'
+      fullPath: '/api/public/grammar/start'
+      preLoaderRoute: typeof ApiPublicGrammarStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/grammar/next': {
+      id: '/api/public/grammar/next'
+      path: '/api/public/grammar/next'
+      fullPath: '/api/public/grammar/next'
+      preLoaderRoute: typeof ApiPublicGrammarNextRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/dashboard/attempts/$attemptId': {
@@ -343,8 +443,13 @@ const rootRouteChildren: RootRouteChildren = {
   FreePlacementTestRoute: FreePlacementTestRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  GrammarTestLeadIdRoute: GrammarTestLeadIdRoute,
   PlacementTestLeadIdRoute: PlacementTestLeadIdRoute,
   ApiPublicLeadsRoute: ApiPublicLeadsRoute,
+  ApiPublicGrammarNextRoute: ApiPublicGrammarNextRoute,
+  ApiPublicGrammarStartRoute: ApiPublicGrammarStartRoute,
+  ApiPublicGrammarStateRoute: ApiPublicGrammarStateRoute,
+  ApiPublicGrammarSubmitRoute: ApiPublicGrammarSubmitRoute,
   ApiPublicPlacementNextRoute: ApiPublicPlacementNextRoute,
   ApiPublicPlacementStartRoute: ApiPublicPlacementStartRoute,
   ApiPublicPlacementStateRoute: ApiPublicPlacementStateRoute,

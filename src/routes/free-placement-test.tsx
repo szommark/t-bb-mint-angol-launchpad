@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2, Sparkles, ArrowRight } from "lucide-react";
-import { FOCUS_OPTIONS, FOCUS_OTHER, isPresetFocus, skillsForFocus, levelForFocus } from "@/lib/focus-options";
+import { FOCUS_OPTIONS, FOCUS_COMING_SOON, FOCUS_OTHER, isPresetFocus, levelForFocus } from "@/lib/focus-options";
 
 export const Route = createFileRoute("/free-placement-test")({
   ssr: false,
@@ -21,10 +21,15 @@ export const Route = createFileRoute("/free-placement-test")({
   component: CombinedFlow,
 });
 
-type Level = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+type Level = "A1" | "A2" | "B1" | "B2" | "C1";
 const LEVEL_LABEL: Record<Level, string> = {
-  A1: "Kezdő", A2: "Alapszintű", B1: "Középszintű", B2: "Középszintű felső", C1: "Haladó", C2: "Anyanyelvi szintű",
+  A1: "Kezdő", A2: "Alapszintű", B1: "Középszintű", B2: "Középszintű felső", C1: "Haladó",
 };
+// The grammar test bank only covers A1-C1; a prior general placement result
+// of C2 (from before the grammar-only test existed) clamps down to C1.
+function clampToC1(level: string): Level {
+  return level === "C2" ? "C1" : (level as Level);
+}
 
 function CombinedFlow() {
   const navigate = useNavigate();
@@ -81,7 +86,7 @@ function CombinedFlow() {
           const attempts = await listMyAttempts();
           if (attempts.length > 0) {
             setHasPriorAttempt(true);
-            setPriorAttemptLevel(attempts[0].final_level as Level);
+            setPriorAttemptLevel(clampToC1(attempts[0].final_level));
           }
         } catch (e) {
           console.warn("could not load prior attempts", e);
@@ -143,17 +148,17 @@ function CombinedFlow() {
         }
       }
       // Pre-write intake by starting the test now
-      const startRes = await fetch("/api/public/placement/start", {
+      const startRes = await fetch("/api/public/grammar/start", {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Lead-Token": data.sessionToken },
         body: JSON.stringify({
           leadId: data.id,
-          intake: { selfLevel, focus: focus || null, skills: skillsForFocus(focus), language: "hu" },
+          intake: { selfLevel, language: "hu" },
         }),
       });
       const started = await startRes.json();
       if (!startRes.ok) throw new Error(started?.error ?? "Could not start test");
-      navigate({ to: "/placement-test/$leadId", params: { leadId: data.id } });
+      navigate({ to: "/grammar-test/$leadId", params: { leadId: data.id } });
     } catch (e) {
       console.error(e);
       toast.error(e instanceof Error ? e.message : "Nem sikerült elindítani.");
@@ -245,7 +250,7 @@ function CombinedFlow() {
                     <Select value={manualLevel} onValueChange={(v) => setManualLevel(v as Level)}>
                       <SelectTrigger className="h-11"><SelectValue placeholder="Válassz szintet" /></SelectTrigger>
                       <SelectContent>
-                        {(["A1", "A2", "B1", "B2", "C1", "C2"] as Level[]).map((l) => (
+                        {(["A1", "A2", "B1", "B2", "C1"] as Level[]).map((l) => (
                           <SelectItem key={l} value={l}>{l} — {LEVEL_LABEL[l]}</SelectItem>
                         ))}
                       </SelectContent>
@@ -258,11 +263,7 @@ function CombinedFlow() {
                     value={focusChoice}
                     onValueChange={(v) => {
                       setFocusChoice(v);
-                      if (v === FOCUS_OTHER) {
-                        setFocus(focusOther);
-                      } else {
-                        setFocus(v);
-                      }
+                      setFocus(v);
                     }}
                   >
                     <SelectTrigger className="h-11" id="fpf">
@@ -272,18 +273,9 @@ function CombinedFlow() {
                       {FOCUS_OPTIONS.map((o) => (
                         <SelectItem key={o} value={o}>{o}</SelectItem>
                       ))}
-                      <SelectItem value={FOCUS_OTHER}>{FOCUS_OTHER}</SelectItem>
+                      <SelectItem value={FOCUS_COMING_SOON} disabled>{FOCUS_COMING_SOON}</SelectItem>
                     </SelectContent>
                   </Select>
-                  {focusChoice === FOCUS_OTHER && (
-                    <Input
-                      value={focusOther}
-                      onChange={(e) => { setFocusOther(e.target.value); setFocus(e.target.value); }}
-                      maxLength={120}
-                      placeholder="Add meg a saját fókuszod"
-                      className="h-11"
-                    />
-                  )}
                 </div>
                 <Button onClick={onStart} disabled={starting} className="h-11 w-full bg-[var(--teal-accent)] hover:bg-[var(--teal-accent-strong)]">
                   {starting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}

@@ -22,6 +22,12 @@ export type Database = {
           created_at: string
           email: string | null
           focus: string | null
+          grammar_cefr_level: string | null
+          grammar_completed_at: string | null
+          grammar_intake: Json | null
+          grammar_score_summary: string | null
+          grammar_test_answers: Json | null
+          grammar_test_questions: Json | null
           id: string
           intake: Json | null
           language: string
@@ -38,6 +44,12 @@ export type Database = {
           created_at?: string
           email?: string | null
           focus?: string | null
+          grammar_cefr_level?: string | null
+          grammar_completed_at?: string | null
+          grammar_intake?: Json | null
+          grammar_score_summary?: string | null
+          grammar_test_answers?: Json | null
+          grammar_test_questions?: Json | null
           id?: string
           intake?: Json | null
           language?: string
@@ -54,6 +66,12 @@ export type Database = {
           created_at?: string
           email?: string | null
           focus?: string | null
+          grammar_cefr_level?: string | null
+          grammar_completed_at?: string | null
+          grammar_intake?: Json | null
+          grammar_score_summary?: string | null
+          grammar_test_answers?: Json | null
+          grammar_test_questions?: Json | null
           id?: string
           intake?: Json | null
           language?: string
@@ -100,6 +118,119 @@ export type Database = {
             columns: ["question_id"]
             isOneToOne: false
             referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      grammar_attempt_answers: {
+        Row: {
+          attempt_id: string
+          id: string
+          is_correct: boolean
+          question_id: string
+          selected_answer: string | null
+        }
+        Insert: {
+          attempt_id: string
+          id?: string
+          is_correct?: boolean
+          question_id: string
+          selected_answer?: string | null
+        }
+        Update: {
+          attempt_id?: string
+          id?: string
+          is_correct?: boolean
+          question_id?: string
+          selected_answer?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grammar_attempt_answers_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "grammar_test_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grammar_attempt_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "grammar_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      grammar_questions: {
+        Row: {
+          correct_answer: string
+          created_at: string
+          explanation: string
+          grammar_tag: string | null
+          id: string
+          level: string
+          options: Json
+          question_text: string
+          times_used: number
+        }
+        Insert: {
+          correct_answer: string
+          created_at?: string
+          explanation?: string
+          grammar_tag?: string | null
+          id?: string
+          level: string
+          options: Json
+          question_text: string
+          times_used?: number
+        }
+        Update: {
+          correct_answer?: string
+          created_at?: string
+          explanation?: string
+          grammar_tag?: string | null
+          id?: string
+          level?: string
+          options?: Json
+          question_text?: string
+          times_used?: number
+        }
+        Relationships: []
+      }
+      grammar_test_attempts: {
+        Row: {
+          anonymous_session_id: string | null
+          created_at: string
+          final_level: string
+          id: string
+          score: number
+          total_questions: number
+          user_id: string | null
+        }
+        Insert: {
+          anonymous_session_id?: string | null
+          created_at?: string
+          final_level: string
+          id?: string
+          score: number
+          total_questions?: number
+          user_id?: string | null
+        }
+        Update: {
+          anonymous_session_id?: string | null
+          created_at?: string
+          final_level?: string
+          id?: string
+          score?: number
+          total_questions?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grammar_test_attempts_anonymous_session_id_fkey"
+            columns: ["anonymous_session_id"]
+            isOneToOne: false
+            referencedRelation: "anonymous_sessions"
             referencedColumns: ["id"]
           },
         ]

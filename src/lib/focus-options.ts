@@ -1,16 +1,9 @@
-export const FOCUS_OPTIONS = [
-  "Business English",
-  "English for AI & Prompting",
-  "English for Job Interviews & CVs",
-  "Conversational / Everyday English",
-  "English for Presentations & Public Speaking",
-  "English for Social Media & Content Creation",
-  "Travel English",
-  "Academic English / IELTS Preparation",
-  "Nyelvvizsga gyakorlás (B1)",
-  "Nyelvvizsga gyakorlás (B2)",
-  "Nyelvvizsga gyakorlás (C1)",
-] as const;
+// Only "Grammar" is selectable for now. The rest of the previous preset
+// list is parked here so it's easy to bring back once those focus areas
+// are ready; FOCUS_COMING_SOON is rendered as a disabled placeholder item.
+export const FOCUS_OPTIONS = ["Grammar"] as const;
+
+export const FOCUS_COMING_SOON = "More focus areas (coming soon)";
 
 export const FOCUS_OTHER = "Other (specify)";
 
