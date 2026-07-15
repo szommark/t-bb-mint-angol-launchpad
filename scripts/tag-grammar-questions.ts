@@ -32,11 +32,15 @@ const GRAMMAR_TAGS = [
   "reported_speech",
 ] as const;
 
+// `id` isn't validated as a strict UUID here on purpose — the model
+// occasionally mangles a character when echoing one back, and the
+// membership check against `requestedIds` below is what actually gates
+// which rows get updated, so a malformed id is simply dropped rather than
+// failing the whole batch.
 const ClassificationSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string(),
   grammar_tag: z.enum(GRAMMAR_TAGS),
 });
-const ResponseSchema = z.array(ClassificationSchema);
 
 const RESPONSE_SCHEMA = {
   type: Type.ARRAY,
@@ -99,16 +103,21 @@ async function main() {
   if (!text) throw new Error("Empty response from Gemini");
 
   const raw = JSON.parse(text);
-  const parsed = ResponseSchema.parse(raw);
+  if (!Array.isArray(raw)) throw new Error("Expected a JSON array from Gemini");
 
   const requestedIds = new Set(rows.map((r) => r.id));
   const tagById = new Map<string, string>();
-  for (const item of parsed) {
-    if (!requestedIds.has(item.id)) {
-      console.warn(`Ignoring unrecognized id in response: ${item.id}`);
+  for (const item of raw) {
+    const result = ClassificationSchema.safeParse(item);
+    if (!result.success) {
+      console.warn("Skipping malformed classification entry:", item, result.error.issues);
       continue;
     }
-    tagById.set(item.id, item.grammar_tag);
+    if (!requestedIds.has(result.data.id)) {
+      console.warn(`Ignoring unrecognized id in response: ${result.data.id}`);
+      continue;
+    }
+    tagById.set(result.data.id, result.data.grammar_tag);
   }
   const missing = rows.filter((r) => !tagById.has(r.id));
   if (missing.length > 0) {
