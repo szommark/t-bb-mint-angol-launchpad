@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       anonymous_sessions: {
@@ -122,26 +147,71 @@ export type Database = {
           },
         ]
       }
+      blog_posts: {
+        Row: {
+          content: string
+          created_at: string
+          excerpt: string
+          id: string
+          image_url: string | null
+          published: boolean
+          published_at: string
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          excerpt: string
+          id?: string
+          image_url?: string | null
+          published?: boolean
+          published_at?: string
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          excerpt?: string
+          id?: string
+          image_url?: string | null
+          published?: boolean
+          published_at?: string
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       grammar_attempt_answers: {
         Row: {
           attempt_id: string
+          created_at: string
           id: string
           is_correct: boolean
           question_id: string
+          question_order: number | null
           selected_answer: string | null
         }
         Insert: {
           attempt_id: string
+          created_at?: string
           id?: string
           is_correct?: boolean
           question_id: string
+          question_order?: number | null
           selected_answer?: string | null
         }
         Update: {
           attempt_id?: string
+          created_at?: string
           id?: string
           is_correct?: boolean
           question_id?: string
+          question_order?: number | null
           selected_answer?: string | null
         }
         Relationships: [
@@ -166,6 +236,7 @@ export type Database = {
           correct_answer: string
           created_at: string
           explanation: string
+          explanation_hu: string | null
           grammar_tag: string | null
           id: string
           level: string
@@ -177,6 +248,7 @@ export type Database = {
           correct_answer: string
           created_at?: string
           explanation?: string
+          explanation_hu?: string | null
           grammar_tag?: string | null
           id?: string
           level: string
@@ -188,6 +260,7 @@ export type Database = {
           correct_answer?: string
           created_at?: string
           explanation?: string
+          explanation_hu?: string | null
           grammar_tag?: string | null
           id?: string
           level?: string
@@ -243,6 +316,7 @@ export type Database = {
           email: string
           focus: string | null
           intake: Json | null
+          is_teacher: boolean
           language: string
           name: string
           preferred_skills: string[]
@@ -259,6 +333,7 @@ export type Database = {
           email?: string
           focus?: string | null
           intake?: Json | null
+          is_teacher?: boolean
           language?: string
           name?: string
           preferred_skills?: string[]
@@ -275,6 +350,7 @@ export type Database = {
           email?: string
           focus?: string | null
           intake?: Json | null
+          is_teacher?: boolean
           language?: string
           name?: string
           preferred_skills?: string[]
@@ -321,6 +397,71 @@ export type Database = {
           times_used?: number
         }
         Relationships: []
+      }
+      teacher_profiles: {
+        Row: {
+          created_at: string
+          id: string
+          profile_id: string
+          teacher_code: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          profile_id: string
+          teacher_code: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          profile_id?: string
+          teacher_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teacher_profiles_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      teacher_students: {
+        Row: {
+          id: string
+          joined_at: string
+          student_id: string
+          teacher_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          student_id: string
+          teacher_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          student_id?: string
+          teacher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teacher_students_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "teacher_students_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teacher_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       test_attempts: {
         Row: {
@@ -494,6 +635,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

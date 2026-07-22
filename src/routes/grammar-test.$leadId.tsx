@@ -36,6 +36,17 @@ type ReviewItem = {
   correctIndex: number;
   correctAnswer: string;
   explanation: string;
+  explanationHu?: string;
+};
+
+type PracticeQuestion = {
+  id: string;
+  prompt: string;
+  options: string[];
+  cefr: Level;
+  correctIndex: number;
+  explanation: string;
+  explanationHu?: string;
 };
 
 const LEVELS: Level[] = ["A1", "A2", "B1", "B2", "C1"];
@@ -53,7 +64,7 @@ const t = {
     result: {
       heading: "Your estimated level",
       back: "Back to homepage",
-      booking: "Book my consultation",
+      practice: "Practice your mistakes",
     },
     review: {
       heading: "Review your answers",
@@ -63,6 +74,13 @@ const t = {
       noAnswer: "No answer",
       why: "Why",
       score: "Score",
+    },
+    practice: {
+      heading: "Practice question",
+      loading: "Preparing your practice questions…",
+      resultHeading: "Practice result",
+      close: "Close",
+      error: "Could not prepare practice questions.",
     },
     byLevelHeading: "Accuracy by level",
     levelLabel: {
@@ -87,7 +105,7 @@ const t = {
     result: {
       heading: "Becsült szinted",
       back: "Vissza a főoldalra",
-      booking: "Konzultáció foglalása",
+      practice: "Gyakorold a hibáidat",
     },
     review: {
       heading: "Kérdések átnézésre",
@@ -97,6 +115,13 @@ const t = {
       noAnswer: "Nincs válasz",
       why: "Magyarázat",
       score: "Pontszám",
+    },
+    practice: {
+      heading: "Gyakorló kérdés",
+      loading: "Gyakorló kérdések előkészítése…",
+      resultHeading: "Gyakorlás eredménye",
+      close: "Bezárás",
+      error: "Nem sikerült elkészíteni a gyakorló kérdéseket.",
     },
     byLevelHeading: "Pontosság szintenként",
     levelLabel: {
@@ -121,7 +146,7 @@ const t = {
     result: {
       heading: "Dein geschätztes Niveau",
       back: "Zurück zur Startseite",
-      booking: "Beratungstermin buchen",
+      practice: "Übe deine Fehler",
     },
     review: {
       heading: "Fragen zur Wiederholung",
@@ -131,6 +156,13 @@ const t = {
       noAnswer: "Keine Antwort",
       why: "Erklärung",
       score: "Punktzahl",
+    },
+    practice: {
+      heading: "Übungsfrage",
+      loading: "Übungsfragen werden vorbereitet…",
+      resultHeading: "Übungsergebnis",
+      close: "Schließen",
+      error: "Übungsfragen konnten nicht vorbereitet werden.",
     },
     byLevelHeading: "Genauigkeit pro Niveau",
     levelLabel: {
@@ -156,6 +188,58 @@ export const Route = createFileRoute("/grammar-test/$leadId")({
 });
 
 type Step = "loading" | "intake" | "generating" | "test" | "result";
+type PracticeStep = "idle" | "loading" | "active" | "result";
+
+function ReviewList({
+  items,
+  lc,
+  lang,
+}: {
+  items: ReviewItem[];
+  lc: (typeof t)[Lang];
+  lang: Lang;
+}) {
+  if (items.length === 0) {
+    return <p className="mt-3 text-sm text-muted-foreground">{lc.review.empty}</p>;
+  }
+  return (
+    <ol className="mt-5 space-y-4">
+      {items.map((r, i) => (
+        <li key={r.id} className="rounded-2xl border border-border bg-background/40 p-5">
+          <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <span className="rounded-full bg-[var(--teal-accent)]/15 px-2 py-0.5 text-[var(--teal-accent-strong)]">
+              {r.cefr}
+            </span>
+            <span>#{i + 1}</span>
+          </div>
+          <p className="text-sm font-medium leading-snug text-foreground sm:text-base">
+            {r.prompt}
+          </p>
+          <div className="mt-3 space-y-1.5 text-sm">
+            <div className="flex flex-wrap gap-x-2">
+              <span className="font-semibold text-destructive">{lc.review.yours}:</span>
+              <span className="text-foreground/90 line-through decoration-destructive/60">
+                {r.userAnswer ?? lc.review.noAnswer}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-x-2">
+              <span className="font-semibold text-[var(--teal-accent-strong)]">
+                {lc.review.correct}:
+              </span>
+              <span className="text-foreground">{r.correctAnswer}</span>
+            </div>
+          </div>
+          {(lang === "hu" ? r.explanationHu || r.explanation : r.explanation) && (
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              <span className="font-semibold text-foreground/80">{lc.review.why}: </span>
+              {lang === "hu" ? r.explanationHu || r.explanation : r.explanation}
+            </p>
+          )}
+        </li>
+      ))}
+    </ol>
+  );
+}
 
 function GrammarTest() {
   const { leadId } = Route.useParams();
@@ -183,6 +267,12 @@ function GrammarTest() {
   const [result, setResult] = useState<Result | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
   const submittedRef = useRef(false);
+
+  const [practiceStep, setPracticeStep] = useState<PracticeStep>("idle");
+  const [practiceQuestions, setPracticeQuestions] = useState<PracticeQuestion[]>([]);
+  const [practiceIndex, setPracticeIndex] = useState(0);
+  const [practiceSelected, setPracticeSelected] = useState<number | null>(null);
+  const [practiceAnswers, setPracticeAnswers] = useState<Record<number, number>>({});
 
   const lc = t[lang];
 
@@ -351,6 +441,81 @@ function GrammarTest() {
       setSubmitting(false);
     }
   };
+
+  const startPractice = async () => {
+    setPracticeStep("loading");
+    try {
+      const res = await fetch("/api/public/grammar/practice-mistakes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders },
+        body: JSON.stringify({ leadId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "Failed");
+      const qs: PracticeQuestion[] = Array.isArray(data.questions) ? data.questions : [];
+      if (qs.length === 0) {
+        toast.error(lc.practice.error);
+        setPracticeStep("idle");
+        return;
+      }
+      setPracticeQuestions(qs);
+      setPracticeIndex(0);
+      setPracticeAnswers({});
+      setPracticeSelected(null);
+      setPracticeStep("active");
+    } catch (e) {
+      console.error(e);
+      toast.error(e instanceof Error ? e.message : lc.practice.error);
+      setPracticeStep("idle");
+    }
+  };
+
+  const advancePractice = () => {
+    if (practiceSelected === null) return;
+    setPracticeAnswers((prev) => ({ ...prev, [practiceIndex]: practiceSelected }));
+    if (practiceIndex + 1 >= practiceQuestions.length) {
+      setPracticeStep("result");
+    } else {
+      setPracticeIndex((i) => i + 1);
+      setPracticeSelected(null);
+    }
+  };
+
+  const closePractice = () => {
+    setPracticeStep("idle");
+    setPracticeQuestions([]);
+    setPracticeIndex(0);
+    setPracticeAnswers({});
+    setPracticeSelected(null);
+  };
+
+  const practiceResult = useMemo(() => {
+    if (practiceStep !== "result") return { pct: 0, items: [] as ReviewItem[] };
+    let correct = 0;
+    const items: ReviewItem[] = [];
+    practiceQuestions.forEach((q, idx) => {
+      const userIndex = practiceAnswers[idx] ?? null;
+      if (userIndex === q.correctIndex) {
+        correct += 1;
+        return;
+      }
+      items.push({
+        id: q.id,
+        prompt: q.prompt,
+        cefr: q.cefr,
+        options: q.options,
+        userIndex,
+        userAnswer: userIndex !== null ? (q.options[userIndex] ?? null) : null,
+        correctIndex: q.correctIndex,
+        correctAnswer: q.options[q.correctIndex],
+        explanation: q.explanation,
+        explanationHu: q.explanationHu,
+      });
+    });
+    const pct =
+      practiceQuestions.length > 0 ? Math.round((correct / practiceQuestions.length) * 100) : 0;
+    return { pct, items };
+  }, [practiceStep, practiceQuestions, practiceAnswers]);
 
   // Overall test timer with refresh-safe deadline.
   useEffect(() => {
@@ -532,7 +697,7 @@ function GrammarTest() {
             );
           })()}
 
-        {step === "result" && result && (
+        {step === "result" && result && (practiceStep === "idle" || practiceStep === "loading") && (
           <div className="space-y-6">
             <div className="rounded-3xl border border-border bg-card p-8 text-center shadow-[var(--shadow-elegant)] sm:p-12">
               <div className="mx-auto inline-flex h-16 w-16 items-center justify-center rounded-full bg-[var(--teal-accent)]/15">
@@ -604,11 +769,112 @@ function GrammarTest() {
                 <Button onClick={() => navigate({ to: "/" })} variant="outline">
                   {lc.result.back}
                 </Button>
-                <Button
-                  onClick={() => navigate({ to: "/" })}
-                  className="bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)]"
+                {result.review.length > 0 && (
+                  <Button
+                    onClick={startPractice}
+                    disabled={practiceStep === "loading"}
+                    className="bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)]"
+                  >
+                    {practiceStep === "loading" ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        {lc.result.practice} <ArrowRight className="ml-1.5 h-4 w-4" />
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-border bg-card p-7 shadow-[var(--shadow-card)] sm:p-9">
+              <h2 className="text-lg font-semibold tracking-tight sm:text-xl">
+                {lc.review.heading}
+              </h2>
+              <ReviewList items={result.review} lc={lc} lang={lang} />
+            </div>
+          </div>
+        )}
+
+        {step === "result" &&
+          practiceStep === "active" &&
+          practiceQuestions[practiceIndex] &&
+          (() => {
+            const q = practiceQuestions[practiceIndex];
+            const isLast = practiceIndex + 1 >= practiceQuestions.length;
+            return (
+              <div className="rounded-3xl border border-border bg-card p-7 shadow-[var(--shadow-card)] sm:p-9">
+                <div className="mb-6 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <span>
+                    {lc.practice.heading} {practiceIndex + 1} / {practiceQuestions.length}
+                  </span>
+                  <span className="text-[var(--teal-accent-strong)]">{q.cefr}</span>
+                </div>
+                <Progress
+                  value={Math.round((practiceIndex / practiceQuestions.length) * 100)}
+                  className="mb-8 h-1.5"
+                />
+                <h2 className="text-lg font-semibold leading-snug text-foreground sm:text-xl">
+                  {q.prompt}
+                </h2>
+                <RadioGroup
+                  value={practiceSelected !== null ? String(practiceSelected) : ""}
+                  onValueChange={(v) => setPracticeSelected(Number(v))}
+                  className="mt-6 space-y-3"
                 >
-                  {lc.result.booking} <ArrowRight className="ml-1.5 h-4 w-4" />
+                  {q.options.map((opt, i) => (
+                    <label
+                      key={i}
+                      className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors ${practiceSelected === i ? "border-[var(--teal-accent)] bg-[var(--teal-accent)]/5" : "border-border hover:bg-muted/40"}`}
+                    >
+                      <RadioGroupItem value={String(i)} className="mt-0.5" />
+                      <span className="text-sm leading-relaxed">{opt}</span>
+                    </label>
+                  ))}
+                </RadioGroup>
+                <div className="mt-8 flex items-center justify-between">
+                  <Button variant="outline" onClick={closePractice}>
+                    {lc.practice.close}
+                  </Button>
+                  <Button
+                    onClick={advancePractice}
+                    disabled={practiceSelected === null}
+                    className="bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)]"
+                  >
+                    {isLast ? (
+                      <>
+                        {lc.test.submit} <CheckCircle2 className="ml-1.5 h-4 w-4" />
+                      </>
+                    ) : (
+                      <>
+                        {lc.test.next} <ArrowRight className="ml-1.5 h-4 w-4" />
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            );
+          })()}
+
+        {step === "result" && practiceStep === "result" && (
+          <div className="space-y-6">
+            <div className="rounded-3xl border border-border bg-card p-8 text-center shadow-[var(--shadow-elegant)] sm:p-12">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                {lc.practice.resultHeading}
+              </p>
+              <div
+                className="mt-3 text-6xl font-semibold tracking-tight"
+                style={{
+                  background: "var(--gradient-hero)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                {practiceResult.pct}%
+              </div>
+              <div className="mt-9 flex justify-center">
+                <Button variant="outline" onClick={closePractice}>
+                  {lc.practice.close}
                 </Button>
               </div>
             </div>
@@ -617,50 +883,7 @@ function GrammarTest() {
               <h2 className="text-lg font-semibold tracking-tight sm:text-xl">
                 {lc.review.heading}
               </h2>
-              {result.review.length === 0 ? (
-                <p className="mt-3 text-sm text-muted-foreground">{lc.review.empty}</p>
-              ) : (
-                <ol className="mt-5 space-y-4">
-                  {result.review.map((r, i) => (
-                    <li
-                      key={r.id}
-                      className="rounded-2xl border border-border bg-background/40 p-5"
-                    >
-                      <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        <span className="rounded-full bg-[var(--teal-accent)]/15 px-2 py-0.5 text-[var(--teal-accent-strong)]">
-                          {r.cefr}
-                        </span>
-                        <span>#{i + 1}</span>
-                      </div>
-                      <p className="text-sm font-medium leading-snug text-foreground sm:text-base">
-                        {r.prompt}
-                      </p>
-                      <div className="mt-3 space-y-1.5 text-sm">
-                        <div className="flex flex-wrap gap-x-2">
-                          <span className="font-semibold text-destructive">{lc.review.yours}:</span>
-                          <span className="text-foreground/90 line-through decoration-destructive/60">
-                            {r.userAnswer ?? lc.review.noAnswer}
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-x-2">
-                          <span className="font-semibold text-[var(--teal-accent-strong)]">
-                            {lc.review.correct}:
-                          </span>
-                          <span className="text-foreground">{r.correctAnswer}</span>
-                        </div>
-                      </div>
-                      {r.explanation && (
-                        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                          <span className="font-semibold text-foreground/80">
-                            {lc.review.why}:{" "}
-                          </span>
-                          {r.explanation}
-                        </p>
-                      )}
-                    </li>
-                  ))}
-                </ol>
-              )}
+              <ReviewList items={practiceResult.items} lc={lc} lang={lang} />
             </div>
           </div>
         )}

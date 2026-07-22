@@ -1,7 +1,7 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, useRef, useEffect } from "react";
 import {
-  Brain, GraduationCap, Zap, MessagesSquare, BookOpen, Briefcase, Crown,
+  Building2, Presentation, UserRound, Bot, Users,
   ArrowRight, Check, Globe, Menu, X, Mail, Phone, ChevronUp, Star, Sparkles,
   LayoutDashboard, LogOut,
 } from "lucide-react";
@@ -21,6 +21,9 @@ import heroCafeImg from "@/assets/hero-collage-cafe.jpg";
 import heroCallImg from "@/assets/hero-collage-call.jpg";
 import heroMobileImg from "@/assets/hero-collage-mobile.jpg";
 import heroTravelImg from "@/assets/hero-collage-travel.jpg";
+import instructorMarkImg from "@/assets/instructor-mark.png";
+import testimonialRekaImg from "@/assets/testimonial-reka.jpg";
+import testimonialAdriennImg from "@/assets/testimonial-adrienn.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -38,7 +41,7 @@ type Lang = "en" | "hu" | "de";
 
 const translations = {
   en: {
-    nav: { courses: "Courses", about: "About Us", reviews: "Reviews", blog: "Blog", contact: "Contact", cta: "Free Placement Test", ctaLoggedIn: "New Test" },
+    nav: { courses: "Courses", about: "About Us", reviews: "Reviews", blog: "Blog", contact: "Contact", cta: "Free Placement Test", ctaLoggedIn: "New Test", login: "Log in", dashboard: "Dashboard", signOut: "Sign out", signedOut: "Signed out" },
     hero: {
       eyebrow: "Premium English for a new era",
       title1: "Connect to the world.",
@@ -48,6 +51,7 @@ const translations = {
       ctaPrimary: "Start Your Journey",
       ctaResults: "Display My Test Results",
       ctaSecondary: "Explore Courses",
+      badges: ["Adults & executives", "Coaching-led method", "Industry-specific tracks"],
     },
     value: {
       kicker: "Why choose us",
@@ -55,7 +59,18 @@ const translations = {
       body: "Designed for driven professionals who want to go beyond basic language practice. We prepare you to understand, adapt, grow and flourish in a challenging global economy — through a blend of language education, real-world context and coaching techniques.",
       pills: ["Coaching mindset", "Real business context", "Measurable progress", "Executive-grade delivery"],
     },
-    courses: { kicker: "Our courses", title: "Programs engineered for outcomes" },
+    courses: {
+      kicker: "Our courses",
+      title: "Programs engineered for outcomes",
+      learnMore: "Learn more",
+      items: [
+        { title: "Corporate English & German", desc: "Tailored language training for enterprises and business teams — English or German, delivered on-site or online.", tag: "B2B" },
+        { title: "Presentation Skills in English", desc: "Structure, deliver and own the room — English presentation training for professionals.", tag: "Speak" },
+        { title: "One-on-One Language Sessions", desc: "Fully personalized 1:1 coaching — your pace, your goals, your schedule.", tag: "1:1" },
+        { title: "AI English", desc: "Practice with AI-powered tools between sessions — instant feedback, adaptive drills, real progress.", tag: "AI" },
+        { title: "Business English Club", desc: "A recurring group format for professionals to practice, network and stay sharp in English.", tag: "Club" },
+      ],
+    },
     form: {
       kicker: "Free placement test",
       title: "Find your starting line",
@@ -69,12 +84,27 @@ const translations = {
       focusOtherPh: "Tell us your specific focus",
       submit: "Get my placement",
     },
-    about: { kicker: "About us", title: "Meet your instructors" },
-    testimonials: { kicker: "Reviews", title: "What our clients say" },
-    footer: { rights: "All rights reserved.", privacy: "Privacy Policy", imp: "Impressum", reg: "Adult education registry number: B/2020/002545" },
+    about: {
+      title: "About Us",
+      instructors: [
+        { role: "Founder & Lead Coach-Trainer", bio: "Teaching adults since 2007. History degree, systems programming qualification, certified professional coach, and extensive experience writing economic language exam tasks." },
+      ],
+    },
+    testimonials: {
+      kicker: "Reviews",
+      title: "What our clients say",
+      items: [
+        { role: "Purchaser", quote: "The one-on-one lesson helped me a great deal in being able to deliver my professional presentation in a polished style. The material came together in a very short time — the lesson was marked by a flexible approach and shared brainstorming." },
+        { role: "Mechanical / Design Engineer", quote: "I speak English much more naturally and confidently — even in unexpected situations." },
+        { role: "Manager & Coach", quote: "We always talk about the things that concern me at the moment. Conveying my own thoughts helps me speak more fluently." },
+        { role: "Company Manager, Electrical Engineer", quote: "My grammar, vocabulary, listening comprehension and speaking skills have improved a lot. Highly recommended to anyone frustrated with traditional systems." },
+      ],
+    },
+    blog: { kicker: "Blog", title: "From our journal", readMore: "Read more" },
+    footer: { rights: "All rights reserved.", privacy: "Privacy Policy", imp: "Impressum", reg: "Adult education registry number: B/2020/002545", tagline: "Premium, coaching-oriented English training for adults, executives and company leaders.", contactTitle: "Contact", legalTitle: "Legal", madeFor: "Made for driven professionals." },
   },
   hu: {
-    nav: { courses: "Kurzusok", about: "Rólunk", reviews: "Vélemények", blog: "Blog", contact: "Kapcsolat", cta: "Ingyenes szintfelmérő", ctaLoggedIn: "Új teszt" },
+    nav: { courses: "Kurzusok", about: "Rólunk", reviews: "Vélemények", blog: "Blog", contact: "Kapcsolat", cta: "Ingyenes szintfelmérő", ctaLoggedIn: "Új teszt", login: "Bejelentkezés", dashboard: "Irányítópult", signOut: "Kijelentkezés", signedOut: "Sikeres kijelentkezés" },
     hero: {
       eyebrow: "Prémium angol egy új korszakra",
       title1: "Kapcsolódj a világhoz.",
@@ -84,6 +114,7 @@ const translations = {
       ctaPrimary: "Találd meg a szinted!",
       ctaResults: "Eredményeim megtekintése",
       ctaSecondary: "Kurzusok",
+      badges: ["Felnőtteknek és vezetőknek", "Coaching szemléletű módszer", "Iparág-specifikus képzések"],
     },
     value: {
       kicker: "Miért minket válassz",
@@ -91,7 +122,18 @@ const translations = {
       body: "Olyan, motivált ügyfeleknek készült, akik túl akarnak lépni az alap nyelvi gyakorláson. Felkészítünk arra, hogy megértsd, alkalmazkodj, fejlődj és kibontakozz a kihívásokkal teli globális gazdaságban — nyelvoktatás, valós kontextus és coaching technikák ötvözésével.",
       pills: ["Coaching szemlélet", "Valós üzleti kontextus", "Mérhető fejlődés", "Vezetői szintű minőség"],
     },
-    courses: { kicker: "Kurzusaink", title: "Eredményekre tervezve" },
+    courses: {
+      kicker: "Kurzusaink",
+      title: "Eredményekre tervezve",
+      learnMore: "Tudj meg többet",
+      items: [
+        { title: "Vállalati angol és német", desc: "Vállalatoknak és üzleti csapatoknak szabott nyelvi képzés — angolul vagy németül, helyszínen vagy online.", tag: "B2B" },
+        { title: "Prezentációs készségek angolul", desc: "Építsd fel, add elő és urald a termet — angol nyelvű prezentációs képzés szakembereknek.", tag: "Speak" },
+        { title: "Egyéni nyelvórák", desc: "Teljesen személyre szabott 1:1 coaching — a saját tempódban, céljaid szerint, a te időbeosztásodhoz igazítva.", tag: "1:1" },
+        { title: "AI angol", desc: "Gyakorolj MI-alapú eszközökkel az órák között — azonnali visszajelzés, adaptív feladatok, valódi fejlődés.", tag: "AI" },
+        { title: "Business English Club", desc: "Visszatérő csoportos forma szakembereknek — gyakorlás, kapcsolatépítés és angol nyelvi frissesség.", tag: "Club" },
+      ],
+    },
     form: {
       kicker: "Ingyenes szintfelmérő",
       title: "Találd meg a kiindulópontod",
@@ -105,12 +147,27 @@ const translations = {
       focusOtherPh: "Írd le a saját fókuszod",
       submit: "Szintfelmérés indítása",
     },
-    about: { kicker: "Rólunk", title: "Ismerd meg az oktatókat" },
-    testimonials: { kicker: "Vélemények", title: "Mit mondanak ügyfeleink" },
-    footer: { rights: "Minden jog fenntartva.", privacy: "Adatvédelem", imp: "Impresszum", reg: "Felnőttképzési nyilvántartási szám: B/2020/002545" },
+    about: {
+      title: "Rólunk",
+      instructors: [
+        { role: "Alapító és vezető coach-trainer", bio: "2007 óta tanít felnőtteket. Történész diploma, rendszerprogramozói képesítés, minősített professzionális coach, és kiterjedt tapasztalat gazdasági nyelvvizsga-feladatok írásában." },
+      ],
+    },
+    testimonials: {
+      kicker: "Vélemények",
+      title: "Mit mondanak ügyfeleink",
+      items: [
+        { role: "Beszerző", quote: "Az egyéni óra sokat segített abban, hogy a szakmai prezentációmat választékos stílusban legyek képes megtartani. Nagyon rövid idő alatt összeállt az anyag, rugalmas hozzáállás, közös ötletelés jellemezte az órát." },
+        { role: "Gépészmérnök, tervezőmérnök", quote: "Sokkal természetesebben és magabiztosabban beszélek angolul — még váratlan helyzetekben is." },
+        { role: "Ügyvezető és coach", quote: "Mindig azokról a dolgokról beszélgetünk, amik éppen foglalkoztatnak. A saját gondolataim megfogalmazása segít, hogy folyékonyabban beszéljek." },
+        { role: "Cégvezető, villamosmérnök", quote: "Sokat fejlődött a nyelvtani tudásom, a szókincsem, a hallás utáni értésem és a beszédkészségem. Bátran ajánlom mindenkinek, akit csalódottá tett a hagyományos oktatási rendszer." },
+      ],
+    },
+    blog: { kicker: "Blog", title: "Legfrissebb bejegyzéseink", readMore: "Tovább" },
+    footer: { rights: "Minden jog fenntartva.", privacy: "Adatvédelem", imp: "Impresszum", reg: "Felnőttképzési nyilvántartási szám: B/2020/002545", tagline: "Prémium, coaching szemléletű angol nyelvi képzés felnőtteknek, vezetőknek és cégtulajdonosoknak.", contactTitle: "Kapcsolat", legalTitle: "Jogi információk", madeFor: "Motivált szakembereknek készült." },
   },
   de: {
-    nav: { courses: "Kurse", about: "Über uns", reviews: "Bewertungen", blog: "Blog", contact: "Kontakt", cta: "Kostenloser Einstufungstest", ctaLoggedIn: "Neuer Test" },
+    nav: { courses: "Kurse", about: "Über uns", reviews: "Bewertungen", blog: "Blog", contact: "Kontakt", cta: "Kostenloser Einstufungstest", ctaLoggedIn: "Neuer Test", login: "Anmelden", dashboard: "Dashboard", signOut: "Abmelden", signedOut: "Abgemeldet" },
     hero: {
       eyebrow: "Premium-Englisch für eine neue Ära",
       title1: "Verbinde dich mit der Welt.",
@@ -120,6 +177,7 @@ const translations = {
       ctaPrimary: "Starte deine Reise",
       ctaResults: "Meine Testergebnisse anzeigen",
       ctaSecondary: "Kurse entdecken",
+      badges: ["Erwachsene & Führungskräfte", "Coaching-orientierte Methode", "Branchenspezifische Programme"],
     },
     value: {
       kicker: "Warum wir",
@@ -127,7 +185,18 @@ const translations = {
       body: "Für ambitionierte Berufstätige, die über klassisches Sprachtraining hinausgehen wollen. Wir bereiten dich darauf vor, in einer fordernden globalen Wirtschaft zu verstehen, dich anzupassen, zu wachsen und zu glänzen — durch Sprache, realen Kontext und Coaching.",
       pills: ["Coaching-Ansatz", "Realer Geschäftskontext", "Messbarer Fortschritt", "Executive-Qualität"],
     },
-    courses: { kicker: "Unsere Kurse", title: "Programme für echte Ergebnisse" },
+    courses: {
+      kicker: "Unsere Kurse",
+      title: "Programme für echte Ergebnisse",
+      learnMore: "Mehr erfahren",
+      items: [
+        { title: "Business-Englisch & -Deutsch", desc: "Maßgeschneidertes Sprachtraining für Unternehmen und Teams — Englisch oder Deutsch, vor Ort oder online.", tag: "B2B" },
+        { title: "Präsentationstraining auf Englisch", desc: "Struktur, Vortrag und Souveränität — Präsentationstraining auf Englisch für Berufstätige.", tag: "Speak" },
+        { title: "Einzelunterricht", desc: "Vollständig personalisiertes 1:1-Coaching — in deinem Tempo, nach deinen Zielen und deinem Zeitplan.", tag: "1:1" },
+        { title: "KI-Englisch", desc: "Übe zwischen den Sitzungen mit KI-gestützten Tools — sofortiges Feedback, adaptive Übungen, echter Fortschritt.", tag: "AI" },
+        { title: "Business English Club", desc: "Ein wiederkehrendes Gruppenformat für Berufstätige — Üben, Networking und sprachliche Frische auf Englisch.", tag: "Club" },
+      ],
+    },
     form: {
       kicker: "Kostenloser Einstufungstest",
       title: "Finde deinen Startpunkt",
@@ -141,42 +210,44 @@ const translations = {
       focusOtherPh: "Beschreibe deinen Fokus",
       submit: "Einstufung erhalten",
     },
-    about: { kicker: "Über uns", title: "Lerne deine Trainer kennen" },
-    testimonials: { kicker: "Bewertungen", title: "Was unsere Kunden sagen" },
-    footer: { rights: "Alle Rechte vorbehalten.", privacy: "Datenschutz", imp: "Impressum", reg: "Erwachsenenbildungsregisternummer: B/2020/002545" },
+    about: {
+      title: "Über uns",
+      instructors: [
+        { role: "Gründer & Leitender Coach-Trainer", bio: "Unterrichtet Erwachsene seit 2007. Geschichtsstudium, Qualifikation als Systemprogrammierer, zertifizierter professioneller Coach und umfangreiche Erfahrung im Verfassen von Wirtschaftssprachprüfungsaufgaben." },
+      ],
+    },
+    testimonials: {
+      kicker: "Bewertungen",
+      title: "Was unsere Kunden sagen",
+      items: [
+        { role: "Einkäuferin", quote: "Die Einzelstunde hat mir sehr geholfen, meine fachliche Präsentation in einem gewählten Stil zu halten. Das Material kam in sehr kurzer Zeit zusammen — die Stunde war geprägt von einer flexiblen Herangehensweise und gemeinsamem Brainstorming." },
+        { role: "Maschinenbau- / Konstruktionsingenieur", quote: "Ich spreche viel natürlicher und selbstbewusster Englisch — sogar in unerwarteten Situationen." },
+        { role: "Geschäftsführerin & Coach", quote: "Wir sprechen immer über die Dinge, die mich gerade beschäftigen. Meine eigenen Gedanken auszudrücken hilft mir, flüssiger zu sprechen." },
+        { role: "Firmenleiter, Elektroingenieur", quote: "Meine Grammatik, mein Wortschatz, mein Hörverständnis und meine Sprechfertigkeit haben sich stark verbessert. Ich empfehle es jedem, der von traditionellen Systemen enttäuscht ist." },
+      ],
+    },
+    blog: { kicker: "Blog", title: "Aus unserem Journal", readMore: "Weiterlesen" },
+    footer: { rights: "Alle Rechte vorbehalten.", privacy: "Datenschutz", imp: "Impressum", reg: "Erwachsenenbildungsregisternummer: B/2020/002545", tagline: "Maßgeschneidertes, coaching-orientiertes Englischtraining für Erwachsene, Führungskräfte und Unternehmensleiter.", contactTitle: "Kontakt", legalTitle: "Rechtliches", madeFor: "Für ambitionierte Berufstätige gemacht." },
   },
 } as const;
 
-const courseList = [
-  { icon: Brain, title: "Self-Awareness Course in English", desc: "Self-knowledge, communication and personality development.", tag: "Mindset" },
-  { icon: GraduationCap, title: "General English", desc: "Structured progression from beginner to advanced levels.", tag: "Core" },
-  { icon: Zap, title: "Fast Track English™", desc: "Ultra-fast language courses — 25 hours per course level.", tag: "25h" },
-  { icon: MessagesSquare, title: "Mostly Speaking English™", desc: "Speech-centered language courses — 45 hours per course level.", tag: "45h" },
-  { icon: BookOpen, title: "English as it is™", desc: "Traditional, comprehensive language courses — 60 hours per course level.", tag: "60h" },
-  { icon: Briefcase, title: "Professional English", desc: "Tailored ESP tracks: Logistics, Accounting, Marketing, Purchasing, HR, Law, Tourism, Health, Commercial, Technical.", tag: "ESP", featured: true },
-  { icon: Crown, title: "Exclusive English", desc: "Bespoke schedules, flexible class length, integrated executive coaching: objectives, conflict, EQ, motivation, strategy.", tag: "1:1", featured: true },
+const courseMeta = [
+  { icon: Building2, featured: true },
+  { icon: Presentation, featured: false },
+  { icon: UserRound, featured: true },
+  { icon: Bot, featured: false },
+  { icon: Users, featured: false },
 ];
 
 const instructors = [
-  {
-    name: "Márk Szombathelyi",
-    role: "Founder & Lead Coach-Trainer",
-    bio: "Teaching adults since 2007. History degree, systems programming qualification, certified professional coach, and extensive experience writing economic language exam tasks.",
-    initials: "MS",
-  },
-  {
-    name: "Marcell Mándli",
-    role: "Senior Language Trainer",
-    bio: "Focuses on cultural differences, the historical background of the language and interdisciplinary connections — broadening students' worldviews in English.",
-    initials: "MM",
-  },
+  { name: "Márk Szombathelyi", initials: "MS", photo: instructorMarkImg },
 ];
 
 const testimonials = [
-  { name: "Réka Förhécz-Mihályi", role: "Purchaser", quote: "The one-on-one lesson helped me a lot in being able to deliver my professional presentation in a versatile style." },
-  { name: "Attila", role: "Mechanical / Design Engineer", quote: "I speak English much more naturally and confidently — even in unexpected situations." },
-  { name: "Adrienn Varga-Horváth", role: "Manager & Coach", quote: "We always talk about the things that concern me at the moment. Conveying my own thoughts helps me speak more fluently." },
-  { name: "Imi", role: "Company Manager, Electrical Engineer", quote: "My grammar, vocabulary, listening comprehension and speaking skills have improved a lot. Highly recommended to anyone frustrated with traditional systems." },
+  { name: "Réka Förhécz-Mihályi", photo: testimonialRekaImg },
+  { name: "Attila" },
+  { name: "Adrienn Varga-Horváth", photo: testimonialAdriennImg },
+  { name: "Imi" },
 ];
 
 const langLabels: Record<Lang, { label: string; flag: string }> = {
@@ -191,7 +262,26 @@ function Index() {
   const t = translations[lang];
   const formRef = useRef<HTMLDivElement>(null);
   const coursesRef = useRef<HTMLDivElement>(null);
+  const blogRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
+  type BlogCard = { slug: string; title: string; excerpt: string; image_url: string | null; published_at: string };
+  const [blogPosts, setBlogPosts] = useState<BlogCard[]>([]);
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("blog_posts")
+        .select("slug, title, excerpt, image_url, published_at")
+        .eq("published", true)
+        .order("published_at", { ascending: false });
+      if (data) setBlogPosts(data);
+    })();
+  }, []);
+  useEffect(() => {
+    if (window.location.hash === "#blog" && blogPosts.length > 0) {
+      blogRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [blogPosts]);
 
   const [form, setForm] = useState({ name: "", email: "", focus: "" });
   const [focusChoice, setFocusChoice] = useState<string>("");
@@ -263,14 +353,14 @@ function Index() {
     : "";
   const signOut = async () => {
     await supabase.auth.signOut();
-    toast.success("Signed out");
+    toast.success(t.nav.signedOut);
   };
 
   const nav = useMemo(() => ([
     { key: "courses", label: t.nav.courses, onClick: () => scrollTo(coursesRef) },
     { key: "about", label: t.nav.about, onClick: () => document.getElementById("about")?.scrollIntoView({ behavior: "smooth" }) },
     { key: "reviews", label: t.nav.reviews, onClick: () => document.getElementById("reviews")?.scrollIntoView({ behavior: "smooth" }) },
-    { key: "blog", label: t.nav.blog, onClick: () => {} },
+    { key: "blog", label: t.nav.blog, onClick: () => scrollTo(blogRef) },
     { key: "contact", label: t.nav.contact, onClick: () => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" }) },
   ]), [t]);
 
@@ -304,16 +394,16 @@ function Index() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem onClick={() => navigate({ to: "/dashboard" })}>
-                    <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
+                    <LayoutDashboard className="mr-2 h-4 w-4" /> {t.nav.dashboard}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={signOut}>
-                    <LogOut className="mr-2 h-4 w-4" /> Sign out
+                    <LogOut className="mr-2 h-4 w-4" /> {t.nav.signOut}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <Button variant="ghost" onClick={() => navigate({ to: "/auth" })} className="hidden sm:inline-flex">
-                Log in
+                {t.nav.login}
               </Button>
             )}
             <Button onClick={() => navigate({ to: "/free-placement-test" })} className="hidden bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)] sm:inline-flex">
@@ -334,11 +424,11 @@ function Index() {
               ))}
               {authUser ? (
                 <>
-                  <Button variant="outline" onClick={() => navigate({ to: "/dashboard" })} className="mt-2">Dashboard</Button>
-                  <Button variant="ghost" onClick={signOut}>Sign out</Button>
+                  <Button variant="outline" onClick={() => navigate({ to: "/dashboard" })} className="mt-2">{t.nav.dashboard}</Button>
+                  <Button variant="ghost" onClick={signOut}>{t.nav.signOut}</Button>
                 </>
               ) : (
-                <Button variant="outline" onClick={() => navigate({ to: "/auth" })} className="mt-2">Log in</Button>
+                <Button variant="outline" onClick={() => navigate({ to: "/auth" })} className="mt-2">{t.nav.login}</Button>
               )}
               <Button onClick={() => navigate({ to: "/free-placement-test" })} className="mt-2 bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)]">
                 {authUser ? t.nav.ctaLoggedIn : t.nav.cta}
@@ -405,9 +495,9 @@ function Index() {
               </Button>
             </div>
             <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 text-sm text-white/60">
-              <div className="flex items-center gap-2"><Check className="h-4 w-4 text-[var(--teal-accent)]" /> Adults & executives</div>
-              <div className="flex items-center gap-2"><Check className="h-4 w-4 text-[var(--teal-accent)]" /> Coaching-led method</div>
-              <div className="flex items-center gap-2"><Check className="h-4 w-4 text-[var(--teal-accent)]" /> Industry-specific tracks</div>
+              {t.hero.badges.map((b) => (
+                <div key={b} className="flex items-center gap-2"><Check className="h-4 w-4 text-[var(--teal-accent)]" /> {b}</div>
+              ))}
             </div>
           </div>
 
@@ -486,11 +576,12 @@ function Index() {
             <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{t.courses.title}</h2>
           </div>
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {courseList.map((c) => {
-              const Icon = c.icon;
+            {t.courses.items.map((c, i) => {
+              const meta = courseMeta[i];
+              const Icon = meta.icon;
               return (
                 <div key={c.title}
-                  className={`group relative flex flex-col rounded-2xl border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elegant)] ${c.featured ? "border-[var(--teal-accent)]/40 ring-1 ring-[var(--teal-accent)]/20" : "border-border"}`}>
+                  className={`group relative flex flex-col rounded-2xl border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elegant)] ${meta.featured ? "border-[var(--teal-accent)]/40 ring-1 ring-[var(--teal-accent)]/20" : "border-border"}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-transform group-hover:scale-105">
                       <Icon className="h-5 w-5" />
@@ -503,7 +594,7 @@ function Index() {
                   <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{c.desc}</p>
                   <button onClick={() => scrollTo(formRef)}
                     className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:text-[var(--teal-accent-strong)]">
-                    Learn more <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                    {t.courses.learnMore} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                   </button>
                 </div>
               );
@@ -576,23 +667,30 @@ function Index() {
       <section id="about" className="border-t border-border bg-secondary/30">
         <div className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--teal-accent-strong)]">{t.about.kicker}</span>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{t.about.title}</h2>
+            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t.about.title}</h2>
           </div>
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
-            {instructors.map((p) => (
-              <div key={p.name} className="group flex flex-col gap-5 rounded-2xl border border-border bg-card p-7 transition-all hover:shadow-[var(--shadow-card)] sm:flex-row">
-                <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl text-2xl font-semibold text-primary-foreground shadow-[var(--shadow-card)]"
-                  style={{ background: "var(--gradient-hero)" }}>
-                  {p.initials}
+          <div className="mx-auto mt-12 grid max-w-2xl gap-6">
+            {instructors.map((p, i) => {
+              const info = t.about.instructors[i];
+              return (
+                <div key={p.name} className="group flex flex-col gap-5 rounded-2xl border border-border bg-card p-7 transition-all hover:shadow-[var(--shadow-card)] sm:flex-row">
+                  {p.photo ? (
+                    <img src={p.photo} alt={p.name} width={96} height={96}
+                      className="h-24 w-24 shrink-0 rounded-2xl object-cover shadow-[var(--shadow-card)]" />
+                  ) : (
+                    <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl text-2xl font-semibold text-primary-foreground shadow-[var(--shadow-card)]"
+                      style={{ background: "var(--gradient-hero)" }}>
+                      {p.initials}
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="text-xl font-semibold tracking-tight">{p.name}</h3>
+                    <div className="mt-0.5 text-sm font-medium text-[var(--teal-accent-strong)]">{info.role}</div>
+                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{info.bio}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-xl font-semibold tracking-tight">{p.name}</h3>
-                  <div className="mt-0.5 text-sm font-medium text-[var(--teal-accent-strong)]">{p.role}</div>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{p.bio}</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -605,26 +703,69 @@ function Index() {
             <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{t.testimonials.title}</h2>
           </div>
           <div className="mt-12 grid gap-5 md:grid-cols-2">
-            {testimonials.map((r) => (
-              <figure key={r.name} className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-7 transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-card)]">
-                <div className="flex gap-0.5 text-[var(--teal-accent-strong)]">
-                  {Array.from({ length: 5 }).map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
-                </div>
-                <blockquote className="text-base leading-relaxed text-foreground">"{r.quote}"</blockquote>
-                <figcaption className="mt-auto flex items-center gap-3 border-t border-border pt-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-                    {r.name.split(" ").map((s) => s[0]).slice(0, 2).join("")}
+            {testimonials.map((r, i) => {
+              const info = t.testimonials.items[i];
+              return (
+                <figure key={r.name} className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-7 transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-card)]">
+                  <div className="flex gap-0.5 text-[var(--teal-accent-strong)]">
+                    {Array.from({ length: 5 }).map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
                   </div>
-                  <div>
-                    <div className="text-sm font-semibold">{r.name}</div>
-                    <div className="text-xs text-muted-foreground">{r.role}</div>
-                  </div>
-                </figcaption>
-              </figure>
-            ))}
+                  <blockquote className="text-base leading-relaxed text-foreground">"{info.quote}"</blockquote>
+                  <figcaption className="mt-auto flex items-center gap-3 border-t border-border pt-4">
+                    {r.photo ? (
+                      <img src={r.photo} alt={r.name} width={40} height={40}
+                        className="h-10 w-10 shrink-0 rounded-full object-cover" />
+                    ) : (
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+                        {r.name.split(" ").map((s) => s[0]).slice(0, 2).join("")}
+                      </div>
+                    )}
+                    <div>
+                      <div className="text-sm font-semibold">{r.name}</div>
+                      <div className="text-xs text-muted-foreground">{info.role}</div>
+                    </div>
+                  </figcaption>
+                </figure>
+              );
+            })}
           </div>
         </div>
       </section>
+
+      {/* BLOG */}
+      {blogPosts.length > 0 && (
+        <section ref={blogRef} id="blog" className="border-t border-border bg-secondary/30">
+          <div className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+            <div className="mx-auto max-w-2xl text-center">
+              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--teal-accent-strong)]">{t.blog.kicker}</span>
+              <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{t.blog.title}</h2>
+            </div>
+            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {blogPosts.map((post) => (
+                <Link key={post.slug} to="/blog/$slug" params={{ slug: post.slug }}
+                  className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elegant)]">
+                  {post.image_url && (
+                    <div className="aspect-[16/10] w-full overflow-hidden bg-muted">
+                      <img src={post.image_url} alt={post.title} loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    </div>
+                  )}
+                  <div className="flex flex-1 flex-col p-6">
+                    <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                      {new Date(post.published_at).toLocaleDateString(lang === "hu" ? "hu-HU" : lang === "de" ? "de-DE" : "en-GB", { year: "numeric", month: "long", day: "numeric" })}
+                    </span>
+                    <h3 className="mt-2 text-lg font-semibold leading-snug tracking-tight">{post.title}</h3>
+                    <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{post.excerpt}</p>
+                    <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors group-hover:text-[var(--teal-accent-strong)]">
+                      {t.blog.readMore} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* FOOTER */}
       <footer id="contact" className="relative border-t border-border bg-primary text-primary-foreground">
@@ -635,11 +776,11 @@ function Index() {
               <span className="text-base font-semibold tracking-tight">Több mint angol</span>
             </div>
             <p className="mt-4 max-w-sm text-sm text-primary-foreground/70">
-              Premium, coaching-oriented English training for adults, executives and company leaders.
+              {t.footer.tagline}
             </p>
           </div>
           <div>
-            <h4 className="text-sm font-semibold uppercase tracking-wider text-primary-foreground/80">Contact</h4>
+            <h4 className="text-sm font-semibold uppercase tracking-wider text-primary-foreground/80">{t.footer.contactTitle}</h4>
             <ul className="mt-4 space-y-3 text-sm text-primary-foreground/75">
               <li className="flex items-center gap-2"><Mail className="h-4 w-4 text-[var(--teal-accent)]" /> szombathelyi.mark@tobbmintangol.hu</li>
               <li className="flex items-center gap-2"><Mail className="h-4 w-4 text-[var(--teal-accent)]" /> info@tobbmintangol.hu</li>
@@ -647,7 +788,7 @@ function Index() {
             </ul>
           </div>
           <div>
-            <h4 className="text-sm font-semibold uppercase tracking-wider text-primary-foreground/80">Legal</h4>
+            <h4 className="text-sm font-semibold uppercase tracking-wider text-primary-foreground/80">{t.footer.legalTitle}</h4>
             <ul className="mt-4 space-y-3 text-sm text-primary-foreground/75">
               <li>{t.footer.reg}</li>
               <li className="flex gap-4">
@@ -660,7 +801,7 @@ function Index() {
         <div className="border-t border-white/10">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 text-xs text-primary-foreground/60 lg:px-8">
             <span>© {new Date().getFullYear()} Több mint angol. {t.footer.rights}</span>
-            <span className="hidden sm:inline">Made for driven professionals.</span>
+            <span className="hidden sm:inline">{t.footer.madeFor}</span>
           </div>
         </div>
       </footer>

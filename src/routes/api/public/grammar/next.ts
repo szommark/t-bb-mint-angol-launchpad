@@ -103,7 +103,7 @@ export const Route = createFileRoute("/api/public/grammar/next")({
           usedTags: next.tag ? [...state.usedTags, next.tag] : state.usedTags,
         };
 
-        const nextStored: StoredQuestion & { bankId: string } = {
+        const nextStored: StoredQuestion & { bankId: string; tag: string | null } = {
           id: next.id,
           prompt: next.prompt,
           options: next.options,
@@ -111,7 +111,9 @@ export const Route = createFileRoute("/api/public/grammar/next")({
           skill: "grammar",
           cefr: next.cefr,
           explanation: next.explanation,
+          explanationHu: next.explanationHu,
           bankId: next.bankId,
+          tag: next.tag,
         };
 
         const updated = [...questions, nextStored];
@@ -208,13 +210,14 @@ async function logAttempt(
     if (attemptErr || !attempt) throw attemptErr ?? new Error("no attempt id");
     const rows = (questions as Array<StoredQuestion & { bankId?: string }>)
       .filter((q) => !!q.bankId && typeof answers[q.id] === "number")
-      .map((q) => {
+      .map((q, index) => {
         const userIdx = answers[q.id];
         return {
           attempt_id: attempt.id,
           question_id: q.bankId!,
           selected_answer: userIdx !== undefined ? (q.options[userIdx] ?? null) : null,
           is_correct: userIdx === q.correctIndex,
+          question_order: index,
         };
       });
     if (rows.length > 0) {

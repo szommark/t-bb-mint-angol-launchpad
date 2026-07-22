@@ -33,7 +33,7 @@ export const Route = createFileRoute("/api/public/grammar/submit")({
         const { data: lead, error } = await supabaseAdmin
           .from("anonymous_sessions")
           .select(
-            "id, grammar_test_questions, grammar_test_answers, session_token_hash, grammar_completed_at, grammar_cefr_level, grammar_score_summary",
+            "id, grammar_test_questions, grammar_test_answers, session_token_hash, grammar_completed_at, grammar_cefr_level, grammar_score_summary, claimed_by_user_id",
           )
           .eq("id", leadId)
           .maybeSingle();
@@ -95,19 +95,21 @@ export const Route = createFileRoute("/api/public/grammar/submit")({
               final_level: level,
               score: totalCorrect,
               total_questions: totalQ,
+              user_id: lead.claimed_by_user_id ?? null,
             })
             .select("id")
             .single();
           if (attemptErr || !attempt) throw attemptErr ?? new Error("no attempt id");
           const rows = (questions as Array<StoredQuestion & { bankId?: string }>)
             .filter((q) => !!q.bankId && typeof state.answers[q.id] === "number")
-            .map((q) => {
+            .map((q, index) => {
               const userIdx = state.answers[q.id];
               return {
                 attempt_id: attempt.id,
                 question_id: q.bankId!,
                 selected_answer: userIdx !== undefined ? (q.options[userIdx] ?? null) : null,
                 is_correct: userIdx === q.correctIndex,
+                question_order: index,
               };
             });
           if (rows.length > 0) {

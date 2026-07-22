@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -39,6 +40,7 @@ function AuthPage() {
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [signupPassword2, setSignupPassword2] = useState("");
+  const [signupIsTeacher, setSignupIsTeacher] = useState(false);
 
   const [forgotOpen, setForgotOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
@@ -61,15 +63,20 @@ function AuthPage() {
       email: signupEmail.trim(),
       password: signupPassword,
       options: {
-        data: { name: signupName.trim() },
+        data: { name: signupName.trim(), is_teacher: signupIsTeacher },
         emailRedirectTo: `${window.location.origin}/dashboard`,
       },
     });
     setLoading(false);
     if (error) return toast.error(error.message);
     if (data.session) {
-      toast.success("Account created! Let's find your starting level.");
-      navigate({ to: "/free-placement-test" });
+      if (signupIsTeacher) {
+        toast.success("Teacher account created!");
+        navigate({ to: "/teacher" });
+      } else {
+        toast.success("Account created! Let's find your starting level.");
+        navigate({ to: "/free-placement-test" });
+      }
     } else {
       toast.success("Check your inbox to confirm your email.");
     }
@@ -158,6 +165,12 @@ function AuthPage() {
                 <div className="space-y-2">
                   <Label htmlFor="sp2">Confirm password</Label>
                   <Input id="sp2" type="password" required minLength={8} value={signupPassword2} onChange={(e) => setSignupPassword2(e.target.value)} />
+                </div>
+                <div className="flex items-center justify-between rounded-lg border border-border px-3 py-2.5">
+                  <Label htmlFor="is-teacher" className="cursor-pointer text-sm font-normal text-foreground">
+                    I'm a teacher
+                  </Label>
+                  <Switch id="is-teacher" checked={signupIsTeacher} onCheckedChange={setSignupIsTeacher} />
                 </div>
                 <Button type="submit" disabled={loading} className="w-full bg-[var(--teal-accent)] hover:bg-[var(--teal-accent-strong)]">
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create account

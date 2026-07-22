@@ -6,6 +6,7 @@ export type StoredQuestion = {
   skill: "grammar" | "vocabulary" | "reading";
   cefr: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
   explanation?: string;
+  explanationHu?: string;
 };
 
 const LEVEL_ORDER: Record<StoredQuestion["cefr"], number> = {
@@ -52,6 +53,7 @@ export function buildReview(
         correctIndex: q.correctIndex,
         correctAnswer: q.options[q.correctIndex],
         explanation: q.explanation ?? "",
+        explanationHu: q.explanationHu ?? "",
         _ord: originalIdx,
       };
     })

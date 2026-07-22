@@ -77,7 +77,7 @@ export const Route = createFileRoute("/api/public/grammar/start")({
           usedTags: first.tag ? [first.tag] : [],
         };
 
-        const firstStored: StoredQuestion & { bankId: string } = {
+        const firstStored: StoredQuestion & { bankId: string; tag: string | null } = {
           id: first.id,
           prompt: first.prompt,
           options: first.options,
@@ -85,7 +85,9 @@ export const Route = createFileRoute("/api/public/grammar/start")({
           skill: "grammar",
           cefr: first.cefr,
           explanation: first.explanation,
+          explanationHu: first.explanationHu,
           bankId: first.bankId,
+          tag: first.tag,
         };
 
         const { error: updErr } = await supabaseAdmin

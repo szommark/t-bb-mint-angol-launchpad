@@ -39,6 +39,7 @@ const QuestionSchema = z.object({
   options: z.array(z.string()).length(4),
   correct_answer: z.string().min(1),
   explanation: z.string().min(1),
+  explanation_hu: z.string().min(1),
 });
 const ResponseSchema = z.array(QuestionSchema).length(LEVELS.length * PER_LEVEL);
 
@@ -53,8 +54,17 @@ const RESPONSE_SCHEMA = {
       options: { type: Type.ARRAY, items: { type: Type.STRING } },
       correct_answer: { type: Type.STRING },
       explanation: { type: Type.STRING },
+      explanation_hu: { type: Type.STRING },
     },
-    required: ["level", "grammar_tag", "question_text", "options", "correct_answer", "explanation"],
+    required: [
+      "level",
+      "grammar_tag",
+      "question_text",
+      "options",
+      "correct_answer",
+      "explanation",
+      "explanation_hu",
+    ],
   },
 };
 
@@ -67,6 +77,7 @@ Rules for every item:
 - "correct_answer" must be an exact string match (character-for-character) to one of the 4 "options".
 - Difficulty must genuinely match the stated CEFR "level" (A1 = simplest, C1 = most advanced).
 - Include a short 1-2 sentence learner-friendly "explanation" (max ~280 chars) of why the correct answer is right.
+- Include "explanation_hu": a Hungarian translation of that same explanation (natural, fluent Hungarian for a Hungarian learner of English, not a literal word-for-word translation), since students are native Hungarian speakers.
 - No duplicate or near-duplicate questions across the set.
 - Return ONLY the JSON array, no surrounding prose.`;
 
@@ -121,6 +132,7 @@ async function main() {
     level: q.level,
     grammar_tag: q.grammar_tag,
     explanation: q.explanation,
+    explanation_hu: q.explanation_hu,
   }));
 
   const { error, count } = await supabaseAdmin

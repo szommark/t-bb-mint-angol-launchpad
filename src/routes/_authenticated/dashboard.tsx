@@ -3,7 +3,9 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyProfile, listMyAttempts, updateMyProfile } from "@/lib/dashboard.functions";
+import { connectToTeacher, getMyTeachers } from "@/lib/teacher.functions";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -26,6 +28,8 @@ function Dashboard() {
   const fetchProfile = useServerFn(getMyProfile);
   const fetchAttempts = useServerFn(listMyAttempts);
   const saveProfile = useServerFn(updateMyProfile);
+  const connectTeacher = useServerFn(connectToTeacher);
+  const fetchMyTeachers = useServerFn(getMyTeachers);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -33,13 +37,29 @@ function Dashboard() {
   const [focus, setFocus] = useState("");
   const [focusChoice, setFocusChoice] = useState<string>("");
   const [focusOther, setFocusOther] = useState<string>("");
-  type Attempt = { id: string; created_at: string; final_level: string; score: number; total_questions: number };
+  type Attempt = { id: string; created_at: string; final_level: string; score: number; total_questions: number; source: "placement" | "grammar" };
   const [attempts, setAttempts] = useState<Attempt[]>([]);
+  const [teacherCode, setTeacherCode] = useState("");
+  const [connecting, setConnecting] = useState(false);
+  const [myTeachers, setMyTeachers] = useState<{ name: string; email: string; joinedAt: string }[]>([]);
+
+  const loadTeachers = async () => {
+    try {
+      setMyTeachers(await fetchMyTeachers());
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   useEffect(() => {
     (async () => {
       try {
-        const [p, a] = await Promise.all([fetchProfile(), fetchAttempts()]);
+        const p = await fetchProfile();
+        if (p?.is_teacher) {
+          navigate({ to: "/teacher", replace: true });
+          return;
+        }
+        const a = await fetchAttempts();
         if (p) {
           setProfile({ name: p.name, email: p.email, focus: p.focus ?? null });
           setFocus(p.focus ?? "");
@@ -49,6 +69,7 @@ function Dashboard() {
           }
         }
         setAttempts(a as Attempt[]);
+        await loadTeachers();
       } catch (e) {
         console.error(e);
         toast.error("Could not load your dashboard.");
@@ -56,7 +77,22 @@ function Dashboard() {
         setLoading(false);
       }
     })();
-  }, [fetchProfile, fetchAttempts]);
+  }, [fetchProfile, fetchAttempts, navigate]);
+
+  const onConnectTeacher = async () => {
+    if (!teacherCode.trim()) return;
+    setConnecting(true);
+    try {
+      await connectTeacher({ data: { teacherCode: teacherCode.trim() } });
+      toast.success("Connected to teacher.");
+      setTeacherCode("");
+      await loadTeachers();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not connect.");
+    } finally {
+      setConnecting(false);
+    }
+  };
 
   const onSave = async () => {
     setSaving(true);
@@ -184,6 +220,30 @@ function Dashboard() {
             </section>
 
             <section className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+              <h2 className="text-lg font-semibold">Connect to a teacher</h2>
+              <p className="mt-1 text-sm text-muted-foreground">Enter the code your teacher shared with you.</p>
+              <div className="mt-4 flex gap-2">
+                <Input
+                  value={teacherCode}
+                  onChange={(e) => setTeacherCode(e.target.value)}
+                  placeholder="e.g. AB23CD"
+                  maxLength={20}
+                  className="max-w-xs"
+                />
+                <Button onClick={onConnectTeacher} disabled={connecting || !teacherCode.trim()}>
+                  {connecting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Connect
+                </Button>
+              </div>
+              {myTeachers.length > 0 && (
+                <ul className="mt-4 space-y-1.5 text-sm text-muted-foreground">
+                  {myTeachers.map((t) => (
+                    <li key={t.email}>Connected to <span className="font-medium text-foreground">{t.name || t.email}</span></li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            <section className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
               <h2 className="text-lg font-semibold">Test history</h2>
               {attempts.length === 0 ? (
                 <p className="mt-4 text-sm text-muted-foreground">No tests yet — take your first placement test to see results here.</p>
@@ -193,6 +253,7 @@ function Dashboard() {
                     <thead className="border-b border-border text-left text-xs uppercase tracking-wider text-muted-foreground">
                       <tr>
                         <th className="pb-3 pr-4">Date</th>
+                        <th className="pb-3 pr-4">Type</th>
                         <th className="pb-3 pr-4">Level</th>
                         <th className="pb-3 pr-4">Score</th>
                         <th className="pb-3"></th>
@@ -202,6 +263,11 @@ function Dashboard() {
                       {attempts.map((a) => (
                         <tr key={a.id} className="border-b border-border/50 last:border-0">
                           <td className="py-3 pr-4">{new Date(a.created_at).toLocaleDateString()}</td>
+                          <td className="py-3 pr-4">
+                            <Badge variant={a.source === "grammar" ? "secondary" : "outline"}>
+                              {a.source === "grammar" ? "Grammar Test" : "Placement Test"}
+                            </Badge>
+                          </td>
                           <td className="py-3 pr-4 font-semibold">{a.final_level}</td>
                           <td className="py-3 pr-4">{a.score}/{a.total_questions}</td>
                           <td className="py-3 text-right">

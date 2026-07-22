@@ -11,6 +11,7 @@ export type GrammarFilled = {
   correctIndex: number;
   cefr: GrammarLevel;
   explanation: string;
+  explanationHu: string;
   bankId: string;
   tag: string | null;
 };
@@ -48,6 +49,21 @@ export async function getPreviouslyAnsweredGrammarBankIds(
   return Array.from(new Set((answers ?? []).map((a: { question_id: string }) => a.question_id)));
 }
 
+// Shuffles option order so the correct answer's position isn't a tell across
+// users (the bank stores options in whatever order they were authored in).
+function shuffleOptions(
+  options: string[],
+  correctIndex: number,
+): { options: string[]; correctIndex: number } {
+  const correctValue = options[correctIndex];
+  const shuffled = [...options];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return { options: shuffled, correctIndex: shuffled.indexOf(correctValue) };
+}
+
 // Looks up a single grammar bank question, ordered by least-used-first.
 // `level` filters to that CEFR level when provided; omitting it searches
 // any level (used as a relaxed fallback). `excludeIds` filters out ids
@@ -58,17 +74,23 @@ export async function getPreviouslyAnsweredGrammarBankIds(
 async function findGrammarBankQuestion(
   supabaseAdmin: Admin,
   slotId: string,
-  opts: { level?: GrammarLevel; excludeIds?: string[]; excludeTags?: string[] },
+  opts: {
+    level?: GrammarLevel;
+    tag?: string | null;
+    excludeIds?: string[];
+    excludeTags?: string[];
+  },
 ): Promise<GrammarFilled | null> {
   let q = supabaseAdmin
     .from("grammar_questions")
     .select(
-      "id, question_text, options, correct_answer, level, explanation, times_used, grammar_tag",
+      "id, question_text, options, correct_answer, level, explanation, explanation_hu, times_used, grammar_tag",
     )
     .order("times_used", { ascending: true })
     .order("created_at", { ascending: true })
     .limit(1);
   if (opts.level) q = q.eq("level", opts.level);
+  if (opts.tag) q = q.eq("grammar_tag", opts.tag);
   if (opts.excludeIds && opts.excludeIds.length > 0) {
     q = q.not("id", "in", `(${opts.excludeIds.join(",")})`);
   }
@@ -88,13 +110,15 @@ async function findGrammarBankQuestion(
     .from("grammar_questions")
     .update({ times_used: currentUsed + 1 })
     .eq("id", row.id);
+  const shuffled = shuffleOptions(rowOpts, idx);
   return {
     id: slotId,
     prompt: row.question_text,
-    options: rowOpts,
-    correctIndex: idx,
+    options: shuffled.options,
+    correctIndex: shuffled.correctIndex,
     cefr: row.level as GrammarLevel,
     explanation: row.explanation ?? "",
+    explanationHu: (row as { explanation_hu?: string | null }).explanation_hu ?? "",
     bankId: row.id,
     tag: (row as { grammar_tag?: string | null }).grammar_tag ?? null,
   };
@@ -132,4 +156,37 @@ export async function pickGrammarQuestionForSlot(params: {
   const anyLevel = await findGrammarBankQuestion(supabaseAdmin, slotId, {});
   if (anyLevel) return anyLevel;
   return { error: "We couldn't prepare your next question. Please try again." };
+}
+
+// Picks a single "practice the mistakes" question matching the CEFR level
+// and grammar tag of a missed question, relaxing constraints progressively
+// (same level+tag -> same level any tag -> any level+tag -> any level, and
+// finally allowing id repeats) so a small bank never fails to fill the set.
+export async function pickPracticeQuestion(params: {
+  supabaseAdmin: Admin;
+  slotId: string;
+  level: GrammarLevel;
+  tag: string | null;
+  excludeIds: string[];
+}): Promise<PickGrammarQuestionResult> {
+  const { supabaseAdmin, slotId, level, tag, excludeIds } = params;
+
+  if (tag) {
+    const exact = await findGrammarBankQuestion(supabaseAdmin, slotId, { level, tag, excludeIds });
+    if (exact) return exact;
+  }
+  const sameLevel = await findGrammarBankQuestion(supabaseAdmin, slotId, { level, excludeIds });
+  if (sameLevel) return sameLevel;
+  if (tag) {
+    const anyLevelSameTag = await findGrammarBankQuestion(supabaseAdmin, slotId, {
+      tag,
+      excludeIds,
+    });
+    if (anyLevelSameTag) return anyLevelSameTag;
+  }
+  const anyLevel = await findGrammarBankQuestion(supabaseAdmin, slotId, { excludeIds });
+  if (anyLevel) return anyLevel;
+  const fallback = await findGrammarBankQuestion(supabaseAdmin, slotId, {});
+  if (fallback) return fallback;
+  return { error: "We couldn't prepare your practice questions. Please try again." };
 }

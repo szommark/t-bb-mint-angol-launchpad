@@ -138,12 +138,19 @@ export function advanceStaircase(state: GrammarTestState, isCorrect: boolean): G
   };
 }
 
-// Confirm-phase accuracy decides the final call: hold the boundary level,
-// or step down one if the candidate couldn't sustain it under confirmation.
-export function deriveStaircaseLevel(state: GrammarTestState): GrammarLevel {
+// The final call is decided by aggregate accuracy at the boundary level
+// across *every* question answered at that level (step phase + confirm
+// phase combined), not just the fixed 3-item confirm phase -- a candidate
+// who stumbled early at the boundary but recovered in the confirm phase
+// (or vice versa) is judged on the whole picture, not a 3-question sample.
+export function deriveStaircaseLevel(
+  state: GrammarTestState,
+  byLevel: Record<string, { correct: number; total: number }>,
+): GrammarLevel {
   const boundary = state.boundaryLevel ?? state.currentLevel;
-  if (state.confirmTotal === 0) return boundary;
-  const accuracy = state.confirmCorrect / state.confirmTotal;
+  const stats = byLevel[boundary];
+  if (!stats || stats.total === 0) return boundary;
+  const accuracy = stats.correct / stats.total;
   if (accuracy >= CONFIRM_ACCURACY_THRESHOLD) return boundary;
   const idx = GRAMMAR_LEVEL_INDEX[boundary];
   return GRAMMAR_LEVELS[Math.max(0, idx - 1)];
@@ -155,7 +162,9 @@ export function deriveFinalGrammarResult(
   answers: Record<string, number>,
 ) {
   const { byLevel, totalCorrect, totalQ } = computeByLevel(questions, answers);
-  const level = deriveStaircaseLevel(state);
-  const summary = `${totalCorrect}/${totalQ} correct overall. Placed at ${level} (confirmed ${state.confirmCorrect}/${state.confirmTotal} at the boundary).`;
+  const boundary = state.boundaryLevel ?? state.currentLevel;
+  const level = deriveStaircaseLevel(state, byLevel);
+  const boundaryStats = byLevel[boundary] ?? { correct: 0, total: 0 };
+  const summary = `${totalCorrect}/${totalQ} correct overall. Placed at ${level} (${boundaryStats.correct}/${boundaryStats.total} at ${boundary}).`;
   return { level, totalCorrect, totalQ, byLevel, summary };
 }
