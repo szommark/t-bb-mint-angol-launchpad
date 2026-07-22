@@ -10,7 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
+import { reportError } from "../lib/error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -39,7 +39,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    reportError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
   return (
@@ -78,18 +78,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
+      { title: "Több mint angol" },
       { name: "description", content: "Több mint angol offers premium English language training for professionals and adults." },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
+      { name: "author", content: "Több mint angol" },
+      { property: "og:title", content: "Több mint angol" },
       { property: "og:description", content: "Több mint angol offers premium English language training for professionals and adults." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Lovable App" },
+      { name: "twitter:title", content: "Több mint angol" },
       { name: "twitter:description", content: "Több mint angol offers premium English language training for professionals and adults." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/HnJo1dK9GvRY6o8gXXCkISO2FZf1/social-images/social-1782144957491-Márk_logo_átlátszó.mini.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/HnJo1dK9GvRY6o8gXXCkISO2FZf1/social-images/social-1782144957491-Márk_logo_átlátszó.mini.webp" },
+      { property: "og:image", content: "/og-image.jpg" },
+      { name: "twitter:image", content: "/og-image.jpg" },
     ],
     links: [
       {

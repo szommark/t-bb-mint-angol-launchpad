@@ -5,6 +5,9 @@ import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/blog/$slug")({
+  head: () => ({
+    meta: [{ title: "Blog — Több mint angol" }],
+  }),
   component: BlogPostPage,
 });
 
@@ -35,7 +38,10 @@ function BlogPostPage() {
         .maybeSingle();
       if (!mounted) return;
       if (error || !data) setNotFound(true);
-      else setPost(data);
+      else {
+        setPost(data);
+        document.title = `${data.title} — Több mint angol`;
+      }
       setLoading(false);
     })();
     return () => {
