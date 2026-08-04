@@ -186,6 +186,30 @@ export type Database = {
         }
         Relationships: []
       }
+      companies: {
+        Row: {
+          company_name: string
+          contact_email: string
+          contact_name: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          company_name: string
+          contact_email: string
+          contact_name: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          company_name?: string
+          contact_email?: string
+          contact_name?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       grammar_attempt_answers: {
         Row: {
           attempt_id: string
@@ -500,6 +524,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      users: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
       }
     }
     Views: {

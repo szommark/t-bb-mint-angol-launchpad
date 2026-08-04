@@ -14,6 +14,9 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -70,6 +73,20 @@ const translations = {
         { title: "AI English", desc: "Practice with AI-powered tools between sessions — instant feedback, adaptive drills, real progress.", tag: "AI" },
         { title: "Business English Club", desc: "A recurring group format for professionals to practice, network and stay sharp in English.", tag: "Club" },
       ],
+    },
+    inquiry: {
+      title: "Get in touch",
+      descPrefix: "Leave your details and we'll follow up about",
+      name: "Full name",
+      email: "Email",
+      company: "Company name",
+      companyPh: "Acme Inc.",
+      submit: "Send",
+      success: "Thanks! We'll be in touch shortly.",
+      error: "Something went wrong. Please try again.",
+      nameError: "Please enter your name.",
+      emailError: "Please enter a valid email.",
+      companyError: "Please enter your company name.",
     },
     form: {
       kicker: "Free placement test",
@@ -134,6 +151,20 @@ const translations = {
         { title: "Business English Club", desc: "Visszatérő csoportos forma szakembereknek — gyakorlás, kapcsolatépítés és angol nyelvi frissesség.", tag: "Club" },
       ],
     },
+    inquiry: {
+      title: "Kapcsolatfelvétel",
+      descPrefix: "Add meg az elérhetőségeid, és jelentkezünk ezzel kapcsolatban:",
+      name: "Teljes név",
+      email: "Email",
+      company: "Cégnév",
+      companyPh: "Cégnév Kft.",
+      submit: "Küldés",
+      success: "Köszönjük! Hamarosan jelentkezünk.",
+      error: "Hiba történt. Próbáld újra.",
+      nameError: "Add meg a neved.",
+      emailError: "Érvénytelen e-mail cím.",
+      companyError: "Add meg a céged nevét.",
+    },
     form: {
       kicker: "Ingyenes szintfelmérő",
       title: "Találd meg a kiindulópontod",
@@ -197,6 +228,20 @@ const translations = {
         { title: "Business English Club", desc: "Ein wiederkehrendes Gruppenformat für Berufstätige — Üben, Networking und sprachliche Frische auf Englisch.", tag: "Club" },
       ],
     },
+    inquiry: {
+      title: "Kontakt aufnehmen",
+      descPrefix: "Gib deine Kontaktdaten ein, wir melden uns bezüglich:",
+      name: "Voller Name",
+      email: "E-Mail",
+      company: "Firmenname",
+      companyPh: "Firma GmbH",
+      submit: "Senden",
+      success: "Danke! Wir melden uns in Kürze.",
+      error: "Etwas ist schiefgelaufen. Bitte erneut versuchen.",
+      nameError: "Bitte gib deinen Namen ein.",
+      emailError: "Ungültige E-Mail-Adresse.",
+      companyError: "Bitte gib deinen Firmennamen ein.",
+    },
     form: {
       kicker: "Kostenloser Einstufungstest",
       title: "Finde deinen Startpunkt",
@@ -238,6 +283,10 @@ const courseMeta = [
   { icon: Bot, featured: false },
   { icon: Users, featured: false },
 ];
+
+const CORPORATE_COURSE_INDEX = 0;
+const AI_ENGLISH_COURSE_INDEX = 3;
+const AI_ENGLISH_URL = "https://aienglish.hu";
 
 const instructors = [
   { name: "Márk Szombathelyi", initials: "MS", photo: instructorMarkImg },
@@ -328,6 +377,52 @@ function Index() {
       );
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const [inquiryCourseIndex, setInquiryCourseIndex] = useState<number | null>(null);
+  const [inquiryForm, setInquiryForm] = useState({ name: "", email: "", company: "" });
+  const [inquirySubmitting, setInquirySubmitting] = useState(false);
+  const [inquirySubmitted, setInquirySubmitted] = useState(false);
+  const isCorporateInquiry = inquiryCourseIndex === CORPORATE_COURSE_INDEX;
+
+  const openInquiry = (i: number) => {
+    setInquiryCourseIndex(i);
+    setInquiryForm({ name: "", email: "", company: "" });
+    setInquirySubmitted(false);
+  };
+
+  const handleInquirySubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (inquiryCourseIndex === null) return;
+    const name = inquiryForm.name.trim();
+    const email = inquiryForm.email.trim();
+    const company = inquiryForm.company.trim();
+    if (!name) return toast.error(t.inquiry.nameError);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return toast.error(t.inquiry.emailError);
+    if (isCorporateInquiry && !company) return toast.error(t.inquiry.companyError);
+
+    setInquirySubmitting(true);
+    try {
+      const res = await fetch("/api/public/course-inquiry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          companyName: isCorporateInquiry ? company : undefined,
+          course: t.courses.items[inquiryCourseIndex].title,
+          language: lang,
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setInquirySubmitted(true);
+      toast.success(t.inquiry.success);
+    } catch (err) {
+      console.error(err);
+      toast.error(t.inquiry.error);
+    } finally {
+      setInquirySubmitting(false);
     }
   };
 
@@ -592,16 +687,66 @@ function Index() {
                   </div>
                   <h3 className="mt-5 text-lg font-semibold tracking-tight">{c.title}</h3>
                   <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{c.desc}</p>
-                  <button onClick={() => scrollTo(formRef)}
-                    className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:text-[var(--teal-accent-strong)]">
-                    {t.courses.learnMore} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-                  </button>
+                  {i === AI_ENGLISH_COURSE_INDEX ? (
+                    <a href={AI_ENGLISH_URL} target="_blank" rel="noopener noreferrer"
+                      className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:text-[var(--teal-accent-strong)]">
+                      {t.courses.learnMore} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                    </a>
+                  ) : (
+                    <button onClick={() => openInquiry(i)}
+                      className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:text-[var(--teal-accent-strong)]">
+                      {t.courses.learnMore} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                    </button>
+                  )}
                 </div>
               );
             })}
           </div>
         </div>
       </section>
+
+      {/* COURSE INQUIRY DIALOG */}
+      <Dialog open={inquiryCourseIndex !== null} onOpenChange={(open) => { if (!open) setInquiryCourseIndex(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t.inquiry.title}</DialogTitle>
+            {inquiryCourseIndex !== null && (
+              <DialogDescription>
+                {t.inquiry.descPrefix} "{t.courses.items[inquiryCourseIndex].title}"
+              </DialogDescription>
+            )}
+          </DialogHeader>
+          <form onSubmit={handleInquirySubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="inquiry-name">{t.inquiry.name}</Label>
+              <Input id="inquiry-name" required maxLength={120} value={inquiryForm.name}
+                onChange={(e) => setInquiryForm((f) => ({ ...f, name: e.target.value }))}
+                placeholder="Jane Doe" className="h-11" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="inquiry-email">{t.inquiry.email}</Label>
+              <Input id="inquiry-email" type="email" required maxLength={255} value={inquiryForm.email}
+                onChange={(e) => setInquiryForm((f) => ({ ...f, email: e.target.value }))}
+                placeholder="you@company.com" className="h-11" />
+            </div>
+            {isCorporateInquiry && (
+              <div className="space-y-2">
+                <Label htmlFor="inquiry-company">{t.inquiry.company}</Label>
+                <Input id="inquiry-company" required maxLength={200} value={inquiryForm.company}
+                  onChange={(e) => setInquiryForm((f) => ({ ...f, company: e.target.value }))}
+                  placeholder={t.inquiry.companyPh} className="h-11" />
+              </div>
+            )}
+            <Button type="submit" disabled={inquirySubmitting}
+              className="h-12 w-full bg-[var(--teal-accent)] text-base font-semibold text-primary-foreground hover:bg-[var(--teal-accent-strong)] disabled:opacity-60">
+              {inquirySubmitting ? "…" : t.inquiry.submit} <ArrowRight className="ml-1.5 h-4 w-4" />
+            </Button>
+            {inquirySubmitted && (
+              <p className="text-center text-sm text-[var(--teal-accent-strong)]">{t.inquiry.success}</p>
+            )}
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* FORM */}
       <section ref={formRef} id="signup" className="relative overflow-hidden bg-background">
