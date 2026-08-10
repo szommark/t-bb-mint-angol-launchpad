@@ -42,6 +42,108 @@ export const Route = createFileRoute("/")({
 
 type Lang = "en" | "hu" | "de";
 
+const IMPRESSUM_DATA = {
+  company: "Incantation Korlátolt Felelősségű Társaság",
+  address: "9022 Győr, Bisinger József sétány 30. 3. em. 4. ajtó",
+  emails: ["szommark@gmail.com", "szombathelyi.mark@tobbmintangol.hu"],
+  registryNumber: "08-09-037063",
+  court: "Győri Törvényszék Cégbírósága",
+  taxNumber: "32636114-1-08",
+  euTaxNumber: "HU32636114",
+  taxStatus: "érvényes adószám",
+  statusStart: "2024. 09. 03.",
+  hosting: {
+    name: "Websupport Magyarország Kft.",
+    phone: "+36 1 700 2323",
+    email: "info@mhosting.hu",
+    address: "H-1119 Budapest, Fehérvári út 97-99.",
+  },
+} as const;
+
+const PRIVACY_POLICY = {
+  title: "Adatvédelmi (adatkezelési) tájékoztató",
+  intro: `${IMPRESSUM_DATA.company} (a továbbiakban: Adatkezelő) az alábbiakban tájékoztatja Önt a nyelvtanfolyamok szervezésével összefüggésben végzett adatkezelési tevékenységéről, az Európai Parlament és a Tanács (EU) 2016/679 rendelete (GDPR), valamint az információs önrendelkezési jogról és az információszabadságról szóló 2011. évi CXII. törvény (Infotv.) alapján.`,
+  effectiveDate: "Hatályos: 2026. 08. 10.",
+  sections: [
+    {
+      heading: "1. Az adatkezelő adatai",
+      list: [
+        `Név: ${IMPRESSUM_DATA.company}`,
+        `Székhely: ${IMPRESSUM_DATA.address}`,
+        `Adószám / cégjegyzékszám: ${IMPRESSUM_DATA.taxNumber} / ${IMPRESSUM_DATA.registryNumber}`,
+        `E-mail: ${IMPRESSUM_DATA.emails.join(", ")}`,
+        "Telefon: 20/284-7797",
+        "Képviselő: Szombathelyi Márk",
+      ],
+    },
+    {
+      heading: "2. A kezelt adatok köre",
+      list: [
+        "Azonosító adatok: név, születési hely és idő (amennyiben szükséges pl. igazolás kiállításához)",
+        "Kapcsolattartási adatok: e-mail cím, telefonszám, lakcím/levelezési cím",
+        "Tanfolyamhoz kapcsolódó adatok: jelentkezés adatai, választott kurzus, nyelvi szint, részvételi/haladási adatok",
+        "Számlázási adatok: számlázási név és cím, a kifizetéshez szükséges adatok (a fizetés technikai lebonyolítása jellemzően külső szolgáltatón keresztül történik, bankkártyaadatot az Adatkezelő nem tárol)",
+      ],
+    },
+    {
+      heading: "3. Az adatkezelés céljai",
+      list: [
+        "A nyelvtanfolyamra történő jelentkezés, a szerződés (részvételi jogviszony) létrehozása és teljesítése, a tanfolyam megszervezése és lebonyolítása.",
+        "A hatályos jogszabályok alapján kötelező adatszolgáltatási és bejelentési kötelezettségek teljesítése (pl. számviteli és adózási jogszabályok szerinti bizonylatolás, adóhatóság felé történő adatszolgáltatás).",
+      ],
+      footnote: "Az adatokat az Adatkezelő más célra – így különösen marketing, profilalkotás vagy harmadik fél számára történő értékesítés céljára – nem használja fel.",
+    },
+    {
+      heading: "4. Az adatkezelés jogalapja",
+      list: [
+        "GDPR 6. cikk (1) bekezdés b) pont: a szerződés (tanfolyamra történő jelentkezés) teljesítéséhez szükséges adatkezelés.",
+        "GDPR 6. cikk (1) bekezdés c) pont: az Adatkezelőre vonatkozó jogi kötelezettség (pl. számviteli, adó- és egyéb jogszabályi bejelentési kötelezettségek) teljesítése.",
+      ],
+    },
+    {
+      heading: "5. Az adatkezelés időtartama",
+      list: [
+        "A szerződés teljesítéséhez kapcsolódó adatokat a jogviszony (tanfolyam) lezárultáig, azt követően a jogszabályban előírt megőrzési időn belül (pl. számviteli bizonylatok esetén a Számv. tv. szerint 8 évig) kezeli az Adatkezelő.",
+        "A jogi kötelezettség teljesítéséhez szükséges adatokat a vonatkozó jogszabályban meghatározott ideig őrzi meg.",
+      ],
+    },
+    {
+      heading: "6. Adattovábbítás, adatfeldolgozók",
+      intro: "Az adatokhoz kizárólag az Adatkezelő e feladattal megbízott munkatársai, valamint az alábbi adatfeldolgozók férhetnek hozzá:",
+      list: [
+        "Könyvelési/számlázási szolgáltató: nincs megadva",
+        "Online fizetési/számlázó rendszer üzemeltetője: nincs megadva",
+        `Tárhely-/rendszerszolgáltató: ${IMPRESSUM_DATA.hosting.name} (${IMPRESSUM_DATA.hosting.address}, ${IMPRESSUM_DATA.hosting.phone}, ${IMPRESSUM_DATA.hosting.email})`,
+      ],
+      footnote: "Adatok továbbítására jogszabályi kötelezettség teljesítése esetén (pl. adóhatóság, egyéb hatóság megkeresésére) kerülhet sor.",
+    },
+    {
+      heading: "7. Az érintettek jogai",
+      intro: "Ön jogosult:",
+      list: [
+        "tájékoztatást kérni a kezelt adatairól,",
+        "kérni az adatok helyesbítését, illetve – amennyiben jogszabály másképp nem rendelkezik – törlését,",
+        "kérni az adatkezelés korlátozását,",
+        "élni az adathordozhatósághoz való jogával,",
+        "tiltakozni az adatkezelés ellen.",
+      ],
+      footnote: "Kérelmét a fenti elérhetőségeken terjesztheti elő; az Adatkezelő a kérelmet legkésőbb 30 napon belül megválaszolja.",
+    },
+    {
+      heading: "8. Adatbiztonság",
+      paragraph: "Az Adatkezelő megfelelő technikai és szervezési intézkedésekkel gondoskodik a kezelt adatok biztonságáról, védi azokat a jogosulatlan hozzáféréssel, megváltoztatással, továbbítással, nyilvánosságra hozatallal, törléssel vagy megsemmisítéssel, valamint véletlen megsemmisüléssel és sérüléssel szemben.",
+    },
+    {
+      heading: "9. Jogorvoslat",
+      paragraph: "Jogsérelem esetén Ön a Nemzeti Adatvédelmi és Információszabadság Hatósághoz (NAIH, 1055 Budapest, Falk Miksa utca 9–11., www.naih.hu) fordulhat panasszal, illetve jogait bíróság előtt is érvényesítheti.",
+    },
+    {
+      heading: "10. A tájékoztató módosítása",
+      paragraph: "Az Adatkezelő fenntartja a jogot jelen tájékoztató egyoldalú módosítására; a módosított tájékoztatót a honlapon teszi közzé.",
+    },
+  ],
+} as const;
+
 const translations = {
   en: {
     nav: { courses: "Courses", about: "About Us", reviews: "Reviews", blog: "Blog", contact: "Contact", cta: "Free Placement Test", ctaLoggedIn: "New Test", login: "Log in", dashboard: "Dashboard", signOut: "Sign out", signedOut: "Signed out" },
@@ -119,6 +221,15 @@ const translations = {
     },
     blog: { kicker: "Blog", title: "From our journal", readMore: "Read more" },
     footer: { rights: "All rights reserved.", privacy: "Privacy Policy", imp: "Impressum", reg: "Adult education registry number: B/2020/002545", tagline: "Premium, coaching-oriented English training for adults, executives and company leaders.", contactTitle: "Contact", legalTitle: "Legal", madeFor: "Made for driven professionals." },
+    impressum: {
+      title: "Impressum",
+      company: "Company", address: "Registered address", email: "Email",
+      registryNumber: "Company registration number", court: "Registered with", courtValue: "Registry Court of the Győr Regional Court",
+      taxNumber: "Tax number", euTaxNumber: "EU VAT number", taxStatus: "Tax number status", taxStatusValue: "valid",
+      statusStart: "Status effective from",
+      hostingTitle: "Hosting provider", hostingName: "Provider", hostingPhone: "Phone", hostingEmail: "Email", hostingAddress: "Address",
+      close: "Close",
+    },
   },
   hu: {
     nav: { courses: "Kurzusok", about: "Rólunk", reviews: "Vélemények", blog: "Blog", contact: "Kapcsolat", cta: "Ingyenes szintfelmérő", ctaLoggedIn: "Új teszt", login: "Bejelentkezés", dashboard: "Irányítópult", signOut: "Kijelentkezés", signedOut: "Sikeres kijelentkezés" },
@@ -196,6 +307,15 @@ const translations = {
     },
     blog: { kicker: "Blog", title: "Legfrissebb bejegyzéseink", readMore: "Tovább" },
     footer: { rights: "Minden jog fenntartva.", privacy: "Adatvédelem", imp: "Impresszum", reg: "Felnőttképzési nyilvántartási szám: B/2020/002545", tagline: "Prémium, coaching szemléletű angol nyelvi képzés felnőtteknek, vezetőknek és cégtulajdonosoknak.", contactTitle: "Kapcsolat", legalTitle: "Jogi információk", madeFor: "Motivált szakembereknek készült." },
+    impressum: {
+      title: "Impresszum",
+      company: "Cégnév", address: "Székhely", email: "Email",
+      registryNumber: "Cégjegyzékszám", court: "Nyilvántartó bíróság", courtValue: "Győri Törvényszék Cégbírósága",
+      taxNumber: "Adószám", euTaxNumber: "Közösségi adószám", taxStatus: "Adószám státusza", taxStatusValue: "érvényes adószám",
+      statusStart: "Státusz kezdete",
+      hostingTitle: "Tárhelyszolgáltató", hostingName: "Szolgáltató", hostingPhone: "Telefon", hostingEmail: "Email", hostingAddress: "Cím",
+      close: "Bezárás",
+    },
   },
   de: {
     nav: { courses: "Kurse", about: "Über uns", reviews: "Bewertungen", blog: "Blog", contact: "Kontakt", cta: "Kostenloser Einstufungstest", ctaLoggedIn: "Neuer Test", login: "Anmelden", dashboard: "Dashboard", signOut: "Abmelden", signedOut: "Abgemeldet" },
@@ -273,6 +393,15 @@ const translations = {
     },
     blog: { kicker: "Blog", title: "Aus unserem Journal", readMore: "Weiterlesen" },
     footer: { rights: "Alle Rechte vorbehalten.", privacy: "Datenschutz", imp: "Impressum", reg: "Erwachsenenbildungsregisternummer: B/2020/002545", tagline: "Maßgeschneidertes, coaching-orientiertes Englischtraining für Erwachsene, Führungskräfte und Unternehmensleiter.", contactTitle: "Kontakt", legalTitle: "Rechtliches", madeFor: "Für ambitionierte Berufstätige gemacht." },
+    impressum: {
+      title: "Impressum",
+      company: "Firma", address: "Sitz", email: "E-Mail",
+      registryNumber: "Handelsregisternummer", court: "Registergericht", courtValue: "Registergericht des Regionalgerichts Győr",
+      taxNumber: "Steuernummer", euTaxNumber: "USt-IdNr.", taxStatus: "Steuernummer-Status", taxStatusValue: "gültige Steuernummer",
+      statusStart: "Status gültig ab",
+      hostingTitle: "Hosting-Anbieter", hostingName: "Anbieter", hostingPhone: "Telefon", hostingEmail: "E-Mail", hostingAddress: "Adresse",
+      close: "Schließen",
+    },
   },
 } as const;
 
@@ -379,6 +508,9 @@ function Index() {
       setSubmitting(false);
     }
   };
+
+  const [impressumOpen, setImpressumOpen] = useState(false);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
 
   const [inquiryCourseIndex, setInquiryCourseIndex] = useState<number | null>(null);
   const [inquiryForm, setInquiryForm] = useState({ name: "", email: "", company: "" });
@@ -937,8 +1069,8 @@ function Index() {
             <ul className="mt-4 space-y-3 text-sm text-primary-foreground/75">
               <li>{t.footer.reg}</li>
               <li className="flex gap-4">
-                <a href="#" className="hover:text-[var(--teal-accent)]">{t.footer.privacy}</a>
-                <a href="#" className="hover:text-[var(--teal-accent)]">{t.footer.imp}</a>
+                <button type="button" onClick={() => setPrivacyOpen(true)} className="hover:text-[var(--teal-accent)]">{t.footer.privacy}</button>
+                <button type="button" onClick={() => setImpressumOpen(true)} className="hover:text-[var(--teal-accent)]">{t.footer.imp}</button>
               </li>
             </ul>
           </div>
@@ -950,6 +1082,100 @@ function Index() {
           </div>
         </div>
       </footer>
+
+      {/* IMPRESSUM DIALOG */}
+      <Dialog open={impressumOpen} onOpenChange={setImpressumOpen}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{t.impressum.title}</DialogTitle>
+          </DialogHeader>
+          <dl className="space-y-4 text-sm">
+            <div>
+              <dt className="font-semibold text-foreground">{t.impressum.company}</dt>
+              <dd className="text-muted-foreground">{IMPRESSUM_DATA.company}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-foreground">{t.impressum.address}</dt>
+              <dd className="text-muted-foreground">{IMPRESSUM_DATA.address}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-foreground">{t.impressum.email}</dt>
+              <dd className="text-muted-foreground">{IMPRESSUM_DATA.emails.join(", ")}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-foreground">{t.impressum.registryNumber}</dt>
+              <dd className="text-muted-foreground">{IMPRESSUM_DATA.registryNumber}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-foreground">{t.impressum.court}</dt>
+              <dd className="text-muted-foreground">{t.impressum.courtValue}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-foreground">{t.impressum.taxNumber}</dt>
+              <dd className="text-muted-foreground">{IMPRESSUM_DATA.taxNumber}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-foreground">{t.impressum.euTaxNumber}</dt>
+              <dd className="text-muted-foreground">{IMPRESSUM_DATA.euTaxNumber}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-foreground">{t.impressum.taxStatus}</dt>
+              <dd className="text-muted-foreground">{t.impressum.taxStatusValue}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-foreground">{t.impressum.statusStart}</dt>
+              <dd className="text-muted-foreground">{IMPRESSUM_DATA.statusStart}</dd>
+            </div>
+            <div className="border-t border-border pt-4">
+              <dt className="font-semibold text-foreground">{t.impressum.hostingTitle}</dt>
+              <dd className="mt-1 space-y-1 text-muted-foreground">
+                <p>{t.impressum.hostingName}: {IMPRESSUM_DATA.hosting.name}</p>
+                <p>{t.impressum.hostingPhone}: {IMPRESSUM_DATA.hosting.phone}</p>
+                <p>{t.impressum.hostingEmail}: {IMPRESSUM_DATA.hosting.email}</p>
+                <p>{t.impressum.hostingAddress}: {IMPRESSUM_DATA.hosting.address}</p>
+              </dd>
+            </div>
+          </dl>
+          <Button onClick={() => setImpressumOpen(false)} className="mt-2 h-11 w-full">
+            {t.impressum.close}
+          </Button>
+        </DialogContent>
+      </Dialog>
+
+      {/* PRIVACY POLICY DIALOG */}
+      <Dialog open={privacyOpen} onOpenChange={setPrivacyOpen}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{PRIVACY_POLICY.title}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-5 text-sm">
+            <p className="text-muted-foreground">{PRIVACY_POLICY.intro}</p>
+            {PRIVACY_POLICY.sections.map((section) => (
+              <div key={section.heading}>
+                <h4 className="font-semibold text-foreground">{section.heading}</h4>
+                {"intro" in section && section.intro && (
+                  <p className="mt-1 text-muted-foreground">{section.intro}</p>
+                )}
+                {"paragraph" in section && section.paragraph && (
+                  <p className="mt-1 text-muted-foreground">{section.paragraph}</p>
+                )}
+                {"list" in section && section.list && (
+                  <ul className="mt-1 list-disc space-y-1 pl-5 text-muted-foreground">
+                    {section.list.map((item) => <li key={item}>{item}</li>)}
+                  </ul>
+                )}
+                {"footnote" in section && section.footnote && (
+                  <p className="mt-1 text-muted-foreground">{section.footnote}</p>
+                )}
+              </div>
+            ))}
+            <p className="text-xs text-muted-foreground">{PRIVACY_POLICY.effectiveDate}</p>
+          </div>
+          <Button onClick={() => setPrivacyOpen(false)} className="mt-2 h-11 w-full">
+            {t.impressum.close}
+          </Button>
+        </DialogContent>
+      </Dialog>
 
       {/* LANGUAGE DROP-UP */}
       <div className="fixed bottom-5 right-5 z-50">
