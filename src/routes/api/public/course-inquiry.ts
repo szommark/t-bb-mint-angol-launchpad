@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { randomUUID } from "crypto";
 
-const NOTIFY_EMAIL = "mark.szombathelyi@tobbmintangol.hu";
+const NOTIFY_EMAIL = "szombathelyi.mark@tobbmintangol.hu";
 
 const CourseInquirySchema = z.object({
   name: z.string().trim().min(1).max(120),
