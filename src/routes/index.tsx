@@ -614,7 +614,7 @@ function Index() {
                 <DropdownMenuTrigger asChild>
                   <button className="hidden items-center gap-2 rounded-full border border-border bg-card px-2 py-1 pr-3 text-sm font-medium transition-colors hover:bg-muted sm:inline-flex">
                     <Avatar className="h-7 w-7">
-                      <AvatarFallback className="bg-[var(--teal-accent)] text-xs font-semibold text-primary-foreground">{initials}</AvatarFallback>
+                      <AvatarFallback className="bg-[var(--teal-accent)] text-xs font-semibold text-primary">{initials}</AvatarFallback>
                     </Avatar>
                     <span className="max-w-[140px] truncate">{authUser.name}</span>
                   </button>
@@ -633,7 +633,7 @@ function Index() {
                 {t.nav.login}
               </Button>
             )}
-            <Button onClick={() => navigate({ to: "/free-placement-test" })} className="hidden bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)] sm:inline-flex">
+            <Button onClick={() => navigate({ to: "/free-placement-test" })} className="hidden bg-[var(--teal-accent)] text-primary hover:bg-[var(--teal-accent-strong)] sm:inline-flex">
               {authUser ? t.nav.ctaLoggedIn : t.nav.cta} <ArrowRight className="ml-1.5 h-4 w-4" />
             </Button>
             <button onClick={() => setMobileOpen((o) => !o)} className="rounded-md p-2 text-foreground lg:hidden">
@@ -657,7 +657,7 @@ function Index() {
               ) : (
                 <Button variant="outline" onClick={() => navigate({ to: "/auth" })} className="mt-2">{t.nav.login}</Button>
               )}
-              <Button onClick={() => navigate({ to: "/free-placement-test" })} className="mt-2 bg-[var(--teal-accent)] text-primary-foreground hover:bg-[var(--teal-accent-strong)]">
+              <Button onClick={() => navigate({ to: "/free-placement-test" })} className="mt-2 bg-[var(--teal-accent)] text-primary hover:bg-[var(--teal-accent-strong)]">
                 {authUser ? t.nav.ctaLoggedIn : t.nav.cta}
               </Button>
             </div>
@@ -707,12 +707,12 @@ function Index() {
             <div className="mt-9 flex flex-wrap items-center gap-3">
               {authUser ? (
                 <Button size="lg" onClick={() => navigate({ to: "/dashboard" })}
-                  className="h-12 bg-[var(--teal-accent)] px-6 text-[15px] font-semibold text-primary-foreground shadow-[var(--shadow-elegant)] transition-all hover:-translate-y-0.5 hover:bg-[var(--teal-accent-strong)]">
+                  className="h-12 bg-[var(--teal-accent)] px-6 text-[15px] font-semibold text-primary shadow-[var(--shadow-elegant)] transition-all hover:-translate-y-0.5 hover:bg-[var(--teal-accent-strong)]">
                   {t.hero.ctaResults} <ArrowRight className="ml-1.5 h-4 w-4" />
                 </Button>
               ) : (
                 <Button size="lg" onClick={() => scrollTo(formRef)}
-                  className="h-12 bg-[var(--teal-accent)] px-6 text-[15px] font-semibold text-primary-foreground shadow-[var(--shadow-elegant)] transition-all hover:-translate-y-0.5 hover:bg-[var(--teal-accent-strong)]">
+                  className="h-12 bg-[var(--teal-accent)] px-6 text-[15px] font-semibold text-primary shadow-[var(--shadow-elegant)] transition-all hover:-translate-y-0.5 hover:bg-[var(--teal-accent-strong)]">
                   {t.hero.ctaPrimary} <ArrowRight className="ml-1.5 h-4 w-4" />
                 </Button>
               )}
@@ -870,7 +870,7 @@ function Index() {
               </div>
             )}
             <Button type="submit" disabled={inquirySubmitting}
-              className="h-12 w-full bg-[var(--teal-accent)] text-base font-semibold text-primary-foreground hover:bg-[var(--teal-accent-strong)] disabled:opacity-60">
+              className="h-12 w-full bg-[var(--teal-accent)] text-base font-semibold text-primary hover:bg-[var(--teal-accent-strong)] disabled:opacity-60">
               {inquirySubmitting ? "…" : t.inquiry.submit} <ArrowRight className="ml-1.5 h-4 w-4" />
             </Button>
             {inquirySubmitted && (
@@ -925,7 +925,7 @@ function Index() {
                 </Select>
               </div>
               <Button type="submit" disabled={submitting}
-                className="h-12 w-full bg-[var(--teal-accent)] text-base font-semibold text-primary-foreground hover:bg-[var(--teal-accent-strong)] disabled:opacity-60">
+                className="h-12 w-full bg-[var(--teal-accent)] text-base font-semibold text-primary hover:bg-[var(--teal-accent-strong)] disabled:opacity-60">
                 {submitting ? "…" : t.form.submit} <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
               {submitted && (
