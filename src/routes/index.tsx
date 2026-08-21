@@ -666,7 +666,7 @@ function Index() {
       </header>
 
       {/* HERO */}
-      <section id="top" className="relative overflow-hidden">
+      <section id="top" className="relative isolate overflow-hidden">
         <div
           className="absolute inset-0 -z-10"
           style={{ background: "var(--gradient-hero)" }}
@@ -881,7 +881,7 @@ function Index() {
       </Dialog>
 
       {/* FORM */}
-      <section ref={formRef} id="signup" className="relative overflow-hidden bg-background">
+      <section ref={formRef} id="signup" className="relative isolate overflow-hidden bg-background">
         <div className="absolute inset-x-0 top-0 -z-10 h-2/3"
           style={{ background: "linear-gradient(180deg, oklch(0.96 0.012 250) 0%, transparent 100%)" }} />
         <div className="mx-auto max-w-2xl px-5 py-20 lg:px-8">
