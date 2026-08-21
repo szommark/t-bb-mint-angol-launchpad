@@ -23,6 +23,7 @@ import { Route as AdminPostIdRouteImport } from './routes/admin_.$postId'
 import { Route as AuthenticatedTeacherRouteImport } from './routes/_authenticated/teacher'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as ApiPublicLeadsRouteImport } from './routes/api/public/leads'
+import { Route as ApiPublicCourseInquiryRouteImport } from './routes/api/public/course-inquiry'
 import { Route as AuthenticatedTeacherStudentIdRouteImport } from './routes/_authenticated/teacher_.$studentId'
 import { Route as ApiPublicPlacementSubmitRouteImport } from './routes/api/public/placement/submit'
 import { Route as ApiPublicPlacementStateRouteImport } from './routes/api/public/placement/state'
@@ -105,6 +106,11 @@ const ApiPublicLeadsRoute = ApiPublicLeadsRouteImport.update({
   path: '/api/public/leads',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCourseInquiryRoute = ApiPublicCourseInquiryRouteImport.update({
+  id: '/api/public/course-inquiry',
+  path: '/api/public/course-inquiry',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedTeacherStudentIdRoute =
   AuthenticatedTeacherStudentIdRouteImport.update({
     id: '/teacher_/$studentId',
@@ -185,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/grammar-test/$leadId': typeof GrammarTestLeadIdRoute
   '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
   '/teacher/$studentId': typeof AuthenticatedTeacherStudentIdRoute
+  '/api/public/course-inquiry': typeof ApiPublicCourseInquiryRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
   '/dashboard/attempts/$attemptId': typeof AuthenticatedDashboardAttemptsAttemptIdRoute
   '/api/public/grammar/next': typeof ApiPublicGrammarNextRoute
@@ -212,6 +219,7 @@ export interface FileRoutesByTo {
   '/grammar-test/$leadId': typeof GrammarTestLeadIdRoute
   '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
   '/teacher/$studentId': typeof AuthenticatedTeacherStudentIdRoute
+  '/api/public/course-inquiry': typeof ApiPublicCourseInquiryRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
   '/dashboard/attempts/$attemptId': typeof AuthenticatedDashboardAttemptsAttemptIdRoute
   '/api/public/grammar/next': typeof ApiPublicGrammarNextRoute
@@ -241,6 +249,7 @@ export interface FileRoutesById {
   '/grammar-test/$leadId': typeof GrammarTestLeadIdRoute
   '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
   '/_authenticated/teacher_/$studentId': typeof AuthenticatedTeacherStudentIdRoute
+  '/api/public/course-inquiry': typeof ApiPublicCourseInquiryRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
   '/_authenticated/dashboard_/attempts/$attemptId': typeof AuthenticatedDashboardAttemptsAttemptIdRoute
   '/api/public/grammar/next': typeof ApiPublicGrammarNextRoute
@@ -270,6 +279,7 @@ export interface FileRouteTypes {
     | '/grammar-test/$leadId'
     | '/placement-test/$leadId'
     | '/teacher/$studentId'
+    | '/api/public/course-inquiry'
     | '/api/public/leads'
     | '/dashboard/attempts/$attemptId'
     | '/api/public/grammar/next'
@@ -297,6 +307,7 @@ export interface FileRouteTypes {
     | '/grammar-test/$leadId'
     | '/placement-test/$leadId'
     | '/teacher/$studentId'
+    | '/api/public/course-inquiry'
     | '/api/public/leads'
     | '/dashboard/attempts/$attemptId'
     | '/api/public/grammar/next'
@@ -325,6 +336,7 @@ export interface FileRouteTypes {
     | '/grammar-test/$leadId'
     | '/placement-test/$leadId'
     | '/_authenticated/teacher_/$studentId'
+    | '/api/public/course-inquiry'
     | '/api/public/leads'
     | '/_authenticated/dashboard_/attempts/$attemptId'
     | '/api/public/grammar/next'
@@ -351,6 +363,7 @@ export interface RootRouteChildren {
   BlogSlugRoute: typeof BlogSlugRoute
   GrammarTestLeadIdRoute: typeof GrammarTestLeadIdRoute
   PlacementTestLeadIdRoute: typeof PlacementTestLeadIdRoute
+  ApiPublicCourseInquiryRoute: typeof ApiPublicCourseInquiryRoute
   ApiPublicLeadsRoute: typeof ApiPublicLeadsRoute
   ApiPublicGrammarNextRoute: typeof ApiPublicGrammarNextRoute
   ApiPublicGrammarPracticeMistakesRoute: typeof ApiPublicGrammarPracticeMistakesRoute
@@ -461,6 +474,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/leads'
       fullPath: '/api/public/leads'
       preLoaderRoute: typeof ApiPublicLeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/course-inquiry': {
+      id: '/api/public/course-inquiry'
+      path: '/api/public/course-inquiry'
+      fullPath: '/api/public/course-inquiry'
+      preLoaderRoute: typeof ApiPublicCourseInquiryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/teacher_/$studentId': {
@@ -583,6 +603,7 @@ const rootRouteChildren: RootRouteChildren = {
   BlogSlugRoute: BlogSlugRoute,
   GrammarTestLeadIdRoute: GrammarTestLeadIdRoute,
   PlacementTestLeadIdRoute: PlacementTestLeadIdRoute,
+  ApiPublicCourseInquiryRoute: ApiPublicCourseInquiryRoute,
   ApiPublicLeadsRoute: ApiPublicLeadsRoute,
   ApiPublicGrammarNextRoute: ApiPublicGrammarNextRoute,
   ApiPublicGrammarPracticeMistakesRoute: ApiPublicGrammarPracticeMistakesRoute,

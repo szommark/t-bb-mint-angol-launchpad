@@ -55,9 +55,9 @@ function PrivacyPage() {
         <section className="mt-8 space-y-3">
           <h2 className="text-2xl font-semibold">Sub-processors</h2>
           <p>
-            We rely on Lovable Cloud (managed Supabase) for application hosting, database
-            and authentication, and on Lovable AI for generating placement test questions
-            and feedback. Secrets are stored server-side and never shipped to the browser.
+            We rely on Supabase for application hosting, database and authentication, and
+            on Google's AI models for generating placement test questions and feedback.
+            Secrets are stored server-side and never shipped to the browser.
           </p>
         </section>
 
