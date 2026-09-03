@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { toast } from "sonner";
 import { Loader2, Sparkles, ArrowRight } from "lucide-react";
 import { FOCUS_OPTIONS, FOCUS_COMING_SOON, FOCUS_OTHER, isPresetFocus, levelForFocus } from "@/lib/focus-options";
+import { GRAMMAR_ITEM_COUNTS, DEFAULT_GRAMMAR_ITEM_COUNT, type GrammarItemCount } from "@/lib/grammar-item-count";
 
 export const Route = createFileRoute("/free-placement-test")({
   ssr: false,
@@ -52,6 +54,7 @@ function CombinedFlow() {
   const [focus, setFocus] = useState("");
   const [focusChoice, setFocusChoice] = useState<string>("");
   const [focusOther, setFocusOther] = useState<string>("");
+  const [itemCount, setItemCount] = useState<GrammarItemCount>(DEFAULT_GRAMMAR_ITEM_COUNT);
   const [starting, setStarting] = useState(false);
 
   // An exam-prep focus targets one specific level, which takes priority
@@ -153,6 +156,7 @@ function CombinedFlow() {
         headers: { "Content-Type": "application/json", "X-Lead-Token": data.sessionToken },
         body: JSON.stringify({
           leadId: data.id,
+          itemCount,
           intake: { selfLevel, language: "hu" },
         }),
       });
@@ -227,7 +231,7 @@ function CombinedFlow() {
                   <Sparkles className="h-3 w-3" /> 2. lépés / 2
                 </span>
                 <h1 className="mt-3 text-2xl font-semibold tracking-tight">Mesélj magadról{profileName ? `, ${profileName.split(" ")[0]}` : ""}</h1>
-                <p className="mt-2 text-sm text-muted-foreground">10 gyors kérdés, a szintedhez igazítva. Kb. 5 perc.</p>
+                <p className="mt-2 text-sm text-muted-foreground">{itemCount} gyors kérdés, a szintedhez igazítva. Kb. {Math.round(itemCount / 2)} perc.</p>
               </div>
               <div className="space-y-6">
                 {forcedLevel ? (
@@ -276,6 +280,28 @@ function CombinedFlow() {
                       <SelectItem value={FOCUS_COMING_SOON} disabled>{FOCUS_COMING_SOON}</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Kérdések száma</Label>
+                  <ToggleGroup
+                    type="single"
+                    value={String(itemCount)}
+                    onValueChange={(v) => {
+                      if (v) setItemCount(Number(v) as GrammarItemCount);
+                    }}
+                    className="grid grid-cols-3 gap-2"
+                  >
+                    {GRAMMAR_ITEM_COUNTS.map((n) => (
+                      <ToggleGroupItem
+                        key={n}
+                        value={String(n)}
+                        aria-label={`${n} kérdés`}
+                        className="h-11 flex-1 rounded-lg border border-border data-[state=on]:border-[var(--teal-accent)] data-[state=on]:bg-[var(--teal-accent)]/15 data-[state=on]:text-[var(--teal-accent-strong)]"
+                      >
+                        {n}
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
                 </div>
                 <Button onClick={onStart} disabled={starting} className="h-11 w-full bg-[var(--teal-accent)] hover:bg-[var(--teal-accent-strong)]">
                   {starting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
