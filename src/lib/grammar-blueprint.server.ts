@@ -1,17 +1,21 @@
 // Adaptive engine for the standalone Grammar Test: a Seed -> Step -> Confirm
 // staircase (CAT-lite, in the spirit of WIDA/DIALANG placement tests).
 //
-// Item 1 always seeds at B1. Items 2-7 zigzag +-1 CEFR level per answer
-// (correct = up, incorrect = down) while tracking "reversals" -- a fail
-// immediately after a success, which is the signal that we've found the
-// candidate's ceiling. Once we've seen 2 reversals (or 2 answers stuck
+// Item 1 always seeds at B1. The middle ~70% of items zigzag +-1 CEFR level
+// per answer (correct = up, incorrect = down) while tracking "reversals" --
+// a fail immediately after a success, which is the signal that we've found
+// the candidate's ceiling. Once we've seen 2 reversals (or 2 answers stuck
 // against the A1 floor / C1 ceiling), the level freezes: any remaining
-// items 2-7 keep being served at that frozen level without moving further.
-// Items 8-10 are always the fixed Confirm phase, served at the frozen
-// boundary level; their accuracy alone decides whether the candidate holds
-// that level or gets bumped down one, so a single lucky guess or careless
-// slip elsewhere in the test can't swing the final placement.
+// step-phase items keep being served at that frozen level without moving
+// further. The final ~30% of items are always the fixed Confirm phase,
+// served at the frozen boundary level; their accuracy alone decides whether
+// the candidate holds that level or gets bumped down one, so a single lucky
+// guess or careless slip elsewhere in the test can't swing the final
+// placement. Test length (10/20/30 items) only changes how many items each
+// phase gets -- the proportions and logic stay the same.
 import { computeByLevel, type StoredQuestion } from "@/lib/placement-review.server";
+import type { GrammarItemCount } from "@/lib/grammar-item-count";
+export { GRAMMAR_ITEM_COUNTS, isGrammarItemCount, type GrammarItemCount } from "@/lib/grammar-item-count";
 
 export type GrammarLevel = "A1" | "A2" | "B1" | "B2" | "C1";
 
@@ -41,8 +45,12 @@ export type GrammarTag = (typeof GRAMMAR_TAGS)[number];
 export const SEED_LEVEL: GrammarLevel = "B1";
 export const GRAMMAR_TOTAL_PLANNED = 10;
 
-// Items 1-7 are seed+step; items 8-10 are the fixed Confirm phase.
-const STEP_PHASE_LAST_INDEX = 7;
+// The last ~30% of the test is always the fixed Confirm phase (3 of 10, 6 of
+// 20, 9 of 30); everything before that is seed+step.
+const CONFIRM_PHASE_SHARE = 0.3;
+function stepPhaseLastIndex(totalPlanned: number): number {
+  return totalPlanned - Math.round(totalPlanned * CONFIRM_PHASE_SHARE);
+}
 const REVERSALS_TO_FREEZE = 2;
 const CLAMP_STREAK_TO_FREEZE = 2;
 const CONFIRM_ACCURACY_THRESHOLD = 0.6;
@@ -67,10 +75,9 @@ export function isGrammarTestState(x: unknown): x is GrammarTestState {
   return !!x && typeof x === "object" && (x as { v?: number }).v === 2;
 }
 
-export function initialGrammarTestState(): Omit<
-  GrammarTestState,
-  "answers" | "usedBankIds" | "usedTags"
-> {
+export function initialGrammarTestState(
+  totalPlanned: GrammarItemCount = GRAMMAR_TOTAL_PLANNED,
+): Omit<GrammarTestState, "answers" | "usedBankIds" | "usedTags"> {
   return {
     v: 2,
     currentLevel: SEED_LEVEL,
@@ -81,7 +88,7 @@ export function initialGrammarTestState(): Omit<
     boundaryLevel: null,
     confirmCorrect: 0,
     confirmTotal: 0,
-    totalPlanned: GRAMMAR_TOTAL_PLANNED,
+    totalPlanned,
   };
 }
 
@@ -89,9 +96,10 @@ export function initialGrammarTestState(): Omit<
 // recorded. Pure function: returns the next state, doesn't mutate.
 export function advanceStaircase(state: GrammarTestState, isCorrect: boolean): GrammarTestState {
   const answeredSoFar = Object.keys(state.answers).length;
+  const stepPhaseEnd = stepPhaseLastIndex(state.totalPlanned);
 
-  // Items 8-10: fixed Confirm phase, level stays frozen at the boundary.
-  if (answeredSoFar > STEP_PHASE_LAST_INDEX) {
+  // Confirm phase (final ~30% of items): level stays frozen at the boundary.
+  if (answeredSoFar > stepPhaseEnd) {
     return {
       ...state,
       confirmTotal: state.confirmTotal + 1,
@@ -99,7 +107,7 @@ export function advanceStaircase(state: GrammarTestState, isCorrect: boolean): G
     };
   }
 
-  // Still within items 1-7, but already frozen: keep serving the same
+  // Still within the step phase, but already frozen: keep serving the same
   // level without moving further or counting toward the confirm tally.
   if (state.frozen) {
     return { ...state, lastCorrect: isCorrect };
@@ -121,7 +129,7 @@ export function advanceStaircase(state: GrammarTestState, isCorrect: boolean): G
   const newIdx = Math.min(GRAMMAR_LEVELS.length - 1, Math.max(0, rawIdx));
   const newLevel = GRAMMAR_LEVELS[newIdx];
 
-  const stepBudgetExhausted = answeredSoFar >= STEP_PHASE_LAST_INDEX;
+  const stepBudgetExhausted = answeredSoFar >= stepPhaseEnd;
   const shouldFreeze =
     reversals >= REVERSALS_TO_FREEZE ||
     clampStreak >= CLAMP_STREAK_TO_FREEZE ||

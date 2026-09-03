@@ -4,8 +4,10 @@ import { extractLeadToken, verifyLeadToken } from "@/lib/placement-auth.server";
 import {
   initialGrammarTestState,
   SEED_LEVEL,
+  GRAMMAR_TOTAL_PLANNED,
   type GrammarTestState,
 } from "@/lib/grammar-blueprint.server";
+import { isGrammarItemCount, type GrammarItemCount } from "@/lib/grammar-item-count";
 import {
   getPreviouslyAnsweredGrammarBankIds,
   pickGrammarQuestionForSlot,
@@ -14,6 +16,11 @@ import type { StoredQuestion } from "@/lib/placement-review.server";
 
 const StartSchema = z.object({
   leadId: z.string().uuid(),
+  itemCount: z
+    .number()
+    .int()
+    .refine(isGrammarItemCount, { message: "itemCount must be 10, 20, or 30" })
+    .optional(),
 });
 
 function publicOf(q: StoredQuestion) {
@@ -39,6 +46,9 @@ export const Route = createFileRoute("/api/public/grammar/start")({
           );
         }
         const { leadId } = parsed.data;
+        // `.refine(isGrammarItemCount)` validated this at runtime; zod's
+        // output type doesn't narrow through refine, so cast here.
+        const itemCount = (parsed.data.itemCount ?? GRAMMAR_TOTAL_PLANNED) as GrammarItemCount;
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -71,7 +81,7 @@ export const Route = createFileRoute("/api/public/grammar/start")({
         }
 
         const state: GrammarTestState = {
-          ...initialGrammarTestState(),
+          ...initialGrammarTestState(itemCount),
           answers: {},
           usedBankIds: [...priorBankIds, first.bankId],
           usedTags: first.tag ? [first.tag] : [],
