@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, useRef, useEffect } from "react";
 import {
   Building2, Presentation, UserRound, Bot, Users,
-  ArrowRight, Check, Globe, Menu, X, Mail, Phone, ChevronUp, Star, Sparkles,
+  ArrowRight, Check, Globe, Menu, X, Mail, Phone, Star, Sparkles,
   LayoutDashboard, LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,11 @@ import heroTravelImg from "@/assets/hero-collage-travel.jpg";
 import instructorMarkImg from "@/assets/instructor-mark.png";
 import testimonialRekaImg from "@/assets/testimonial-reka.jpg";
 import testimonialAdriennImg from "@/assets/testimonial-adrienn.jpg";
+import { translations } from "@/lib/i18n";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { pickLocalized } from "@/lib/blog-i18n";
+import { SITE_URL } from "@/lib/site";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -36,11 +41,10 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "Több mint angol — Premium English Training" },
       { property: "og:description", content: "Coaching-oriented professional English training for executives and driven adults." },
     ],
+    links: [{ rel: "canonical", href: SITE_URL }],
   }),
   component: Index,
 });
-
-type Lang = "en" | "hu" | "de";
 
 const IMPRESSUM_DATA = {
   company: "Incantation Korlátolt Felelősségű Társaság",
@@ -144,267 +148,6 @@ const PRIVACY_POLICY = {
   ],
 } as const;
 
-const translations = {
-  en: {
-    nav: { courses: "Courses", about: "About Us", reviews: "Reviews", blog: "Blog", contact: "Contact", cta: "Free Placement Test", ctaLoggedIn: "New Test", login: "Log in", dashboard: "Dashboard", signOut: "Sign out", signedOut: "Signed out" },
-    hero: {
-      eyebrow: "Premium English for a new era",
-      title1: "Connect to the world.",
-      title2: "Speak with ease.",
-      title3: "Learn the trendiest way.",
-      subtitle: "Tailor-made, coaching-oriented professional and general English language training for adults, managers, and company leaders.",
-      ctaPrimary: "Start Your Journey",
-      ctaResults: "Display My Test Results",
-      ctaSecondary: "Explore Courses",
-      badges: ["Adults & executives", "Coaching-led method", "Industry-specific tracks"],
-    },
-    value: {
-      kicker: "Why choose us",
-      title: "More than English — a competitive advantage",
-      body: "Designed for driven professionals who want to go beyond basic language practice. We prepare you to understand, adapt, grow and flourish in a challenging global economy — through a blend of language education, real-world context and coaching techniques.",
-      pills: ["Coaching mindset", "Real business context", "Measurable progress", "Executive-grade delivery"],
-    },
-    courses: {
-      kicker: "Our courses",
-      title: "Programs engineered for outcomes",
-      learnMore: "Learn more",
-      items: [
-        { title: "Corporate English & German", desc: "Tailored language training for enterprises and business teams — English or German, delivered on-site or online.", tag: "B2B" },
-        { title: "Presentation Skills in English", desc: "Structure, deliver and own the room — English presentation training for professionals.", tag: "Speak" },
-        { title: "One-on-One Language Sessions", desc: "Fully personalized 1:1 coaching — your pace, your goals, your schedule.", tag: "1:1" },
-        { title: "AI English", desc: "Practice with AI-powered tools between sessions — instant feedback, adaptive drills, real progress.", tag: "AI" },
-        { title: "Business English Club", desc: "A recurring group format for professionals to practice, network and stay sharp in English.", tag: "Club" },
-      ],
-    },
-    inquiry: {
-      title: "Get in touch",
-      descPrefix: "Leave your details and we'll follow up about",
-      name: "Full name",
-      email: "Email",
-      company: "Company name",
-      companyPh: "Acme Inc.",
-      submit: "Send",
-      success: "Thanks! We'll be in touch shortly.",
-      error: "Something went wrong. Please try again.",
-      nameError: "Please enter your name.",
-      emailError: "Please enter a valid email.",
-      companyError: "Please enter your company name.",
-    },
-    form: {
-      kicker: "Free placement test",
-      title: "Find your starting line",
-      sub: "Create your account and we'll match you with the right track.",
-      name: "Full name", email: "Email", password: "Password",
-      focus: "What is your main focus area?",
-      focusPh: "Select a focus area",
-      focusOptions: ["Grammar"],
-      focusComingSoon: "More focus areas (coming soon)",
-      focusOther: "Other (specify)",
-      focusOtherPh: "Tell us your specific focus",
-      submit: "Get my placement",
-    },
-    about: {
-      title: "About Us",
-      instructors: [
-        { role: "Founder & Lead Coach-Trainer", bio: "Teaching adults since 2007. History degree, systems programming qualification, certified professional coach, and extensive experience writing economic language exam tasks." },
-      ],
-    },
-    testimonials: {
-      kicker: "Reviews",
-      title: "What our clients say",
-      items: [
-        { role: "Purchaser", quote: "The one-on-one lesson helped me a great deal in being able to deliver my professional presentation in a polished style. The material came together in a very short time — the lesson was marked by a flexible approach and shared brainstorming." },
-        { role: "Mechanical / Design Engineer", quote: "I speak English much more naturally and confidently — even in unexpected situations." },
-        { role: "Manager & Coach", quote: "We always talk about the things that concern me at the moment. Conveying my own thoughts helps me speak more fluently." },
-        { role: "Company Manager, Electrical Engineer", quote: "My grammar, vocabulary, listening comprehension and speaking skills have improved a lot. Highly recommended to anyone frustrated with traditional systems." },
-      ],
-    },
-    blog: { kicker: "Blog", title: "From our journal", readMore: "Read more" },
-    footer: { rights: "All rights reserved.", privacy: "Privacy Policy", imp: "Impressum", reg: "Adult education registry number: B/2020/002545", tagline: "Premium, coaching-oriented English training for adults, executives and company leaders.", contactTitle: "Contact", legalTitle: "Legal", madeFor: "Made for driven professionals." },
-    impressum: {
-      title: "Impressum",
-      company: "Company", address: "Registered address", email: "Email",
-      registryNumber: "Company registration number", court: "Registered with", courtValue: "Registry Court of the Győr Regional Court",
-      taxNumber: "Tax number", euTaxNumber: "EU VAT number", taxStatus: "Tax number status", taxStatusValue: "valid",
-      statusStart: "Status effective from",
-      hostingTitle: "Hosting provider", hostingName: "Provider", hostingPhone: "Phone", hostingEmail: "Email", hostingAddress: "Address",
-      close: "Close",
-    },
-  },
-  hu: {
-    nav: { courses: "Kurzusok", about: "Rólunk", reviews: "Vélemények", blog: "Blog", contact: "Kapcsolat", cta: "Ingyenes szintfelmérő", ctaLoggedIn: "Új teszt", login: "Bejelentkezés", dashboard: "Irányítópult", signOut: "Kijelentkezés", signedOut: "Sikeres kijelentkezés" },
-    hero: {
-      eyebrow: "Prémium angol egy új korszakra",
-      title1: "Kapcsolódj a világhoz.",
-      title2: "Beszélj könnyedén.",
-      title3: "Tanulj a legtrendibb módon.",
-      subtitle: "Személyre szabott, coaching szemléletű szakmai és általános angol nyelvi képzés felnőtteknek, vezetőknek és cégtulajdonosoknak.",
-      ctaPrimary: "Találd meg a szinted!",
-      ctaResults: "Eredményeim megtekintése",
-      ctaSecondary: "Kurzusok",
-      badges: ["Felnőtteknek és vezetőknek", "Coaching szemléletű módszer", "Iparág-specifikus képzések"],
-    },
-    value: {
-      kicker: "Miért minket válassz",
-      title: "Több mint angol — versenyelőny",
-      body: "Olyan, motivált ügyfeleknek készült, akik túl akarnak lépni az alap nyelvi gyakorláson. Felkészítünk arra, hogy megértsd, alkalmazkodj, fejlődj és kibontakozz a kihívásokkal teli globális gazdaságban — nyelvoktatás, valós kontextus és coaching technikák ötvözésével.",
-      pills: ["Coaching szemlélet", "Valós üzleti kontextus", "Mérhető fejlődés", "Vezetői szintű minőség"],
-    },
-    courses: {
-      kicker: "Kurzusaink",
-      title: "Eredményekre tervezve",
-      learnMore: "Tudj meg többet",
-      items: [
-        { title: "Vállalati angol és német", desc: "Vállalatoknak és üzleti csapatoknak szabott nyelvi képzés — angolul vagy németül, helyszínen vagy online.", tag: "B2B" },
-        { title: "Prezentációs készségek angolul", desc: "Építsd fel, add elő és urald a termet — angol nyelvű prezentációs képzés szakembereknek.", tag: "Speak" },
-        { title: "Egyéni nyelvórák", desc: "Teljesen személyre szabott 1:1 coaching — a saját tempódban, céljaid szerint, a te időbeosztásodhoz igazítva.", tag: "1:1" },
-        { title: "AI angol", desc: "Gyakorolj MI-alapú eszközökkel az órák között — azonnali visszajelzés, adaptív feladatok, valódi fejlődés.", tag: "AI" },
-        { title: "Business English Club", desc: "Visszatérő csoportos forma szakembereknek — gyakorlás, kapcsolatépítés és angol nyelvi frissesség.", tag: "Club" },
-      ],
-    },
-    inquiry: {
-      title: "Kapcsolatfelvétel",
-      descPrefix: "Add meg az elérhetőségeid, és jelentkezünk ezzel kapcsolatban:",
-      name: "Teljes név",
-      email: "Email",
-      company: "Cégnév",
-      companyPh: "Cégnév Kft.",
-      submit: "Küldés",
-      success: "Köszönjük! Hamarosan jelentkezünk.",
-      error: "Hiba történt. Próbáld újra.",
-      nameError: "Add meg a neved.",
-      emailError: "Érvénytelen e-mail cím.",
-      companyError: "Add meg a céged nevét.",
-    },
-    form: {
-      kicker: "Ingyenes szintfelmérő",
-      title: "Találd meg a kiindulópontod",
-      sub: "Hozd létre a fiókod és a megfelelő képzésre irányítunk.",
-      name: "Teljes név", email: "Email", password: "Jelszó",
-      focus: "Mi a fő fókuszterületed?",
-      focusPh: "Válassz fókuszt",
-      focusOptions: ["Nyelvtan"],
-      focusComingSoon: "További fókuszterületek (hamarosan)",
-      focusOther: "Egyéb (add meg)",
-      focusOtherPh: "Írd le a saját fókuszod",
-      submit: "Szintfelmérés indítása",
-    },
-    about: {
-      title: "Rólunk",
-      instructors: [
-        { role: "Alapító és vezető coach-trainer", bio: "2007 óta tanít felnőtteket. Történész diploma, rendszerprogramozói képesítés, minősített professzionális coach, és kiterjedt tapasztalat gazdasági nyelvvizsga-feladatok írásában." },
-      ],
-    },
-    testimonials: {
-      kicker: "Vélemények",
-      title: "Mit mondanak ügyfeleink",
-      items: [
-        { role: "Beszerző", quote: "Az egyéni óra sokat segített abban, hogy a szakmai prezentációmat választékos stílusban legyek képes megtartani. Nagyon rövid idő alatt összeállt az anyag, rugalmas hozzáállás, közös ötletelés jellemezte az órát." },
-        { role: "Gépészmérnök, tervezőmérnök", quote: "Sokkal természetesebben és magabiztosabban beszélek angolul — még váratlan helyzetekben is." },
-        { role: "Ügyvezető és coach", quote: "Mindig azokról a dolgokról beszélgetünk, amik éppen foglalkoztatnak. A saját gondolataim megfogalmazása segít, hogy folyékonyabban beszéljek." },
-        { role: "Cégvezető, villamosmérnök", quote: "Sokat fejlődött a nyelvtani tudásom, a szókincsem, a hallás utáni értésem és a beszédkészségem. Bátran ajánlom mindenkinek, akit csalódottá tett a hagyományos oktatási rendszer." },
-      ],
-    },
-    blog: { kicker: "Blog", title: "Legfrissebb bejegyzéseink", readMore: "Tovább" },
-    footer: { rights: "Minden jog fenntartva.", privacy: "Adatvédelem", imp: "Impresszum", reg: "Felnőttképzési nyilvántartási szám: B/2020/002545", tagline: "Prémium, coaching szemléletű angol nyelvi képzés felnőtteknek, vezetőknek és cégtulajdonosoknak.", contactTitle: "Kapcsolat", legalTitle: "Jogi információk", madeFor: "Motivált szakembereknek készült." },
-    impressum: {
-      title: "Impresszum",
-      company: "Cégnév", address: "Székhely", email: "Email",
-      registryNumber: "Cégjegyzékszám", court: "Nyilvántartó bíróság", courtValue: "Győri Törvényszék Cégbírósága",
-      taxNumber: "Adószám", euTaxNumber: "Közösségi adószám", taxStatus: "Adószám státusza", taxStatusValue: "érvényes adószám",
-      statusStart: "Státusz kezdete",
-      hostingTitle: "Tárhelyszolgáltató", hostingName: "Szolgáltató", hostingPhone: "Telefon", hostingEmail: "Email", hostingAddress: "Cím",
-      close: "Bezárás",
-    },
-  },
-  de: {
-    nav: { courses: "Kurse", about: "Über uns", reviews: "Bewertungen", blog: "Blog", contact: "Kontakt", cta: "Kostenloser Einstufungstest", ctaLoggedIn: "Neuer Test", login: "Anmelden", dashboard: "Dashboard", signOut: "Abmelden", signedOut: "Abgemeldet" },
-    hero: {
-      eyebrow: "Premium-Englisch für eine neue Ära",
-      title1: "Verbinde dich mit der Welt.",
-      title2: "Sprich mit Leichtigkeit.",
-      title3: "Lerne auf die trendigste Art.",
-      subtitle: "Maßgeschneidertes, coaching-orientiertes Business- und Allgemeinenglisch für Erwachsene, Manager und Führungskräfte.",
-      ctaPrimary: "Starte deine Reise",
-      ctaResults: "Meine Testergebnisse anzeigen",
-      ctaSecondary: "Kurse entdecken",
-      badges: ["Erwachsene & Führungskräfte", "Coaching-orientierte Methode", "Branchenspezifische Programme"],
-    },
-    value: {
-      kicker: "Warum wir",
-      title: "Mehr als Englisch — ein Wettbewerbsvorteil",
-      body: "Für ambitionierte Berufstätige, die über klassisches Sprachtraining hinausgehen wollen. Wir bereiten dich darauf vor, in einer fordernden globalen Wirtschaft zu verstehen, dich anzupassen, zu wachsen und zu glänzen — durch Sprache, realen Kontext und Coaching.",
-      pills: ["Coaching-Ansatz", "Realer Geschäftskontext", "Messbarer Fortschritt", "Executive-Qualität"],
-    },
-    courses: {
-      kicker: "Unsere Kurse",
-      title: "Programme für echte Ergebnisse",
-      learnMore: "Mehr erfahren",
-      items: [
-        { title: "Business-Englisch & -Deutsch", desc: "Maßgeschneidertes Sprachtraining für Unternehmen und Teams — Englisch oder Deutsch, vor Ort oder online.", tag: "B2B" },
-        { title: "Präsentationstraining auf Englisch", desc: "Struktur, Vortrag und Souveränität — Präsentationstraining auf Englisch für Berufstätige.", tag: "Speak" },
-        { title: "Einzelunterricht", desc: "Vollständig personalisiertes 1:1-Coaching — in deinem Tempo, nach deinen Zielen und deinem Zeitplan.", tag: "1:1" },
-        { title: "KI-Englisch", desc: "Übe zwischen den Sitzungen mit KI-gestützten Tools — sofortiges Feedback, adaptive Übungen, echter Fortschritt.", tag: "AI" },
-        { title: "Business English Club", desc: "Ein wiederkehrendes Gruppenformat für Berufstätige — Üben, Networking und sprachliche Frische auf Englisch.", tag: "Club" },
-      ],
-    },
-    inquiry: {
-      title: "Kontakt aufnehmen",
-      descPrefix: "Gib deine Kontaktdaten ein, wir melden uns bezüglich:",
-      name: "Voller Name",
-      email: "E-Mail",
-      company: "Firmenname",
-      companyPh: "Firma GmbH",
-      submit: "Senden",
-      success: "Danke! Wir melden uns in Kürze.",
-      error: "Etwas ist schiefgelaufen. Bitte erneut versuchen.",
-      nameError: "Bitte gib deinen Namen ein.",
-      emailError: "Ungültige E-Mail-Adresse.",
-      companyError: "Bitte gib deinen Firmennamen ein.",
-    },
-    form: {
-      kicker: "Kostenloser Einstufungstest",
-      title: "Finde deinen Startpunkt",
-      sub: "Erstelle dein Konto und wir finden den passenden Kurs.",
-      name: "Voller Name", email: "E-Mail", password: "Passwort",
-      focus: "Was ist dein Hauptfokus?",
-      focusPh: "Fokus wählen",
-      focusOptions: ["Grammatik"],
-      focusComingSoon: "Weitere Themen (bald verfügbar)",
-      focusOther: "Sonstiges (angeben)",
-      focusOtherPh: "Beschreibe deinen Fokus",
-      submit: "Einstufung erhalten",
-    },
-    about: {
-      title: "Über uns",
-      instructors: [
-        { role: "Gründer & Leitender Coach-Trainer", bio: "Unterrichtet Erwachsene seit 2007. Geschichtsstudium, Qualifikation als Systemprogrammierer, zertifizierter professioneller Coach und umfangreiche Erfahrung im Verfassen von Wirtschaftssprachprüfungsaufgaben." },
-      ],
-    },
-    testimonials: {
-      kicker: "Bewertungen",
-      title: "Was unsere Kunden sagen",
-      items: [
-        { role: "Einkäuferin", quote: "Die Einzelstunde hat mir sehr geholfen, meine fachliche Präsentation in einem gewählten Stil zu halten. Das Material kam in sehr kurzer Zeit zusammen — die Stunde war geprägt von einer flexiblen Herangehensweise und gemeinsamem Brainstorming." },
-        { role: "Maschinenbau- / Konstruktionsingenieur", quote: "Ich spreche viel natürlicher und selbstbewusster Englisch — sogar in unerwarteten Situationen." },
-        { role: "Geschäftsführerin & Coach", quote: "Wir sprechen immer über die Dinge, die mich gerade beschäftigen. Meine eigenen Gedanken auszudrücken hilft mir, flüssiger zu sprechen." },
-        { role: "Firmenleiter, Elektroingenieur", quote: "Meine Grammatik, mein Wortschatz, mein Hörverständnis und meine Sprechfertigkeit haben sich stark verbessert. Ich empfehle es jedem, der von traditionellen Systemen enttäuscht ist." },
-      ],
-    },
-    blog: { kicker: "Blog", title: "Aus unserem Journal", readMore: "Weiterlesen" },
-    footer: { rights: "Alle Rechte vorbehalten.", privacy: "Datenschutz", imp: "Impressum", reg: "Erwachsenenbildungsregisternummer: B/2020/002545", tagline: "Maßgeschneidertes, coaching-orientiertes Englischtraining für Erwachsene, Führungskräfte und Unternehmensleiter.", contactTitle: "Kontakt", legalTitle: "Rechtliches", madeFor: "Für ambitionierte Berufstätige gemacht." },
-    impressum: {
-      title: "Impressum",
-      company: "Firma", address: "Sitz", email: "E-Mail",
-      registryNumber: "Handelsregisternummer", court: "Registergericht", courtValue: "Registergericht des Regionalgerichts Győr",
-      taxNumber: "Steuernummer", euTaxNumber: "USt-IdNr.", taxStatus: "Steuernummer-Status", taxStatusValue: "gültige Steuernummer",
-      statusStart: "Status gültig ab",
-      hostingTitle: "Hosting-Anbieter", hostingName: "Anbieter", hostingPhone: "Telefon", hostingEmail: "E-Mail", hostingAddress: "Adresse",
-      close: "Schließen",
-    },
-  },
-} as const;
-
 const courseMeta = [
   { icon: Building2, featured: true },
   { icon: Presentation, featured: false },
@@ -428,14 +171,8 @@ const testimonials = [
   { name: "Imi" },
 ];
 
-const langLabels: Record<Lang, { label: string; flag: string }> = {
-  en: { label: "English", flag: "EN" },
-  hu: { label: "Magyar", flag: "HU" },
-  de: { label: "Deutsch", flag: "DE" },
-};
-
 function Index() {
-  const [lang, setLang] = useState<Lang>("hu");
+  const { lang } = useLanguage();
   const [mobileOpen, setMobileOpen] = useState(false);
   const t = translations[lang];
   const formRef = useRef<HTMLDivElement>(null);
@@ -443,13 +180,16 @@ function Index() {
   const blogRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  type BlogCard = { slug: string; title: string; excerpt: string; image_url: string | null; published_at: string };
+  type BlogCard = {
+    slug: string; title: string; excerpt: string; image_url: string | null; published_at: string;
+    title_en?: string | null; excerpt_en?: string | null; title_de?: string | null; excerpt_de?: string | null;
+  };
   const [blogPosts, setBlogPosts] = useState<BlogCard[]>([]);
   useEffect(() => {
     (async () => {
       const { data } = await supabase
         .from("blog_posts")
-        .select("slug, title, excerpt, image_url, published_at")
+        .select("slug, title, excerpt, image_url, published_at, title_en, excerpt_en, title_de, excerpt_de")
         .eq("published", true)
         .order("published_at", { ascending: false });
       if (data) setBlogPosts(data);
@@ -1018,12 +758,15 @@ function Index() {
               <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{t.blog.title}</h2>
             </div>
             <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {blogPosts.map((post) => (
+              {blogPosts.map((post) => {
+                const localizedTitle = pickLocalized(post, "title", lang);
+                const localizedExcerpt = pickLocalized(post, "excerpt", lang);
+                return (
                 <Link key={post.slug} to="/blog/$slug" params={{ slug: post.slug }}
                   className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elegant)]">
                   {post.image_url && (
                     <div className="aspect-[16/10] w-full overflow-hidden bg-muted">
-                      <img src={post.image_url} alt={post.title} loading="lazy"
+                      <img src={post.image_url} alt={localizedTitle} loading="lazy"
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
                     </div>
                   )}
@@ -1031,14 +774,15 @@ function Index() {
                     <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                       {new Date(post.published_at).toLocaleDateString(lang === "hu" ? "hu-HU" : lang === "de" ? "de-DE" : "en-GB", { year: "numeric", month: "long", day: "numeric" })}
                     </span>
-                    <h3 className="mt-2 text-lg font-semibold leading-snug tracking-tight">{post.title}</h3>
-                    <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{post.excerpt}</p>
+                    <h3 className="mt-2 text-lg font-semibold leading-snug tracking-tight">{localizedTitle}</h3>
+                    <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{localizedExcerpt}</p>
                     <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors group-hover:text-[var(--teal-accent-strong)]">
                       {t.blog.readMore} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                     </span>
                   </div>
                 </Link>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>
@@ -1177,27 +921,7 @@ function Index() {
         </DialogContent>
       </Dialog>
 
-      {/* LANGUAGE DROP-UP */}
-      <div className="fixed bottom-5 right-5 z-50">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:border-[var(--teal-accent)]/50">
-              <Globe className="h-4 w-4 text-[var(--teal-accent-strong)]" />
-              {langLabels[lang].flag}
-              <ChevronUp className="h-4 w-4 text-muted-foreground" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" align="end" className="mb-2 w-40">
-            {(Object.keys(langLabels) as Lang[]).map((l) => (
-              <DropdownMenuItem key={l} onClick={() => setLang(l)}
-                className={`cursor-pointer ${l === lang ? "bg-muted font-semibold" : ""}`}>
-                <span className="mr-2 text-xs font-bold text-muted-foreground">{langLabels[l].flag}</span>
-                {langLabels[l].label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      <LanguageSwitcher />
     </div>
   );
 }

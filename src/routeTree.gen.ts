@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as FreePlacementTestRouteImport } from './routes/free-placement-test'
@@ -42,6 +43,11 @@ import { Route as AuthenticatedAdminCoursesCourseIdRouteImport } from './routes/
 import { Route as AuthenticatedAdminBlogPostIdRouteImport } from './routes/_authenticated/admin.blog_.$postId'
 import { Route as AuthenticatedTeacherStudentIdAttemptsAttemptIdRouteImport } from './routes/_authenticated/teacher_.$studentId_.attempts.$attemptId'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -217,6 +223,7 @@ export interface FileRoutesByFullPath {
   '/free-placement-test': typeof FreePlacementTestRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/teacher': typeof AuthenticatedTeacherRoute
@@ -250,6 +257,7 @@ export interface FileRoutesByTo {
   '/free-placement-test': typeof FreePlacementTestRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/teacher': typeof AuthenticatedTeacherRoute
@@ -285,6 +293,7 @@ export interface FileRoutesById {
   '/free-placement-test': typeof FreePlacementTestRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/teacher': typeof AuthenticatedTeacherRoute
@@ -320,6 +329,7 @@ export interface FileRouteTypes {
     | '/free-placement-test'
     | '/privacy'
     | '/reset-password'
+    | '/sitemap.xml'
     | '/admin'
     | '/dashboard'
     | '/teacher'
@@ -353,6 +363,7 @@ export interface FileRouteTypes {
     | '/free-placement-test'
     | '/privacy'
     | '/reset-password'
+    | '/sitemap.xml'
     | '/admin'
     | '/dashboard'
     | '/teacher'
@@ -387,6 +398,7 @@ export interface FileRouteTypes {
     | '/free-placement-test'
     | '/privacy'
     | '/reset-password'
+    | '/sitemap.xml'
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
     | '/_authenticated/teacher'
@@ -422,6 +434,7 @@ export interface RootRouteChildren {
   FreePlacementTestRoute: typeof FreePlacementTestRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   BlogSlugRoute: typeof BlogSlugRoute
   GrammarTestLeadIdRoute: typeof GrammarTestLeadIdRoute
   PlacementTestLeadIdRoute: typeof PlacementTestLeadIdRoute
@@ -440,6 +453,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -719,6 +739,7 @@ const rootRouteChildren: RootRouteChildren = {
   FreePlacementTestRoute: FreePlacementTestRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   BlogSlugRoute: BlogSlugRoute,
   GrammarTestLeadIdRoute: GrammarTestLeadIdRoute,
   PlacementTestLeadIdRoute: PlacementTestLeadIdRoute,

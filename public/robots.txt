@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /teacher
+Allow: /
+
+Sitemap: https://tobbmintangol.hu/sitemap.xml
