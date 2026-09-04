@@ -1,26 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAdmin } from "@/lib/admin.functions";
 
-function assertAdminPassword(password: string) {
-  const expected = process.env.BLOG_ADMIN_PASSWORD;
-  if (!expected || password !== expected) {
-    throw new Error("Unauthorized");
-  }
-}
-
-const PasswordSchema = z.object({ password: z.string().min(1) });
-
-export const verifyBlogAdminPassword = createServerFn({ method: "POST" })
-  .inputValidator((input: z.infer<typeof PasswordSchema>) => PasswordSchema.parse(input))
-  .handler(async ({ data }) => {
-    assertAdminPassword(data.password);
-    return { ok: true as const };
-  });
-
-export const adminListBlogPosts = createServerFn({ method: "POST" })
-  .inputValidator((input: z.infer<typeof PasswordSchema>) => PasswordSchema.parse(input))
-  .handler(async ({ data }) => {
-    assertAdminPassword(data.password);
+export const adminListBlogPosts = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    await requireAdmin(supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: posts, error } = await supabaseAdmin
       .from("blog_posts")
@@ -31,7 +18,6 @@ export const adminListBlogPosts = createServerFn({ method: "POST" })
   });
 
 const SaveBlogPostSchema = z.object({
-  password: z.string().min(1),
   id: z.string().uuid().optional(),
   slug: z
     .string()
@@ -48,9 +34,11 @@ const SaveBlogPostSchema = z.object({
 });
 
 export const adminSaveBlogPost = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: z.infer<typeof SaveBlogPostSchema>) => SaveBlogPostSchema.parse(input))
-  .handler(async ({ data }) => {
-    assertAdminPassword(data.password);
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireAdmin(supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const payload = {
@@ -78,12 +66,14 @@ export const adminSaveBlogPost = createServerFn({ method: "POST" })
     return { ok: true as const, id: inserted.id as string };
   });
 
-const DeleteBlogPostSchema = z.object({ password: z.string().min(1), id: z.string().uuid() });
+const DeleteBlogPostSchema = z.object({ id: z.string().uuid() });
 
 export const adminDeleteBlogPost = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: z.infer<typeof DeleteBlogPostSchema>) => DeleteBlogPostSchema.parse(input))
-  .handler(async ({ data }) => {
-    assertAdminPassword(data.password);
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireAdmin(supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.from("blog_posts").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
