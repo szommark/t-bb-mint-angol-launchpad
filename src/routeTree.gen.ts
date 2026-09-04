@@ -9,22 +9,26 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as FreePlacementTestRouteImport } from './routes/free-placement-test'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlacementTestLeadIdRouteImport } from './routes/placement-test.$leadId'
 import { Route as GrammarTestLeadIdRouteImport } from './routes/grammar-test.$leadId'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
-import { Route as AdminPostIdRouteImport } from './routes/admin_.$postId'
 import { Route as AuthenticatedTeacherRouteImport } from './routes/_authenticated/teacher'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiPublicLeadsRouteImport } from './routes/api/public/leads'
 import { Route as ApiPublicCourseInquiryRouteImport } from './routes/api/public/course-inquiry'
 import { Route as AuthenticatedTeacherStudentIdRouteImport } from './routes/_authenticated/teacher_.$studentId'
+import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
+import { Route as AuthenticatedAdminCoursesRouteImport } from './routes/_authenticated/admin.courses'
+import { Route as AuthenticatedAdminCompaniesRouteImport } from './routes/_authenticated/admin.companies'
+import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin.blog'
 import { Route as ApiPublicPlacementSubmitRouteImport } from './routes/api/public/placement/submit'
 import { Route as ApiPublicPlacementStateRouteImport } from './routes/api/public/placement/state'
 import { Route as ApiPublicPlacementStartRouteImport } from './routes/api/public/placement/start'
@@ -35,8 +39,15 @@ import { Route as ApiPublicGrammarStartRouteImport } from './routes/api/public/g
 import { Route as ApiPublicGrammarPracticeMistakesRouteImport } from './routes/api/public/grammar/practice-mistakes'
 import { Route as ApiPublicGrammarNextRouteImport } from './routes/api/public/grammar/next'
 import { Route as AuthenticatedDashboardAttemptsAttemptIdRouteImport } from './routes/_authenticated/dashboard_.attempts.$attemptId'
+import { Route as AuthenticatedAdminCoursesCourseIdRouteImport } from './routes/_authenticated/admin.courses_.$courseId'
+import { Route as AuthenticatedAdminBlogPostIdRouteImport } from './routes/_authenticated/admin.blog_.$postId'
 import { Route as AuthenticatedTeacherStudentIdAttemptsAttemptIdRouteImport } from './routes/_authenticated/teacher_.$studentId_.attempts.$attemptId'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -55,11 +66,6 @@ const FreePlacementTestRoute = FreePlacementTestRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -86,11 +92,6 @@ const BlogSlugRoute = BlogSlugRouteImport.update({
   path: '/blog/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminPostIdRoute = AdminPostIdRouteImport.update({
-  id: '/admin_/$postId',
-  path: '/admin/$postId',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedTeacherRoute = AuthenticatedTeacherRouteImport.update({
   id: '/teacher',
   path: '/teacher',
@@ -99,6 +100,11 @@ const AuthenticatedTeacherRoute = AuthenticatedTeacherRouteImport.update({
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const ApiPublicLeadsRoute = ApiPublicLeadsRouteImport.update({
@@ -117,6 +123,28 @@ const AuthenticatedTeacherStudentIdRoute =
     path: '/teacher/$studentId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminCoursesRoute =
+  AuthenticatedAdminCoursesRouteImport.update({
+    id: '/courses',
+    path: '/courses',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminCompaniesRoute =
+  AuthenticatedAdminCompaniesRouteImport.update({
+    id: '/companies',
+    path: '/companies',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminBlogRoute = AuthenticatedAdminBlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const ApiPublicPlacementSubmitRoute =
   ApiPublicPlacementSubmitRouteImport.update({
     id: '/api/public/placement/submit',
@@ -170,6 +198,18 @@ const AuthenticatedDashboardAttemptsAttemptIdRoute =
     path: '/dashboard/attempts/$attemptId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminCoursesCourseIdRoute =
+  AuthenticatedAdminCoursesCourseIdRouteImport.update({
+    id: '/courses_/$courseId',
+    path: '/courses/$courseId',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminBlogPostIdRoute =
+  AuthenticatedAdminBlogPostIdRouteImport.update({
+    id: '/blog_/$postId',
+    path: '/blog/$postId',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedTeacherStudentIdAttemptsAttemptIdRoute =
   AuthenticatedTeacherStudentIdAttemptsAttemptIdRouteImport.update({
     id: '/teacher_/$studentId_/attempts/$attemptId',
@@ -179,20 +219,26 @@ const AuthenticatedTeacherStudentIdAttemptsAttemptIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/free-placement-test': typeof FreePlacementTestRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/teacher': typeof AuthenticatedTeacherRoute
-  '/admin/$postId': typeof AdminPostIdRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/grammar-test/$leadId': typeof GrammarTestLeadIdRoute
   '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
+  '/admin/blog': typeof AuthenticatedAdminBlogRoute
+  '/admin/companies': typeof AuthenticatedAdminCompaniesRoute
+  '/admin/courses': typeof AuthenticatedAdminCoursesRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/teacher/$studentId': typeof AuthenticatedTeacherStudentIdRoute
   '/api/public/course-inquiry': typeof ApiPublicCourseInquiryRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
+  '/admin/blog/$postId': typeof AuthenticatedAdminBlogPostIdRoute
+  '/admin/courses/$courseId': typeof AuthenticatedAdminCoursesCourseIdRoute
   '/dashboard/attempts/$attemptId': typeof AuthenticatedDashboardAttemptsAttemptIdRoute
   '/api/public/grammar/next': typeof ApiPublicGrammarNextRoute
   '/api/public/grammar/practice-mistakes': typeof ApiPublicGrammarPracticeMistakesRoute
@@ -207,20 +253,26 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/free-placement-test': typeof FreePlacementTestRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/teacher': typeof AuthenticatedTeacherRoute
-  '/admin/$postId': typeof AdminPostIdRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/grammar-test/$leadId': typeof GrammarTestLeadIdRoute
   '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
+  '/admin/blog': typeof AuthenticatedAdminBlogRoute
+  '/admin/companies': typeof AuthenticatedAdminCompaniesRoute
+  '/admin/courses': typeof AuthenticatedAdminCoursesRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/teacher/$studentId': typeof AuthenticatedTeacherStudentIdRoute
   '/api/public/course-inquiry': typeof ApiPublicCourseInquiryRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
+  '/admin/blog/$postId': typeof AuthenticatedAdminBlogPostIdRoute
+  '/admin/courses/$courseId': typeof AuthenticatedAdminCoursesCourseIdRoute
   '/dashboard/attempts/$attemptId': typeof AuthenticatedDashboardAttemptsAttemptIdRoute
   '/api/public/grammar/next': typeof ApiPublicGrammarNextRoute
   '/api/public/grammar/practice-mistakes': typeof ApiPublicGrammarPracticeMistakesRoute
@@ -237,20 +289,26 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
-  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/free-placement-test': typeof FreePlacementTestRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/teacher': typeof AuthenticatedTeacherRoute
-  '/admin_/$postId': typeof AdminPostIdRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/grammar-test/$leadId': typeof GrammarTestLeadIdRoute
   '/placement-test/$leadId': typeof PlacementTestLeadIdRoute
+  '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
+  '/_authenticated/admin/companies': typeof AuthenticatedAdminCompaniesRoute
+  '/_authenticated/admin/courses': typeof AuthenticatedAdminCoursesRoute
+  '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/teacher_/$studentId': typeof AuthenticatedTeacherStudentIdRoute
   '/api/public/course-inquiry': typeof ApiPublicCourseInquiryRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
+  '/_authenticated/admin/blog_/$postId': typeof AuthenticatedAdminBlogPostIdRoute
+  '/_authenticated/admin/courses_/$courseId': typeof AuthenticatedAdminCoursesCourseIdRoute
   '/_authenticated/dashboard_/attempts/$attemptId': typeof AuthenticatedDashboardAttemptsAttemptIdRoute
   '/api/public/grammar/next': typeof ApiPublicGrammarNextRoute
   '/api/public/grammar/practice-mistakes': typeof ApiPublicGrammarPracticeMistakesRoute
@@ -267,20 +325,26 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/admin'
     | '/auth'
     | '/free-placement-test'
     | '/privacy'
     | '/reset-password'
+    | '/sitemap.xml'
+    | '/admin'
     | '/dashboard'
     | '/teacher'
-    | '/admin/$postId'
     | '/blog/$slug'
     | '/grammar-test/$leadId'
     | '/placement-test/$leadId'
+    | '/admin/blog'
+    | '/admin/companies'
+    | '/admin/courses'
+    | '/admin/users'
     | '/teacher/$studentId'
     | '/api/public/course-inquiry'
     | '/api/public/leads'
+    | '/admin/blog/$postId'
+    | '/admin/courses/$courseId'
     | '/dashboard/attempts/$attemptId'
     | '/api/public/grammar/next'
     | '/api/public/grammar/practice-mistakes'
@@ -295,20 +359,26 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/admin'
     | '/auth'
     | '/free-placement-test'
     | '/privacy'
     | '/reset-password'
+    | '/sitemap.xml'
+    | '/admin'
     | '/dashboard'
     | '/teacher'
-    | '/admin/$postId'
     | '/blog/$slug'
     | '/grammar-test/$leadId'
     | '/placement-test/$leadId'
+    | '/admin/blog'
+    | '/admin/companies'
+    | '/admin/courses'
+    | '/admin/users'
     | '/teacher/$studentId'
     | '/api/public/course-inquiry'
     | '/api/public/leads'
+    | '/admin/blog/$postId'
+    | '/admin/courses/$courseId'
     | '/dashboard/attempts/$attemptId'
     | '/api/public/grammar/next'
     | '/api/public/grammar/practice-mistakes'
@@ -324,20 +394,26 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
-    | '/admin'
     | '/auth'
     | '/free-placement-test'
     | '/privacy'
     | '/reset-password'
+    | '/sitemap.xml'
+    | '/_authenticated/admin'
     | '/_authenticated/dashboard'
     | '/_authenticated/teacher'
-    | '/admin_/$postId'
     | '/blog/$slug'
     | '/grammar-test/$leadId'
     | '/placement-test/$leadId'
+    | '/_authenticated/admin/blog'
+    | '/_authenticated/admin/companies'
+    | '/_authenticated/admin/courses'
+    | '/_authenticated/admin/users'
     | '/_authenticated/teacher_/$studentId'
     | '/api/public/course-inquiry'
     | '/api/public/leads'
+    | '/_authenticated/admin/blog_/$postId'
+    | '/_authenticated/admin/courses_/$courseId'
     | '/_authenticated/dashboard_/attempts/$attemptId'
     | '/api/public/grammar/next'
     | '/api/public/grammar/practice-mistakes'
@@ -354,12 +430,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   FreePlacementTestRoute: typeof FreePlacementTestRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
-  AdminPostIdRoute: typeof AdminPostIdRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   BlogSlugRoute: typeof BlogSlugRoute
   GrammarTestLeadIdRoute: typeof GrammarTestLeadIdRoute
   PlacementTestLeadIdRoute: typeof PlacementTestLeadIdRoute
@@ -378,6 +453,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -404,13 +486,6 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -448,13 +523,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin_/$postId': {
-      id: '/admin_/$postId'
-      path: '/admin/$postId'
-      fullPath: '/admin/$postId'
-      preLoaderRoute: typeof AdminPostIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/teacher': {
       id: '/_authenticated/teacher'
       path: '/teacher'
@@ -467,6 +535,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/public/leads': {
@@ -489,6 +564,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/teacher/$studentId'
       preLoaderRoute: typeof AuthenticatedTeacherStudentIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/users': {
+      id: '/_authenticated/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/courses': {
+      id: '/_authenticated/admin/courses'
+      path: '/courses'
+      fullPath: '/admin/courses'
+      preLoaderRoute: typeof AuthenticatedAdminCoursesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/companies': {
+      id: '/_authenticated/admin/companies'
+      path: '/companies'
+      fullPath: '/admin/companies'
+      preLoaderRoute: typeof AuthenticatedAdminCompaniesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/blog': {
+      id: '/_authenticated/admin/blog'
+      path: '/blog'
+      fullPath: '/admin/blog'
+      preLoaderRoute: typeof AuthenticatedAdminBlogRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/api/public/placement/submit': {
       id: '/api/public/placement/submit'
@@ -560,6 +663,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardAttemptsAttemptIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/courses_/$courseId': {
+      id: '/_authenticated/admin/courses_/$courseId'
+      path: '/courses/$courseId'
+      fullPath: '/admin/courses/$courseId'
+      preLoaderRoute: typeof AuthenticatedAdminCoursesCourseIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/blog_/$postId': {
+      id: '/_authenticated/admin/blog_/$postId'
+      path: '/blog/$postId'
+      fullPath: '/admin/blog/$postId'
+      preLoaderRoute: typeof AuthenticatedAdminBlogPostIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/teacher_/$studentId_/attempts/$attemptId': {
       id: '/_authenticated/teacher_/$studentId_/attempts/$attemptId'
       path: '/teacher/$studentId/attempts/$attemptId'
@@ -570,7 +687,30 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminBlogRoute: typeof AuthenticatedAdminBlogRoute
+  AuthenticatedAdminCompaniesRoute: typeof AuthenticatedAdminCompaniesRoute
+  AuthenticatedAdminCoursesRoute: typeof AuthenticatedAdminCoursesRoute
+  AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
+  AuthenticatedAdminBlogPostIdRoute: typeof AuthenticatedAdminBlogPostIdRoute
+  AuthenticatedAdminCoursesCourseIdRoute: typeof AuthenticatedAdminCoursesCourseIdRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminBlogRoute: AuthenticatedAdminBlogRoute,
+  AuthenticatedAdminCompaniesRoute: AuthenticatedAdminCompaniesRoute,
+  AuthenticatedAdminCoursesRoute: AuthenticatedAdminCoursesRoute,
+  AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
+  AuthenticatedAdminBlogPostIdRoute: AuthenticatedAdminBlogPostIdRoute,
+  AuthenticatedAdminCoursesCourseIdRoute:
+    AuthenticatedAdminCoursesCourseIdRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedTeacherRoute: typeof AuthenticatedTeacherRoute
   AuthenticatedTeacherStudentIdRoute: typeof AuthenticatedTeacherStudentIdRoute
@@ -579,6 +719,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedTeacherRoute: AuthenticatedTeacherRoute,
   AuthenticatedTeacherStudentIdRoute: AuthenticatedTeacherStudentIdRoute,
@@ -594,12 +735,11 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
-  AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   FreePlacementTestRoute: FreePlacementTestRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
-  AdminPostIdRoute: AdminPostIdRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   BlogSlugRoute: BlogSlugRoute,
   GrammarTestLeadIdRoute: GrammarTestLeadIdRoute,
   PlacementTestLeadIdRoute: PlacementTestLeadIdRoute,

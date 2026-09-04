@@ -150,38 +150,56 @@ export type Database = {
       blog_posts: {
         Row: {
           content: string
+          content_de: string | null
+          content_en: string | null
           created_at: string
           excerpt: string
+          excerpt_de: string | null
+          excerpt_en: string | null
           id: string
           image_url: string | null
           published: boolean
           published_at: string
           slug: string
           title: string
+          title_de: string | null
+          title_en: string | null
           updated_at: string
         }
         Insert: {
           content: string
+          content_de?: string | null
+          content_en?: string | null
           created_at?: string
           excerpt: string
+          excerpt_de?: string | null
+          excerpt_en?: string | null
           id?: string
           image_url?: string | null
           published?: boolean
           published_at?: string
           slug: string
           title: string
+          title_de?: string | null
+          title_en?: string | null
           updated_at?: string
         }
         Update: {
           content?: string
+          content_de?: string | null
+          content_en?: string | null
           created_at?: string
           excerpt?: string
+          excerpt_de?: string | null
+          excerpt_en?: string | null
           id?: string
           image_url?: string | null
           published?: boolean
           published_at?: string
           slug?: string
           title?: string
+          title_de?: string | null
+          title_en?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -189,26 +207,103 @@ export type Database = {
       companies: {
         Row: {
           company_name: string
-          contact_email: string
-          contact_name: string
+          contact_email: string | null
+          contact_name: string | null
           created_at: string
           id: string
         }
         Insert: {
           company_name: string
-          contact_email: string
-          contact_name: string
+          contact_email?: string | null
+          contact_name?: string | null
           created_at?: string
           id?: string
         }
         Update: {
           company_name?: string
-          contact_email?: string
-          contact_name?: string
+          contact_email?: string | null
+          contact_name?: string | null
           created_at?: string
           id?: string
         }
         Relationships: []
+      }
+      course_participants: {
+        Row: {
+          added_at: string
+          course_id: string
+          id: string
+          participant_id: string
+        }
+        Insert: {
+          added_at?: string
+          course_id: string
+          id?: string
+          participant_id: string
+        }
+        Update: {
+          added_at?: string
+          course_id?: string
+          id?: string
+          participant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_participants_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_participants_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      courses: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          name: string
+          start_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name: string
+          start_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          start_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       grammar_attempt_answers: {
         Row: {
@@ -261,8 +356,10 @@ export type Database = {
           created_at: string
           explanation: string
           explanation_hu: string | null
+          generative_category: string | null
           grammar_tag: string | null
           id: string
+          is_generative: boolean
           level: string
           options: Json
           question_text: string
@@ -273,8 +370,10 @@ export type Database = {
           created_at?: string
           explanation?: string
           explanation_hu?: string | null
+          generative_category?: string | null
           grammar_tag?: string | null
           id?: string
+          is_generative?: boolean
           level: string
           options: Json
           question_text: string
@@ -285,8 +384,10 @@ export type Database = {
           created_at?: string
           explanation?: string
           explanation_hu?: string | null
+          generative_category?: string | null
           grammar_tag?: string | null
           id?: string
+          is_generative?: boolean
           level?: string
           options?: Json
           question_text?: string
@@ -335,11 +436,13 @@ export type Database = {
       profiles: {
         Row: {
           cefr_level: string | null
+          company_id: string | null
           completed_at: string | null
           created_at: string
           email: string
           focus: string | null
           intake: Json | null
+          is_admin: boolean
           is_teacher: boolean
           language: string
           name: string
@@ -352,11 +455,13 @@ export type Database = {
         }
         Insert: {
           cefr_level?: string | null
+          company_id?: string | null
           completed_at?: string | null
           created_at?: string
           email?: string
           focus?: string | null
           intake?: Json | null
+          is_admin?: boolean
           is_teacher?: boolean
           language?: string
           name?: string
@@ -369,11 +474,13 @@ export type Database = {
         }
         Update: {
           cefr_level?: string | null
+          company_id?: string | null
           completed_at?: string | null
           created_at?: string
           email?: string
           focus?: string | null
           intake?: Json | null
+          is_admin?: boolean
           is_teacher?: boolean
           language?: string
           name?: string
@@ -384,7 +491,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       questions: {
         Row: {
@@ -570,12 +685,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -599,11 +714,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -624,11 +739,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -649,11 +764,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -666,11 +781,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
