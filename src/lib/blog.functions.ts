@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { randomUUID } from "crypto";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { requireAdmin } from "@/lib/admin.functions";
@@ -76,6 +77,42 @@ export const adminSaveBlogPost = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
     return { ok: true as const, id: inserted.id as string };
+  });
+
+const ALLOWED_IMAGE_TYPES: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+};
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
+export const adminUploadBlogImage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => {
+    if (!(data instanceof FormData)) throw new Error("Expected FormData");
+    const file = data.get("file");
+    if (!(file instanceof File)) throw new Error("Hiányzik a fájl.");
+    return { file };
+  })
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireAdmin(supabase, userId);
+
+    const { file } = data;
+    const extension = ALLOWED_IMAGE_TYPES[file.type];
+    if (!extension) throw new Error("Csak JPG, PNG, WEBP vagy GIF kép tölthető fel.");
+    if (file.size > MAX_IMAGE_BYTES) throw new Error("A kép mérete legfeljebb 5 MB lehet.");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const path = `${randomUUID()}.${extension}`;
+    const { error: uploadError } = await supabaseAdmin.storage
+      .from("blog-images")
+      .upload(path, file, { contentType: file.type });
+    if (uploadError) throw new Error(uploadError.message);
+
+    const { data: publicUrl } = supabaseAdmin.storage.from("blog-images").getPublicUrl(path);
+    return { ok: true as const, url: publicUrl.publicUrl };
   });
 
 const DeleteBlogPostSchema = z.object({ id: z.string().uuid() });

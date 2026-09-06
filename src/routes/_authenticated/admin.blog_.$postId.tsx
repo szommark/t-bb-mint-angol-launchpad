@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { adminListBlogPosts, adminSaveBlogPost } from "@/lib/blog.functions";
+import { adminListBlogPosts, adminSaveBlogPost, adminUploadBlogImage } from "@/lib/blog.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +9,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload } from "lucide-react";
+
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
 export const Route = createFileRoute("/_authenticated/admin/blog_/$postId")({
   component: AdminPostEditor,
@@ -44,9 +47,12 @@ function AdminPostEditor() {
   const isNew = postId === "new";
   const listPosts = useServerFn(adminListBlogPosts);
   const savePost = useServerFn(adminSaveBlogPost);
+  const uploadImage = useServerFn(adminUploadBlogImage);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [slugTouched, setSlugTouched] = useState(!isNew);
   const [activeTab, setActiveTab] = useState<LangTab>("hu");
 
@@ -127,6 +133,32 @@ function AdminPostEditor() {
       toast.error(e instanceof Error ? e.message : "A mentés nem sikerült.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const onFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+      toast.error("Csak JPG, PNG, WEBP vagy GIF kép tölthető fel.");
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      toast.error("A kép mérete legfeljebb 5 MB lehet.");
+      return;
+    }
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const result = await uploadImage({ data: formData });
+      setImageUrl(result.url);
+      toast.success("Kép feltöltve.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "A feltöltés nem sikerült.");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -220,7 +252,28 @@ function AdminPostEditor() {
 
         <div className="space-y-2">
           <Label htmlFor="image">Kép URL</Label>
-          <Input id="image" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="/blog/pelda.jpg" />
+          <div className="flex gap-2">
+            <Input id="image" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="/blog/pelda.jpg" />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="hidden"
+              onChange={onFileSelected}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              disabled={uploading}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+              <span className="ml-1.5">Feltöltés</span>
+            </Button>
+          </div>
+          {imageUrl ? (
+            <img src={imageUrl} alt="" className="mt-2 h-32 w-full rounded-md border border-border object-cover" />
+          ) : null}
         </div>
 
         <div className="flex items-center gap-3">
