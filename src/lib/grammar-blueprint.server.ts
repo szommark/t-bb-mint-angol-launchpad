@@ -5,7 +5,7 @@
 // per answer (correct = up, incorrect = down) while tracking "reversals" --
 // a fail immediately after a success, which is the signal that we've found
 // the candidate's ceiling. Once we've seen 2 reversals (or 2 answers stuck
-// against the A1 floor / C1 ceiling), the level freezes: any remaining
+// against the A1 floor / C1-C2 ceiling), the level freezes: any remaining
 // step-phase items keep being served at that frozen level without moving
 // further. The final ~30% of items are always the fixed Confirm phase,
 // served at the frozen boundary level; their accuracy alone decides whether
@@ -17,15 +17,29 @@ import { computeByLevel, type StoredQuestion } from "@/lib/placement-review.serv
 import type { GrammarItemCount } from "@/lib/grammar-item-count";
 export { GRAMMAR_ITEM_COUNTS, isGrammarItemCount, type GrammarItemCount } from "@/lib/grammar-item-count";
 
-export type GrammarLevel = "A1" | "A2" | "B1" | "B2" | "C1";
+// The grammar_questions bank uses the Roadmap series' 8 bands (see the
+// roadmap_generative_expansion migration), so the staircase steps through all 8.
+export type GrammarLevel = "A1" | "A2" | "A2+" | "B1" | "B1+" | "B2" | "B2+" | "C1-C2";
 
-export const GRAMMAR_LEVELS: GrammarLevel[] = ["A1", "A2", "B1", "B2", "C1"];
+export const GRAMMAR_LEVELS: GrammarLevel[] = [
+  "A1",
+  "A2",
+  "A2+",
+  "B1",
+  "B1+",
+  "B2",
+  "B2+",
+  "C1-C2",
+];
 export const GRAMMAR_LEVEL_INDEX: Record<GrammarLevel, number> = {
   A1: 0,
   A2: 1,
-  B1: 2,
-  B2: 3,
-  C1: 4,
+  "A2+": 2,
+  B1: 3,
+  "B1+": 4,
+  B2: 5,
+  "B2+": 6,
+  "C1-C2": 7,
 };
 
 export const GRAMMAR_TAGS = [

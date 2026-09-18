@@ -1,7 +1,7 @@
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, XCircle } from "lucide-react";
 
-const LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"] as const;
+const LEVELS = ["A1", "A2", "A2+", "B1", "B1+", "B2", "B2+", "C1", "C1-C2", "C2"] as const;
 
 export type AttemptDetail = {
   attempt: { id: string; created_at: string; final_level: string; score: number; total_questions: number };

@@ -4,16 +4,21 @@ export type StoredQuestion = {
   options: string[];
   correctIndex: number;
   skill: "grammar" | "vocabulary" | "reading";
-  cefr: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+  // The placement test uses A1..C2; the grammar test uses the 8-band scale
+  // (A2+, B1+, B2+, C1-C2).
+  cefr: "A1" | "A2" | "A2+" | "B1" | "B1+" | "B2" | "B2+" | "C1" | "C1-C2" | "C2";
   explanation?: string;
   explanationHu?: string;
 };
 
-const LEVEL_ORDER: Record<StoredQuestion["cefr"], number> = {
-  A1: 0, A2: 1, B1: 2, B2: 3, C1: 4, C2: 5,
-};
+const ALL_LEVELS: StoredQuestion["cefr"][] = [
+  "A1", "A2", "A2+", "B1", "B1+", "B2", "B2+", "C1", "C1-C2", "C2",
+];
 
-const ALL_LEVELS: StoredQuestion["cefr"][] = ["A1", "A2", "B1", "B2", "C1", "C2"];
+const LEVEL_ORDER = Object.fromEntries(ALL_LEVELS.map((l, i) => [l, i])) as Record<
+  StoredQuestion["cefr"],
+  number
+>;
 
 export function computeByLevel(
   questions: StoredQuestion[],
@@ -26,9 +31,12 @@ export function computeByLevel(
   for (const q of questions) {
     if (typeof answers[q.id] !== "number") continue;
     answered += 1;
-    byLevel[q.cefr].total += 1;
+    // Never throw on a level we don't know about: this runs when the last
+    // answer is submitted, and a crash there loses the whole test result.
+    const bucket = (byLevel[q.cefr] ??= { correct: 0, total: 0 });
+    bucket.total += 1;
     if (answers[q.id] === q.correctIndex) {
-      byLevel[q.cefr].correct += 1;
+      bucket.correct += 1;
       totalCorrect += 1;
     }
   }
@@ -58,6 +66,8 @@ export function buildReview(
       };
     })
     .filter((r): r is NonNullable<typeof r> => r !== null)
-    .sort((a, b) => LEVEL_ORDER[a.cefr] - LEVEL_ORDER[b.cefr] || a._ord - b._ord)
+    .sort(
+      (a, b) => (LEVEL_ORDER[a.cefr] ?? 0) - (LEVEL_ORDER[b.cefr] ?? 0) || a._ord - b._ord,
+    )
     .map(({ _ord: _o, ...rest }) => rest);
 }

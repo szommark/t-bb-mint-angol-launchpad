@@ -5,7 +5,7 @@ import { getGoogleAiClient } from "@/lib/google-ai-client.server";
 import type { BankSkill, Level } from "@/lib/placement-blueprint.server";
 import type { StoredQuestion } from "@/lib/placement-review.server";
 
-export type Filled = StoredQuestion & { bankId: string };
+export type Filled = Omit<StoredQuestion, "cefr"> & { cefr: Level; bankId: string };
 
 const AiItemSchema = z.object({
   question: z.string(),

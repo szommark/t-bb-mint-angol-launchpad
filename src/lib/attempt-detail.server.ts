@@ -19,7 +19,7 @@ export type ReviewRow = {
 
 type AttemptSummary = { id: string; created_at: string; final_level: string; score: number; total_questions: number };
 
-const LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"] as const;
+const LEVELS = ["A1", "A2", "A2+", "B1", "B1+", "B2", "B2+", "C1", "C1-C2", "C2"] as const;
 
 export function buildAttemptDetail(attempt: AttemptSummary, rows: ReviewRow[]) {
   const byLevel: Record<string, { correct: number; total: number }> = Object.fromEntries(
