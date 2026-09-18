@@ -7,7 +7,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 
 type Lang = "en" | "hu" | "de";
-type Level = "A1" | "A2" | "B1" | "B2" | "C1";
+type Level = "A1" | "A2" | "A2+" | "B1" | "B1+" | "B2" | "B2+" | "C1-C2";
 
 type Question = {
   id: string;
@@ -49,7 +49,7 @@ type PracticeQuestion = {
   explanationHu?: string;
 };
 
-const LEVELS: Level[] = ["A1", "A2", "B1", "B2", "C1"];
+const LEVELS: Level[] = ["A1", "A2", "A2+", "B1", "B1+", "B2", "B2+", "C1-C2"];
 
 const t = {
   en: {
@@ -86,9 +86,12 @@ const t = {
     levelLabel: {
       A1: "Beginner",
       A2: "Elementary",
+      "A2+": "Elementary+",
       B1: "Intermediate",
+      "B1+": "Intermediate+",
       B2: "Upper-Intermediate",
-      C1: "Advanced",
+      "B2+": "Upper-Intermediate+",
+      "C1-C2": "Advanced",
     } as Record<Level, string>,
     timeLeft: "Time left",
     timedOut: "Time's up — submitting what you've answered.",
@@ -127,9 +130,12 @@ const t = {
     levelLabel: {
       A1: "Kezdő",
       A2: "Alapfok",
+      "A2+": "Alapfok+",
       B1: "Középhaladó",
-      B2: "Középfok+",
-      C1: "Haladó",
+      "B1+": "Középhaladó+",
+      B2: "Középfok",
+      "B2+": "Középfok+",
+      "C1-C2": "Haladó",
     } as Record<Level, string>,
     timeLeft: "Hátralévő idő",
     timedOut: "Lejárt az idő — a megválaszolt kérdések beküldve.",
@@ -168,9 +174,12 @@ const t = {
     levelLabel: {
       A1: "Anfänger",
       A2: "Grundkenntnisse",
+      "A2+": "Grundkenntnisse+",
       B1: "Mittelstufe",
+      "B1+": "Mittelstufe+",
       B2: "Obere Mittelstufe",
-      C1: "Fortgeschritten",
+      "B2+": "Obere Mittelstufe+",
+      "C1-C2": "Fortgeschritten",
     } as Record<Level, string>,
     timeLeft: "Verbleibende Zeit",
     timedOut: "Zeit abgelaufen — beantwortete Fragen werden gesendet.",
@@ -717,7 +726,7 @@ function GrammarTest() {
                 {result.level}
               </div>
               <div className="mt-1 text-base font-medium text-foreground">
-                {lc.levelLabel[result.level]}
+                {lc.levelLabel[result.level] ?? ""}
               </div>
               {result.totalQ > 0 && (
                 <div className="mt-3 text-sm font-semibold text-foreground">
@@ -746,7 +755,7 @@ function GrammarTest() {
                               : "hsl(var(--destructive))";
                         return (
                           <li key={r.level} className="flex items-center gap-3">
-                            <span className="w-8 shrink-0 text-xs font-semibold text-foreground/80">
+                            <span className="w-12 shrink-0 text-xs font-semibold text-foreground/80">
                               {r.level}
                             </span>
                             <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-muted">
