@@ -7,7 +7,10 @@ import {
   adminListEligibleParticipants,
   adminAddCourseParticipant,
   adminRemoveCourseParticipant,
+  adminDeleteCourseParticipantRecord,
 } from "@/lib/courses.functions";
+import { ParticipantUpload } from "@/components/participant-upload";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +35,7 @@ export const Route = createFileRoute("/_authenticated/admin/courses_/$courseId")
 
 type Participant = { userId: string; name: string; email: string; addedAt: string };
 type EligibleUser = { userId: string; name: string; email: string };
+type ParticipantRecord = Awaited<ReturnType<typeof adminGetCourse>>["participantRecords"][number];
 
 function AdminCourseDetail() {
   const { courseId } = Route.useParams();
@@ -41,6 +45,7 @@ function AdminCourseDetail() {
   const listEligible = useServerFn(adminListEligibleParticipants);
   const addParticipant = useServerFn(adminAddCourseParticipant);
   const removeParticipant = useServerFn(adminRemoveCourseParticipant);
+  const deleteRecord = useServerFn(adminDeleteCourseParticipantRecord);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -51,14 +56,16 @@ function AdminCourseDetail() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [participants, setParticipants] = useState<Participant[]>([]);
+  const [records, setRecords] = useState<ParticipantRecord[]>([]);
+  const [deletingRecordId, setDeletingRecordId] = useState<string | null>(null);
 
   const [eligible, setEligible] = useState<EligibleUser[]>([]);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [addingId, setAddingId] = useState<string | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
 
-  const load = async () => {
-    setLoading(true);
+  const load = async ({ silent = false } = {}) => {
+    if (!silent) setLoading(true);
     try {
       const course = await getCourse({ data: { courseId } });
       setCompanyId(course.companyId);
@@ -68,6 +75,7 @@ function AdminCourseDetail() {
       setStartDate(course.startDate ?? "");
       setEndDate(course.endDate ?? "");
       setParticipants(course.participants);
+      setRecords(course.participantRecords);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not load course.");
       navigate({ to: "/admin/courses" });
@@ -136,6 +144,19 @@ function AdminCourseDetail() {
       toast.error(e instanceof Error ? e.message : "Could not remove participant.");
     } finally {
       setRemovingId(null);
+    }
+  };
+
+  const onDeleteRecord = async (recordId: string) => {
+    setDeletingRecordId(recordId);
+    try {
+      await deleteRecord({ data: { courseId, recordId } });
+      setRecords((prev) => prev.filter((r) => r.id !== recordId));
+      toast.success("Participant data deleted.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not delete participant data.");
+    } finally {
+      setDeletingRecordId(null);
     }
   };
 
@@ -255,6 +276,80 @@ function AdminCourseDetail() {
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction onClick={() => onRemove(p.userId)}>Remove</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </div>
+      </section>
+
+      <section className="rounded-xl border border-border p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold">Participant data</h2>
+            <p className="text-sm text-muted-foreground">
+              Official participant records uploaded from the "Résztvevő adatai" .xlsx template (columns A–I).
+            </p>
+          </div>
+          <ParticipantUpload courseId={courseId} onImported={() => load({ silent: true })} />
+        </div>
+
+        <div className="mt-4">
+          {records.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No participant data uploaded yet.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Birth name</TableHead>
+                  <TableHead>Mother's name</TableHead>
+                  <TableHead>Born</TableHead>
+                  <TableHead>Highest education</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Non-HU, no HU address</TableHead>
+                  <TableHead>Account</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {records.map((r) => (
+                  <TableRow key={r.id}>
+                    <TableCell className="font-medium">{r.currentName}</TableCell>
+                    <TableCell className="text-muted-foreground">{r.birthName}</TableCell>
+                    <TableCell className="text-muted-foreground">{r.motherName}</TableCell>
+                    <TableCell className="whitespace-nowrap text-muted-foreground">
+                      {r.birthPlace}{r.birthCountry ? `, ${r.birthCountry}` : ""}
+                      <div className="text-xs">{r.birthDate}</div>
+                    </TableCell>
+                    <TableCell className="min-w-56 text-xs text-muted-foreground">{r.highestEducation}</TableCell>
+                    <TableCell className="text-muted-foreground">{r.email}</TableCell>
+                    <TableCell className="text-muted-foreground">{r.nonHuCitizenWithoutHuAddress ? "Igen" : "Nem"}</TableCell>
+                    <TableCell>
+                      {r.profileId ? <Badge variant="secondary">Linked</Badge> : <Badge variant="outline">No account</Badge>}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" disabled={deletingRecordId === r.id}>
+                            {deletingRecordId === r.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete this participant's data?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              The uploaded data of {r.currentName} will be permanently deleted. Their account and roster entry, if any, are not affected.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => onDeleteRecord(r.id)}>Delete</AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
