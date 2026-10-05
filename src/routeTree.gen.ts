@@ -9,58 +9,47 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as FreePlacementTestRouteImport } from './routes/free-placement-test'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as PlacementTestLeadIdRouteImport } from './routes/placement-test.$leadId'
-import { Route as GrammarTestLeadIdRouteImport } from './routes/grammar-test.$leadId'
-import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
-import { Route as AuthenticatedTeacherRouteImport } from './routes/_authenticated/teacher'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as FreePlacementTestRouteImport } from './routes/free-placement-test'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
-import { Route as ApiPublicLeadsRouteImport } from './routes/api/public/leads'
-import { Route as ApiPublicCourseInquiryRouteImport } from './routes/api/public/course-inquiry'
-import { Route as AuthenticatedTeacherStudentIdRouteImport } from './routes/_authenticated/teacher_.$studentId'
-import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
-import { Route as AuthenticatedAdminCoursesRouteImport } from './routes/_authenticated/admin.courses'
-import { Route as AuthenticatedAdminCompaniesRouteImport } from './routes/_authenticated/admin.companies'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedTeacherRouteImport } from './routes/_authenticated/teacher'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as GrammarTestLeadIdRouteImport } from './routes/grammar-test.$leadId'
+import { Route as PlacementTestLeadIdRouteImport } from './routes/placement-test.$leadId'
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin.blog'
-import { Route as ApiPublicPlacementSubmitRouteImport } from './routes/api/public/placement/submit'
-import { Route as ApiPublicPlacementStateRouteImport } from './routes/api/public/placement/state'
-import { Route as ApiPublicPlacementStartRouteImport } from './routes/api/public/placement/start'
-import { Route as ApiPublicPlacementNextRouteImport } from './routes/api/public/placement/next'
-import { Route as ApiPublicGrammarSubmitRouteImport } from './routes/api/public/grammar/submit'
-import { Route as ApiPublicGrammarStateRouteImport } from './routes/api/public/grammar/state'
-import { Route as ApiPublicGrammarStartRouteImport } from './routes/api/public/grammar/start'
-import { Route as ApiPublicGrammarPracticeMistakesRouteImport } from './routes/api/public/grammar/practice-mistakes'
-import { Route as ApiPublicGrammarNextRouteImport } from './routes/api/public/grammar/next'
-import { Route as AuthenticatedDashboardAttemptsAttemptIdRouteImport } from './routes/_authenticated/dashboard_.attempts.$attemptId'
-import { Route as AuthenticatedAdminCoursesCourseIdRouteImport } from './routes/_authenticated/admin.courses_.$courseId'
+import { Route as AuthenticatedAdminCompaniesRouteImport } from './routes/_authenticated/admin.companies'
+import { Route as AuthenticatedAdminCoursesRouteImport } from './routes/_authenticated/admin.courses'
+import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
+import { Route as AuthenticatedTeacherStudentIdRouteImport } from './routes/_authenticated/teacher_.$studentId'
+import { Route as ApiPublicCourseInquiryRouteImport } from './routes/api/public/course-inquiry'
+import { Route as ApiPublicLeadsRouteImport } from './routes/api/public/leads'
 import { Route as AuthenticatedAdminBlogPostIdRouteImport } from './routes/_authenticated/admin.blog_.$postId'
+import { Route as AuthenticatedAdminCoursesCourseIdRouteImport } from './routes/_authenticated/admin.courses_.$courseId'
+import { Route as AuthenticatedDashboardAttemptsAttemptIdRouteImport } from './routes/_authenticated/dashboard_.attempts.$attemptId'
+import { Route as ApiPublicGrammarNextRouteImport } from './routes/api/public/grammar/next'
+import { Route as ApiPublicGrammarPracticeMistakesRouteImport } from './routes/api/public/grammar/practice-mistakes'
+import { Route as ApiPublicGrammarStartRouteImport } from './routes/api/public/grammar/start'
+import { Route as ApiPublicGrammarStateRouteImport } from './routes/api/public/grammar/state'
+import { Route as ApiPublicGrammarSubmitRouteImport } from './routes/api/public/grammar/submit'
+import { Route as ApiPublicPlacementNextRouteImport } from './routes/api/public/placement/next'
+import { Route as ApiPublicPlacementStartRouteImport } from './routes/api/public/placement/start'
+import { Route as ApiPublicPlacementStateRouteImport } from './routes/api/public/placement/state'
+import { Route as ApiPublicPlacementSubmitRouteImport } from './routes/api/public/placement/submit'
 import { Route as AuthenticatedTeacherStudentIdAttemptsAttemptIdRouteImport } from './routes/_authenticated/teacher_.$studentId_.attempts.$attemptId'
 
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrivacyRoute = PrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FreePlacementTestRoute = FreePlacementTestRouteImport.update({
-  id: '/free-placement-test',
-  path: '/free-placement-test',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -68,33 +57,29 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
+const FreePlacementTestRoute = FreePlacementTestRouteImport.update({
+  id: '/free-placement-test',
+  path: '/free-placement-test',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PlacementTestLeadIdRoute = PlacementTestLeadIdRouteImport.update({
-  id: '/placement-test/$leadId',
-  path: '/placement-test/$leadId',
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GrammarTestLeadIdRoute = GrammarTestLeadIdRouteImport.update({
-  id: '/grammar-test/$leadId',
-  path: '/grammar-test/$leadId',
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BlogSlugRoute = BlogSlugRouteImport.update({
-  id: '/blog/$slug',
-  path: '/blog/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedTeacherRoute = AuthenticatedTeacherRouteImport.update({
-  id: '/teacher',
-  path: '/teacher',
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -102,20 +87,47 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const AuthenticatedTeacherRoute = AuthenticatedTeacherRouteImport.update({
+  id: '/teacher',
+  path: '/teacher',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiPublicLeadsRoute = ApiPublicLeadsRouteImport.update({
-  id: '/api/public/leads',
-  path: '/api/public/leads',
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicCourseInquiryRoute = ApiPublicCourseInquiryRouteImport.update({
-  id: '/api/public/course-inquiry',
-  path: '/api/public/course-inquiry',
+const GrammarTestLeadIdRoute = GrammarTestLeadIdRouteImport.update({
+  id: '/grammar-test/$leadId',
+  path: '/grammar-test/$leadId',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PlacementTestLeadIdRoute = PlacementTestLeadIdRouteImport.update({
+  id: '/placement-test/$leadId',
+  path: '/placement-test/$leadId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminBlogRoute = AuthenticatedAdminBlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminCompaniesRoute =
+  AuthenticatedAdminCompaniesRouteImport.update({
+    id: '/companies',
+    path: '/companies',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminCoursesRoute =
+  AuthenticatedAdminCoursesRouteImport.update({
+    id: '/courses',
+    path: '/courses',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
 const AuthenticatedTeacherStudentIdRoute =
   AuthenticatedTeacherStudentIdRouteImport.update({
@@ -123,62 +135,37 @@ const AuthenticatedTeacherStudentIdRoute =
     path: '/teacher/$studentId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AuthenticatedAdminRoute,
+const ApiPublicCourseInquiryRoute = ApiPublicCourseInquiryRouteImport.update({
+  id: '/api/public/course-inquiry',
+  path: '/api/public/course-inquiry',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAdminCoursesRoute =
-  AuthenticatedAdminCoursesRouteImport.update({
-    id: '/courses',
-    path: '/courses',
+const ApiPublicLeadsRoute = ApiPublicLeadsRouteImport.update({
+  id: '/api/public/leads',
+  path: '/api/public/leads',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminBlogPostIdRoute =
+  AuthenticatedAdminBlogPostIdRouteImport.update({
+    id: '/blog_/$postId',
+    path: '/blog/$postId',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
-const AuthenticatedAdminCompaniesRoute =
-  AuthenticatedAdminCompaniesRouteImport.update({
-    id: '/companies',
-    path: '/companies',
+const AuthenticatedAdminCoursesCourseIdRoute =
+  AuthenticatedAdminCoursesCourseIdRouteImport.update({
+    id: '/courses_/$courseId',
+    path: '/courses/$courseId',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
-const AuthenticatedAdminBlogRoute = AuthenticatedAdminBlogRouteImport.update({
-  id: '/blog',
-  path: '/blog',
-  getParentRoute: () => AuthenticatedAdminRoute,
-} as any)
-const ApiPublicPlacementSubmitRoute =
-  ApiPublicPlacementSubmitRouteImport.update({
-    id: '/api/public/placement/submit',
-    path: '/api/public/placement/submit',
-    getParentRoute: () => rootRouteImport,
+const AuthenticatedDashboardAttemptsAttemptIdRoute =
+  AuthenticatedDashboardAttemptsAttemptIdRouteImport.update({
+    id: '/dashboard_/attempts/$attemptId',
+    path: '/dashboard/attempts/$attemptId',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const ApiPublicPlacementStateRoute = ApiPublicPlacementStateRouteImport.update({
-  id: '/api/public/placement/state',
-  path: '/api/public/placement/state',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicPlacementStartRoute = ApiPublicPlacementStartRouteImport.update({
-  id: '/api/public/placement/start',
-  path: '/api/public/placement/start',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicPlacementNextRoute = ApiPublicPlacementNextRouteImport.update({
-  id: '/api/public/placement/next',
-  path: '/api/public/placement/next',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicGrammarSubmitRoute = ApiPublicGrammarSubmitRouteImport.update({
-  id: '/api/public/grammar/submit',
-  path: '/api/public/grammar/submit',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicGrammarStateRoute = ApiPublicGrammarStateRouteImport.update({
-  id: '/api/public/grammar/state',
-  path: '/api/public/grammar/state',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicGrammarStartRoute = ApiPublicGrammarStartRouteImport.update({
-  id: '/api/public/grammar/start',
-  path: '/api/public/grammar/start',
+const ApiPublicGrammarNextRoute = ApiPublicGrammarNextRouteImport.update({
+  id: '/api/public/grammar/next',
+  path: '/api/public/grammar/next',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicGrammarPracticeMistakesRoute =
@@ -187,28 +174,41 @@ const ApiPublicGrammarPracticeMistakesRoute =
     path: '/api/public/grammar/practice-mistakes',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicGrammarNextRoute = ApiPublicGrammarNextRouteImport.update({
-  id: '/api/public/grammar/next',
-  path: '/api/public/grammar/next',
+const ApiPublicGrammarStartRoute = ApiPublicGrammarStartRouteImport.update({
+  id: '/api/public/grammar/start',
+  path: '/api/public/grammar/start',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedDashboardAttemptsAttemptIdRoute =
-  AuthenticatedDashboardAttemptsAttemptIdRouteImport.update({
-    id: '/dashboard_/attempts/$attemptId',
-    path: '/dashboard/attempts/$attemptId',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedAdminCoursesCourseIdRoute =
-  AuthenticatedAdminCoursesCourseIdRouteImport.update({
-    id: '/courses_/$courseId',
-    path: '/courses/$courseId',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
-const AuthenticatedAdminBlogPostIdRoute =
-  AuthenticatedAdminBlogPostIdRouteImport.update({
-    id: '/blog_/$postId',
-    path: '/blog/$postId',
-    getParentRoute: () => AuthenticatedAdminRoute,
+const ApiPublicGrammarStateRoute = ApiPublicGrammarStateRouteImport.update({
+  id: '/api/public/grammar/state',
+  path: '/api/public/grammar/state',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicGrammarSubmitRoute = ApiPublicGrammarSubmitRouteImport.update({
+  id: '/api/public/grammar/submit',
+  path: '/api/public/grammar/submit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicPlacementNextRoute = ApiPublicPlacementNextRouteImport.update({
+  id: '/api/public/placement/next',
+  path: '/api/public/placement/next',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicPlacementStartRoute = ApiPublicPlacementStartRouteImport.update({
+  id: '/api/public/placement/start',
+  path: '/api/public/placement/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicPlacementStateRoute = ApiPublicPlacementStateRouteImport.update({
+  id: '/api/public/placement/state',
+  path: '/api/public/placement/state',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicPlacementSubmitRoute =
+  ApiPublicPlacementSubmitRouteImport.update({
+    id: '/api/public/placement/submit',
+    path: '/api/public/placement/submit',
+    getParentRoute: () => rootRouteImport,
   } as any)
 const AuthenticatedTeacherStudentIdAttemptsAttemptIdRoute =
   AuthenticatedTeacherStudentIdAttemptsAttemptIdRouteImport.update({
@@ -453,39 +453,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/privacy': {
-      id: '/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/free-placement-test': {
-      id: '/free-placement-test'
-      path: '/free-placement-test'
-      fullPath: '/free-placement-test'
-      preLoaderRoute: typeof FreePlacementTestRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -495,39 +467,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/placement-test/$leadId': {
-      id: '/placement-test/$leadId'
-      path: '/placement-test/$leadId'
-      fullPath: '/placement-test/$leadId'
-      preLoaderRoute: typeof PlacementTestLeadIdRouteImport
+    '/free-placement-test': {
+      id: '/free-placement-test'
+      path: '/free-placement-test'
+      fullPath: '/free-placement-test'
+      preLoaderRoute: typeof FreePlacementTestRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/grammar-test/$leadId': {
-      id: '/grammar-test/$leadId'
-      path: '/grammar-test/$leadId'
-      fullPath: '/grammar-test/$leadId'
-      preLoaderRoute: typeof GrammarTestLeadIdRouteImport
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/blog/$slug': {
-      id: '/blog/$slug'
-      path: '/blog/$slug'
-      fullPath: '/blog/$slug'
-      preLoaderRoute: typeof BlogSlugRouteImport
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/teacher': {
-      id: '/_authenticated/teacher'
-      path: '/teacher'
-      fullPath: '/teacher'
-      preLoaderRoute: typeof AuthenticatedTeacherRouteImport
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -537,46 +516,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/admin': {
-      id: '/_authenticated/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+    '/_authenticated/teacher': {
+      id: '/_authenticated/teacher'
+      path: '/teacher'
+      fullPath: '/teacher'
+      preLoaderRoute: typeof AuthenticatedTeacherRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/leads': {
-      id: '/api/public/leads'
-      path: '/api/public/leads'
-      fullPath: '/api/public/leads'
-      preLoaderRoute: typeof ApiPublicLeadsRouteImport
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/course-inquiry': {
-      id: '/api/public/course-inquiry'
-      path: '/api/public/course-inquiry'
-      fullPath: '/api/public/course-inquiry'
-      preLoaderRoute: typeof ApiPublicCourseInquiryRouteImport
+    '/grammar-test/$leadId': {
+      id: '/grammar-test/$leadId'
+      path: '/grammar-test/$leadId'
+      fullPath: '/grammar-test/$leadId'
+      preLoaderRoute: typeof GrammarTestLeadIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/teacher_/$studentId': {
-      id: '/_authenticated/teacher_/$studentId'
-      path: '/teacher/$studentId'
-      fullPath: '/teacher/$studentId'
-      preLoaderRoute: typeof AuthenticatedTeacherStudentIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/placement-test/$leadId': {
+      id: '/placement-test/$leadId'
+      path: '/placement-test/$leadId'
+      fullPath: '/placement-test/$leadId'
+      preLoaderRoute: typeof PlacementTestLeadIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/admin/users': {
-      id: '/_authenticated/admin/users'
-      path: '/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_authenticated/admin/courses': {
-      id: '/_authenticated/admin/courses'
-      path: '/courses'
-      fullPath: '/admin/courses'
-      preLoaderRoute: typeof AuthenticatedAdminCoursesRouteImport
+    '/_authenticated/admin/blog': {
+      id: '/_authenticated/admin/blog'
+      path: '/blog'
+      fullPath: '/admin/blog'
+      preLoaderRoute: typeof AuthenticatedAdminBlogRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/companies': {
@@ -586,60 +558,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminCompaniesRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/_authenticated/admin/blog': {
-      id: '/_authenticated/admin/blog'
-      path: '/blog'
-      fullPath: '/admin/blog'
-      preLoaderRoute: typeof AuthenticatedAdminBlogRouteImport
+    '/_authenticated/admin/courses': {
+      id: '/_authenticated/admin/courses'
+      path: '/courses'
+      fullPath: '/admin/courses'
+      preLoaderRoute: typeof AuthenticatedAdminCoursesRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/api/public/placement/submit': {
-      id: '/api/public/placement/submit'
-      path: '/api/public/placement/submit'
-      fullPath: '/api/public/placement/submit'
-      preLoaderRoute: typeof ApiPublicPlacementSubmitRouteImport
+    '/_authenticated/admin/users': {
+      id: '/_authenticated/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/teacher_/$studentId': {
+      id: '/_authenticated/teacher_/$studentId'
+      path: '/teacher/$studentId'
+      fullPath: '/teacher/$studentId'
+      preLoaderRoute: typeof AuthenticatedTeacherStudentIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/course-inquiry': {
+      id: '/api/public/course-inquiry'
+      path: '/api/public/course-inquiry'
+      fullPath: '/api/public/course-inquiry'
+      preLoaderRoute: typeof ApiPublicCourseInquiryRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/placement/state': {
-      id: '/api/public/placement/state'
-      path: '/api/public/placement/state'
-      fullPath: '/api/public/placement/state'
-      preLoaderRoute: typeof ApiPublicPlacementStateRouteImport
+    '/api/public/leads': {
+      id: '/api/public/leads'
+      path: '/api/public/leads'
+      fullPath: '/api/public/leads'
+      preLoaderRoute: typeof ApiPublicLeadsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/placement/start': {
-      id: '/api/public/placement/start'
-      path: '/api/public/placement/start'
-      fullPath: '/api/public/placement/start'
-      preLoaderRoute: typeof ApiPublicPlacementStartRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/admin/blog_/$postId': {
+      id: '/_authenticated/admin/blog_/$postId'
+      path: '/blog/$postId'
+      fullPath: '/admin/blog/$postId'
+      preLoaderRoute: typeof AuthenticatedAdminBlogPostIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/api/public/placement/next': {
-      id: '/api/public/placement/next'
-      path: '/api/public/placement/next'
-      fullPath: '/api/public/placement/next'
-      preLoaderRoute: typeof ApiPublicPlacementNextRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/admin/courses_/$courseId': {
+      id: '/_authenticated/admin/courses_/$courseId'
+      path: '/courses/$courseId'
+      fullPath: '/admin/courses/$courseId'
+      preLoaderRoute: typeof AuthenticatedAdminCoursesCourseIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/api/public/grammar/submit': {
-      id: '/api/public/grammar/submit'
-      path: '/api/public/grammar/submit'
-      fullPath: '/api/public/grammar/submit'
-      preLoaderRoute: typeof ApiPublicGrammarSubmitRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/dashboard_/attempts/$attemptId': {
+      id: '/_authenticated/dashboard_/attempts/$attemptId'
+      path: '/dashboard/attempts/$attemptId'
+      fullPath: '/dashboard/attempts/$attemptId'
+      preLoaderRoute: typeof AuthenticatedDashboardAttemptsAttemptIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/grammar/state': {
-      id: '/api/public/grammar/state'
-      path: '/api/public/grammar/state'
-      fullPath: '/api/public/grammar/state'
-      preLoaderRoute: typeof ApiPublicGrammarStateRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/grammar/start': {
-      id: '/api/public/grammar/start'
-      path: '/api/public/grammar/start'
-      fullPath: '/api/public/grammar/start'
-      preLoaderRoute: typeof ApiPublicGrammarStartRouteImport
+    '/api/public/grammar/next': {
+      id: '/api/public/grammar/next'
+      path: '/api/public/grammar/next'
+      fullPath: '/api/public/grammar/next'
+      preLoaderRoute: typeof ApiPublicGrammarNextRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/grammar/practice-mistakes': {
@@ -649,33 +628,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicGrammarPracticeMistakesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/grammar/next': {
-      id: '/api/public/grammar/next'
-      path: '/api/public/grammar/next'
-      fullPath: '/api/public/grammar/next'
-      preLoaderRoute: typeof ApiPublicGrammarNextRouteImport
+    '/api/public/grammar/start': {
+      id: '/api/public/grammar/start'
+      path: '/api/public/grammar/start'
+      fullPath: '/api/public/grammar/start'
+      preLoaderRoute: typeof ApiPublicGrammarStartRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/dashboard_/attempts/$attemptId': {
-      id: '/_authenticated/dashboard_/attempts/$attemptId'
-      path: '/dashboard/attempts/$attemptId'
-      fullPath: '/dashboard/attempts/$attemptId'
-      preLoaderRoute: typeof AuthenticatedDashboardAttemptsAttemptIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/api/public/grammar/state': {
+      id: '/api/public/grammar/state'
+      path: '/api/public/grammar/state'
+      fullPath: '/api/public/grammar/state'
+      preLoaderRoute: typeof ApiPublicGrammarStateRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/admin/courses_/$courseId': {
-      id: '/_authenticated/admin/courses_/$courseId'
-      path: '/courses/$courseId'
-      fullPath: '/admin/courses/$courseId'
-      preLoaderRoute: typeof AuthenticatedAdminCoursesCourseIdRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
+    '/api/public/grammar/submit': {
+      id: '/api/public/grammar/submit'
+      path: '/api/public/grammar/submit'
+      fullPath: '/api/public/grammar/submit'
+      preLoaderRoute: typeof ApiPublicGrammarSubmitRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/admin/blog_/$postId': {
-      id: '/_authenticated/admin/blog_/$postId'
-      path: '/blog/$postId'
-      fullPath: '/admin/blog/$postId'
-      preLoaderRoute: typeof AuthenticatedAdminBlogPostIdRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
+    '/api/public/placement/next': {
+      id: '/api/public/placement/next'
+      path: '/api/public/placement/next'
+      fullPath: '/api/public/placement/next'
+      preLoaderRoute: typeof ApiPublicPlacementNextRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/placement/start': {
+      id: '/api/public/placement/start'
+      path: '/api/public/placement/start'
+      fullPath: '/api/public/placement/start'
+      preLoaderRoute: typeof ApiPublicPlacementStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/placement/state': {
+      id: '/api/public/placement/state'
+      path: '/api/public/placement/state'
+      fullPath: '/api/public/placement/state'
+      preLoaderRoute: typeof ApiPublicPlacementStateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/placement/submit': {
+      id: '/api/public/placement/submit'
+      path: '/api/public/placement/submit'
+      fullPath: '/api/public/placement/submit'
+      preLoaderRoute: typeof ApiPublicPlacementSubmitRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/teacher_/$studentId_/attempts/$attemptId': {
       id: '/_authenticated/teacher_/$studentId_/attempts/$attemptId'
