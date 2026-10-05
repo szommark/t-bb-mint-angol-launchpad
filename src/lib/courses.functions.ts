@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { requireAdmin } from "@/lib/admin.functions";
+import { ParticipantRecordSchema } from "@/lib/participant-import";
 
 export const adminListCourses = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -53,6 +54,13 @@ export const adminGetCourse = createServerFn({ method: "POST" })
       .order("added_at", { ascending: false });
     if (rosterErr) throw new Error(rosterErr.message);
 
+    const { data: records, error: recordsErr } = await supabaseAdmin
+      .from("course_participant_records")
+      .select("id, profile_id, highest_education, current_name, birth_name, mother_name, birth_country, birth_place, birth_date, email, non_hu_citizen_without_hu_address")
+      .eq("course_id", data.courseId)
+      .order("current_name");
+    if (recordsErr) throw new Error(recordsErr.message);
+
     return {
       id: course.id,
       name: course.name,
@@ -68,6 +76,19 @@ export const adminGetCourse = createServerFn({ method: "POST" })
           return { userId: profile.user_id, name: profile.name, email: profile.email, addedAt: row.added_at as string };
         })
         .filter((p): p is { userId: string; name: string; email: string; addedAt: string } => !!p),
+      participantRecords: (records ?? []).map((r) => ({
+        id: r.id,
+        profileId: r.profile_id,
+        highestEducation: r.highest_education,
+        currentName: r.current_name,
+        birthName: r.birth_name,
+        motherName: r.mother_name,
+        birthCountry: r.birth_country,
+        birthPlace: r.birth_place,
+        birthDate: r.birth_date,
+        email: r.email,
+        nonHuCitizenWithoutHuAddress: r.non_hu_citizen_without_hu_address,
+      })),
     };
   });
 
@@ -220,6 +241,98 @@ export const adminRemoveCourseParticipant = createServerFn({ method: "POST" })
       .delete()
       .eq("course_id", data.courseId)
       .eq("participant_id", data.participantId);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
+
+const ImportParticipantsSchema = z.object({
+  courseId: z.string().uuid(),
+  records: z.array(ParticipantRecordSchema).min(1).max(1000),
+});
+
+// Upserts official participant data by (course, email). Records whose email
+// matches an existing account are linked to it, and accounts from the course's
+// company are also put on the roster.
+export const adminImportCourseParticipants = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: z.infer<typeof ImportParticipantsSchema>) => ImportParticipantsSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const emails = [...new Set(data.records.map((r) => r.email))];
+    if (emails.length !== data.records.length) throw new Error("Each email may appear only once in the file.");
+
+    const { data: course, error: courseErr } = await supabaseAdmin
+      .from("courses")
+      .select("company_id")
+      .eq("id", data.courseId)
+      .maybeSingle();
+    if (courseErr) throw new Error(courseErr.message);
+    if (!course) throw new Error("Not found");
+
+    const { data: profiles, error: profilesErr } = await supabaseAdmin
+      .from("profiles")
+      .select("user_id, email, company_id")
+      .in("email", emails);
+    if (profilesErr) throw new Error(profilesErr.message);
+    const profileByEmail = new Map((profiles ?? []).map((p) => [p.email.toLowerCase(), p]));
+
+    const { error: upsertErr } = await supabaseAdmin.from("course_participant_records").upsert(
+      data.records.map((r) => ({
+        course_id: data.courseId,
+        profile_id: profileByEmail.get(r.email)?.user_id ?? null,
+        highest_education: r.highestEducation,
+        current_name: r.currentName,
+        birth_name: r.birthName,
+        mother_name: r.motherName,
+        birth_country: r.birthCountry,
+        birth_place: r.birthPlace,
+        birth_date: r.birthDate,
+        email: r.email,
+        non_hu_citizen_without_hu_address: r.nonHuCitizenWithoutHuAddress,
+      })),
+      { onConflict: "course_id,email" },
+    );
+    if (upsertErr) throw new Error(upsertErr.message);
+
+    const linked = [...profileByEmail.values()];
+    const rosterIds = linked.filter((p) => p.company_id === course.company_id).map((p) => p.user_id);
+    if (rosterIds.length > 0) {
+      const { error: rosterErr } = await supabaseAdmin
+        .from("course_participants")
+        .upsert(
+          rosterIds.map((participantId) => ({ course_id: data.courseId, participant_id: participantId })),
+          { onConflict: "course_id,participant_id", ignoreDuplicates: true },
+        );
+      if (rosterErr) throw new Error(rosterErr.message);
+    }
+
+    return {
+      ok: true as const,
+      imported: data.records.length,
+      linkedAccounts: linked.length,
+      addedToRoster: rosterIds.length,
+      otherCompanyAccounts: linked.length - rosterIds.length,
+    };
+  });
+
+const ParticipantRecordIdSchema = z.object({ courseId: z.string().uuid(), recordId: z.string().uuid() });
+
+export const adminDeleteCourseParticipantRecord = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: z.infer<typeof ParticipantRecordIdSchema>) => ParticipantRecordIdSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { error } = await supabaseAdmin
+      .from("course_participant_records")
+      .delete()
+      .eq("course_id", data.courseId)
+      .eq("id", data.recordId);
     if (error) throw new Error(error.message);
     return { ok: true as const };
   });

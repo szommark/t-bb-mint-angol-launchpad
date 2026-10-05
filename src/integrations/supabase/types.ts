@@ -264,6 +264,72 @@ export type Database = {
           },
         ]
       }
+      course_participant_records: {
+        Row: {
+          birth_country: string | null
+          birth_date: string
+          birth_name: string
+          birth_place: string
+          course_id: string
+          created_at: string
+          current_name: string
+          email: string
+          highest_education: string
+          id: string
+          mother_name: string
+          non_hu_citizen_without_hu_address: boolean
+          profile_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          birth_country?: string | null
+          birth_date: string
+          birth_name: string
+          birth_place: string
+          course_id: string
+          created_at?: string
+          current_name: string
+          email: string
+          highest_education: string
+          id?: string
+          mother_name: string
+          non_hu_citizen_without_hu_address?: boolean
+          profile_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          birth_country?: string | null
+          birth_date?: string
+          birth_name?: string
+          birth_place?: string
+          course_id?: string
+          created_at?: string
+          current_name?: string
+          email?: string
+          highest_education?: string
+          id?: string
+          mother_name?: string
+          non_hu_citizen_without_hu_address?: boolean
+          profile_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_participant_records_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_participant_records_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           company_id: string
