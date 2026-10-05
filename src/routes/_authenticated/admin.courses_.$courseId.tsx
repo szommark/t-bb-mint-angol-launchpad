@@ -33,9 +33,10 @@ export const Route = createFileRoute("/_authenticated/admin/courses_/$courseId")
   component: AdminCourseDetail,
 });
 
-type Participant = { userId: string; name: string; email: string; addedAt: string };
+type Course = Awaited<ReturnType<typeof adminGetCourse>>;
+type RosterEntry = Course["roster"][number];
+type ParticipantRecord = Course["participantRecords"][number];
 type EligibleUser = { userId: string; name: string; email: string };
-type ParticipantRecord = Awaited<ReturnType<typeof adminGetCourse>>["participantRecords"][number];
 
 function AdminCourseDetail() {
   const { courseId } = Route.useParams();
@@ -55,14 +56,13 @@ function AdminCourseDetail() {
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [roster, setRoster] = useState<RosterEntry[]>([]);
   const [records, setRecords] = useState<ParticipantRecord[]>([]);
-  const [deletingRecordId, setDeletingRecordId] = useState<string | null>(null);
 
   const [eligible, setEligible] = useState<EligibleUser[]>([]);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [addingId, setAddingId] = useState<string | null>(null);
-  const [removingId, setRemovingId] = useState<string | null>(null);
+  const [removingEmail, setRemovingEmail] = useState<string | null>(null);
 
   const load = async ({ silent = false } = {}) => {
     if (!silent) setLoading(true);
@@ -74,7 +74,7 @@ function AdminCourseDetail() {
       setDescription(course.description ?? "");
       setStartDate(course.startDate ?? "");
       setEndDate(course.endDate ?? "");
-      setParticipants(course.participants);
+      setRoster(course.roster);
       setRecords(course.participantRecords);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not load course.");
@@ -125,7 +125,7 @@ function AdminCourseDetail() {
     try {
       await addParticipant({ data: { courseId, participantId: userId } });
       setPickerOpen(false);
-      await load();
+      await load({ silent: true });
       toast.success("Participant added.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not add participant.");
@@ -134,29 +134,25 @@ function AdminCourseDetail() {
     }
   };
 
-  const onRemove = async (userId: string) => {
-    setRemovingId(userId);
+  // Removing someone takes them off the course entirely: both the account
+  // enrolment and any uploaded participant data.
+  const onRemove = async (entry: RosterEntry) => {
+    setRemovingEmail(entry.email);
     try {
-      await removeParticipant({ data: { courseId, participantId: userId } });
-      setParticipants((prev) => prev.filter((p) => p.userId !== userId));
+      if (entry.userId) {
+        await removeParticipant({ data: { courseId, participantId: entry.userId } });
+      }
+      if (entry.recordId) {
+        await deleteRecord({ data: { courseId, recordId: entry.recordId } });
+      }
+      setRoster((prev) => prev.filter((p) => p.email !== entry.email));
+      setRecords((prev) => prev.filter((r) => r.id !== entry.recordId));
       toast.success("Participant removed.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not remove participant.");
+      await load({ silent: true });
     } finally {
-      setRemovingId(null);
-    }
-  };
-
-  const onDeleteRecord = async (recordId: string) => {
-    setDeletingRecordId(recordId);
-    try {
-      await deleteRecord({ data: { courseId, recordId } });
-      setRecords((prev) => prev.filter((r) => r.id !== recordId));
-      toast.success("Participant data deleted.");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not delete participant data.");
-    } finally {
-      setDeletingRecordId(null);
+      setRemovingEmail(null);
     }
   };
 
@@ -204,78 +200,98 @@ function AdminCourseDetail() {
       </section>
 
       <section className="rounded-xl border border-border p-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Roster</h2>
-          <Popover open={pickerOpen} onOpenChange={(open) => { setPickerOpen(open); if (open) loadEligible(); }}>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm">
-                <UserPlus className="mr-1.5 h-4 w-4" /> Add participant
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-72 p-0" align="end">
-              <Command>
-                <CommandInput placeholder="Search users..." />
-                <CommandList>
-                  <CommandEmpty>
-                    {companyName ? `No eligible users from ${companyName}.` : "No eligible users."}
-                  </CommandEmpty>
-                  <CommandGroup>
-                    {eligible.map((u) => (
-                      <CommandItem
-                        key={u.userId}
-                        value={`${u.name} ${u.email}`}
-                        onSelect={() => onAdd(u.userId)}
-                        disabled={addingId === u.userId}
-                      >
-                        <div className="flex flex-col">
-                          <span>{u.name || "—"}</span>
-                          <span className="text-xs text-muted-foreground">{u.email}</span>
-                        </div>
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-lg font-semibold">
+            Roster <span className="text-sm font-normal text-muted-foreground">({roster.length})</span>
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            <ParticipantUpload courseId={courseId} onImported={() => load({ silent: true })} />
+            <Popover open={pickerOpen} onOpenChange={(open) => { setPickerOpen(open); if (open) loadEligible(); }}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <UserPlus className="mr-1.5 h-4 w-4" /> Add participant
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-72 p-0" align="end">
+                <Command>
+                  <CommandInput placeholder="Search users..." />
+                  <CommandList>
+                    <CommandEmpty>
+                      {companyName ? `No eligible users from ${companyName}.` : "No eligible users."}
+                    </CommandEmpty>
+                    <CommandGroup>
+                      {eligible.map((u) => (
+                        <CommandItem
+                          key={u.userId}
+                          value={`${u.name} ${u.email}`}
+                          onSelect={() => onAdd(u.userId)}
+                          disabled={addingId === u.userId}
+                        >
+                          <div className="flex flex-col">
+                            <span>{u.name || "—"}</span>
+                            <span className="text-xs text-muted-foreground">{u.email}</span>
+                          </div>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
 
         <div className="mt-4">
-          {participants.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No participants yet.</p>
+          {roster.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No participants yet. Upload the participant spreadsheet or add existing users.
+            </p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Added</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {participants.map((p) => (
-                  <TableRow key={p.userId}>
+                {roster.map((p) => (
+                  <TableRow key={p.email}>
                     <TableCell className="font-medium">{p.name || "—"}</TableCell>
                     <TableCell className="text-muted-foreground">{p.email}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {p.hasAccount ? (
+                          <Badge variant="secondary">Account</Badge>
+                        ) : (
+                          <Badge variant="outline">No account</Badge>
+                        )}
+                        {p.recordId && <Badge variant="outline">Data uploaded</Badge>}
+                      </div>
+                    </TableCell>
                     <TableCell className="text-muted-foreground">{new Date(p.addedAt).toLocaleDateString()}</TableCell>
                     <TableCell className="text-right">
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" disabled={removingId === p.userId}>
-                            {removingId === p.userId ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                          <Button variant="ghost" size="icon" disabled={removingEmail === p.email}>
+                            {removingEmail === p.email ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
                             <AlertDialogTitle>Remove this participant?</AlertDialogTitle>
                             <AlertDialogDescription>
-                              {p.name || p.email} will be removed from this course's roster.
+                              {p.name || p.email} will be removed from this course
+                              {p.recordId ? ", and their uploaded participant data will be permanently deleted" : ""}.
+                              {p.hasAccount ? " Their user account is not affected." : ""}
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => onRemove(p.userId)}>Remove</AlertDialogAction>
+                            <AlertDialogAction onClick={() => onRemove(p)}>Remove</AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
@@ -288,21 +304,13 @@ function AdminCourseDetail() {
         </div>
       </section>
 
-      <section className="rounded-xl border border-border p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold">Participant data</h2>
-            <p className="text-sm text-muted-foreground">
-              Official participant records uploaded from the "Résztvevő adatai" .xlsx template (columns A–I).
-            </p>
-          </div>
-          <ParticipantUpload courseId={courseId} onImported={() => load({ silent: true })} />
-        </div>
-
-        <div className="mt-4">
-          {records.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No participant data uploaded yet.</p>
-          ) : (
+      {records.length > 0 && (
+        <section className="rounded-xl border border-border p-6">
+          <h2 className="text-lg font-semibold">Participant data</h2>
+          <p className="text-sm text-muted-foreground">
+            Official participant records uploaded from the "Résztvevő adatai" .xlsx template (columns A–I).
+          </p>
+          <div className="mt-4">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -313,8 +321,6 @@ function AdminCourseDetail() {
                   <TableHead>Highest education</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Non-HU, no HU address</TableHead>
-                  <TableHead>Account</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -330,37 +336,13 @@ function AdminCourseDetail() {
                     <TableCell className="min-w-56 text-xs text-muted-foreground">{r.highestEducation}</TableCell>
                     <TableCell className="text-muted-foreground">{r.email}</TableCell>
                     <TableCell className="text-muted-foreground">{r.nonHuCitizenWithoutHuAddress ? "Igen" : "Nem"}</TableCell>
-                    <TableCell>
-                      {r.profileId ? <Badge variant="secondary">Linked</Badge> : <Badge variant="outline">No account</Badge>}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" disabled={deletingRecordId === r.id}>
-                            {deletingRecordId === r.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete this participant's data?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              The uploaded data of {r.currentName} will be permanently deleted. Their account and roster entry, if any, are not affected.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => onDeleteRecord(r.id)}>Delete</AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-          )}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
