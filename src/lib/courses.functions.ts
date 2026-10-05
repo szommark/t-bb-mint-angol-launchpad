@@ -13,23 +13,44 @@ export const adminListCourses = createServerFn({ method: "GET" })
 
     const { data, error } = await supabaseAdmin
       .from("courses")
-      .select("id, name, description, start_date, end_date, company_id, companies ( company_name ), course_participants ( count )")
+      .select(
+        "id, name, description, start_date, end_date, company_id, companies ( company_name ), course_participants ( profiles ( email ) ), course_participant_records ( email )",
+      )
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
 
-    return (data ?? []).map((row) => ({
-      id: row.id,
-      name: row.name,
-      description: row.description,
-      startDate: row.start_date,
-      endDate: row.end_date,
-      companyId: row.company_id,
-      companyName: (row.companies as unknown as { company_name: string } | null)?.company_name ?? null,
-      participantCount: (row.course_participants as unknown as { count: number }[])[0]?.count ?? 0,
-    }));
+    return (data ?? []).map((row) => {
+      // Accounts on the roster and uploaded records are the same person when
+      // their emails match, so count unique emails.
+      const accountEmails = (row.course_participants as unknown as { profiles: { email: string } | null }[])
+        .map((p) => p.profiles?.email.toLowerCase())
+        .filter((e): e is string => !!e);
+      const recordEmails = (row.course_participant_records as unknown as { email: string }[]).map((r) => r.email);
+      return {
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        startDate: row.start_date,
+        endDate: row.end_date,
+        companyId: row.company_id,
+        companyName: (row.companies as unknown as { company_name: string } | null)?.company_name ?? null,
+        participantCount: new Set([...accountEmails, ...recordEmails]).size,
+      };
+    });
   });
 
 const CourseIdSchema = z.object({ courseId: z.string().uuid() });
+
+type RosterEntry = {
+  email: string;
+  name: string;
+  // Set when the person was added to the course as an account.
+  userId: string | null;
+  // Set when official participant data was uploaded for them.
+  recordId: string | null;
+  hasAccount: boolean;
+  addedAt: string;
+};
 
 export const adminGetCourse = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -47,7 +68,7 @@ export const adminGetCourse = createServerFn({ method: "POST" })
     if (courseErr) throw new Error(courseErr.message);
     if (!course) throw new Error("Not found");
 
-    const { data: roster, error: rosterErr } = await supabaseAdmin
+    const { data: rosterRows, error: rosterErr } = await supabaseAdmin
       .from("course_participants")
       .select("participant_id, added_at, profiles ( user_id, name, email )")
       .eq("course_id", data.courseId)
@@ -56,10 +77,57 @@ export const adminGetCourse = createServerFn({ method: "POST" })
 
     const { data: records, error: recordsErr } = await supabaseAdmin
       .from("course_participant_records")
-      .select("id, profile_id, highest_education, current_name, birth_name, mother_name, birth_country, birth_place, birth_date, email, non_hu_citizen_without_hu_address")
+      .select("id, profile_id, highest_education, current_name, birth_name, mother_name, birth_country, birth_place, birth_date, email, non_hu_citizen_without_hu_address, created_at")
       .eq("course_id", data.courseId)
       .order("current_name");
     if (recordsErr) throw new Error(recordsErr.message);
+
+    // Match uploaded records to accounts by email at read time, so someone who
+    // registers after the upload shows up as having an account.
+    const recordEmails = (records ?? []).map((r) => r.email);
+    const accountEmails = new Set<string>();
+    if (recordEmails.length > 0) {
+      const { data: accounts, error: accountsErr } = await supabaseAdmin
+        .from("profiles")
+        .select("email")
+        .in("email", recordEmails);
+      if (accountsErr) throw new Error(accountsErr.message);
+      for (const a of accounts ?? []) accountEmails.add(a.email.toLowerCase());
+    }
+
+    // One roster row per person: accounts added to the course and uploaded
+    // records, merged on email.
+    const roster = new Map<string, RosterEntry>();
+    for (const row of rosterRows ?? []) {
+      const profile = row.profiles as unknown as { user_id: string; name: string; email: string } | null;
+      if (!profile) continue;
+      const email = profile.email.toLowerCase();
+      roster.set(email, {
+        email,
+        name: profile.name,
+        userId: profile.user_id,
+        recordId: null,
+        hasAccount: true,
+        addedAt: row.added_at as string,
+      });
+    }
+    for (const r of records ?? []) {
+      const existing = roster.get(r.email);
+      if (existing) {
+        existing.recordId = r.id;
+        existing.name = r.current_name;
+        if (r.created_at < existing.addedAt) existing.addedAt = r.created_at;
+      } else {
+        roster.set(r.email, {
+          email: r.email,
+          name: r.current_name,
+          userId: null,
+          recordId: r.id,
+          hasAccount: accountEmails.has(r.email),
+          addedAt: r.created_at,
+        });
+      }
+    }
 
     return {
       id: course.id,
@@ -69,13 +137,7 @@ export const adminGetCourse = createServerFn({ method: "POST" })
       endDate: course.end_date,
       companyId: course.company_id,
       companyName: (course.companies as unknown as { company_name: string } | null)?.company_name ?? null,
-      participants: (roster ?? [])
-        .map((row) => {
-          const profile = row.profiles as unknown as { user_id: string; name: string; email: string } | null;
-          if (!profile) return null;
-          return { userId: profile.user_id, name: profile.name, email: profile.email, addedAt: row.added_at as string };
-        })
-        .filter((p): p is { userId: string; name: string; email: string; addedAt: string } => !!p),
+      roster: [...roster.values()].sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email, "hu")),
       participantRecords: (records ?? []).map((r) => ({
         id: r.id,
         profileId: r.profile_id,
@@ -335,4 +397,63 @@ export const adminDeleteCourseParticipantRecord = createServerFn({ method: "POST
       .eq("id", data.recordId);
     if (error) throw new Error(error.message);
     return { ok: true as const };
+  });
+
+// Everyone uploaded from participant spreadsheets, one row per person (email)
+// with the courses they were uploaded to.
+export const adminListParticipants = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    await requireAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: records, error } = await supabaseAdmin
+      .from("course_participant_records")
+      .select("email, current_name, birth_date, birth_place, updated_at, courses ( id, name, companies ( company_name ) )")
+      .order("updated_at", { ascending: false });
+    if (error) throw new Error(error.message);
+
+    const emails = [...new Set((records ?? []).map((r) => r.email))];
+    const accountEmails = new Set<string>();
+    if (emails.length > 0) {
+      const { data: accounts, error: accountsErr } = await supabaseAdmin
+        .from("profiles")
+        .select("email")
+        .in("email", emails);
+      if (accountsErr) throw new Error(accountsErr.message);
+      for (const a of accounts ?? []) accountEmails.add(a.email.toLowerCase());
+    }
+
+    type Participant = {
+      email: string;
+      name: string;
+      birthDate: string;
+      birthPlace: string;
+      hasAccount: boolean;
+      courses: { id: string; name: string; companyName: string | null }[];
+    };
+    // Records are newest first, so the first one seen per email carries the
+    // most recently uploaded name and birth details.
+    const byEmail = new Map<string, Participant>();
+    for (const r of records ?? []) {
+      const course = r.courses as unknown as { id: string; name: string; companies: { company_name: string } | null } | null;
+      let participant = byEmail.get(r.email);
+      if (!participant) {
+        participant = {
+          email: r.email,
+          name: r.current_name,
+          birthDate: r.birth_date,
+          birthPlace: r.birth_place,
+          hasAccount: accountEmails.has(r.email),
+          courses: [],
+        };
+        byEmail.set(r.email, participant);
+      }
+      if (course) {
+        participant.courses.push({ id: course.id, name: course.name, companyName: course.companies?.company_name ?? null });
+      }
+    }
+
+    return [...byEmail.values()].sort((a, b) => a.name.localeCompare(b.name, "hu"));
   });
