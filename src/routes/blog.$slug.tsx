@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { BlogContent } from "@/components/BlogContent";
+import { BrandText } from "@/components/BrandText";
 import { supabase } from "@/integrations/supabase/client";
 import { translations } from "@/lib/i18n";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -133,7 +134,7 @@ function BlogPostPage() {
           <span className="block text-xs font-medium uppercase tracking-wider text-muted-foreground">
             {new Date(post.published_at).toLocaleDateString(dateLocale, { year: "numeric", month: "long", day: "numeric" })}
           </span>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl"><BrandText text={title} /></h1>
           {post.image_url && (
             <div className="mt-6 aspect-[16/9] w-full overflow-hidden rounded-2xl bg-muted">
               <img src={post.image_url} alt={title} className="h-full w-full object-cover" />

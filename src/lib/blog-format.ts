@@ -1,4 +1,5 @@
 import { Marked, type Tokens } from "marked";
+import { brandHtml } from "@/lib/avalon";
 import { SITE_URL } from "@/lib/site";
 
 // Blog content is stored as Markdown, but posts pasted from Word or plain text often separate
@@ -221,5 +222,5 @@ const blogMarked = new Marked({
 });
 
 export function renderBlogHtml(source: string): string {
-  return blogMarked.parse(normalizeBlogMarkdown(source), { async: false });
+  return brandHtml(blogMarked.parse(normalizeBlogMarkdown(source), { async: false }));
 }

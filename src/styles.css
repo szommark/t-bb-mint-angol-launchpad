@@ -85,6 +85,8 @@
   --slate-deep: oklch(0.32 0.04 255);
   --teal-accent: oklch(0.72 0.13 195);
   --teal-accent-strong: oklch(0.64 0.14 195);
+  --avalon-navy: #0a1f44;
+  --avalon-gold: #c9a227;
   --gradient-hero: linear-gradient(135deg, oklch(0.22 0.06 255) 0%, oklch(0.30 0.07 240) 60%, oklch(0.38 0.10 215) 100%);
   --gradient-accent: linear-gradient(135deg, oklch(0.72 0.13 195), oklch(0.78 0.14 180));
   --shadow-elegant: 0 20px 60px -25px oklch(0.24 0.07 255 / 0.35);
@@ -137,6 +139,7 @@
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
+  --avalon-navy: #dce3f0;
 }
 
 @layer base {
@@ -151,6 +154,24 @@
 }
 
 @layer components {
+  /* AVaLoN brand colours, from the logo: navy with a gold "a" and "o". */
+  .avalon-wordmark {
+    color: var(--avalon-navy);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .avalon-wordmark .avalon-accent { color: var(--avalon-gold); }
+  .avalon-link,
+  .blog-prose a.avalon-link {
+    color: var(--avalon-navy);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: var(--avalon-gold);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+  .avalon-link:hover { text-decoration-thickness: 2px; }
+
   /* Blog article typography, used by <BlogContent>. */
   .blog-prose {
     font-size: 1.0625rem;
