@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { marked } from "marked";
 import { Loader2 } from "lucide-react";
+import { BlogContent } from "@/components/BlogContent";
 import { supabase } from "@/integrations/supabase/client";
 import { translations } from "@/lib/i18n";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -101,7 +101,6 @@ function BlogPostPage() {
   }
 
   const content = pickLocalized(post, "content", lang);
-  const html = marked.parse(content, { async: false });
   const dateLocale = lang === "hu" ? "hu-HU" : lang === "de" ? "de-DE" : "en-GB";
   const jsonLd = {
     "@context": "https://schema.org",
@@ -140,10 +139,7 @@ function BlogPostPage() {
               <img src={post.image_url} alt={title} className="h-full w-full object-cover" />
             </div>
           )}
-          <div
-            className="mt-8 space-y-4 leading-relaxed text-foreground [&_a]:text-primary [&_a]:underline [&_h2]:mt-8 [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:tracking-tight [&_h3]:mt-6 [&_h3]:text-xl [&_h3]:font-semibold [&_li]:mt-1 [&_ol]:list-decimal [&_ol]:space-y-1 [&_ol]:pl-6 [&_p]:leading-relaxed [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-6"
-            dangerouslySetInnerHTML={{ __html: html }}
-          />
+          <BlogContent markdown={content} className="mt-10" />
         </article>
       </div>
 
