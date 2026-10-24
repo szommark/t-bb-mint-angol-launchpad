@@ -28,8 +28,8 @@ export const translations = {
         { title: "Corporate English & German", desc: "Tailored language training for enterprises and business teams — English or German, delivered on-site or online.", tag: "B2B" },
         { title: "Presentation Skills in English", desc: "Structure, deliver and own the room — English presentation training for professionals.", tag: "Speak" },
         { title: "One-on-One Language Sessions", desc: "Fully personalized 1:1 coaching — your pace, your goals, your schedule.", tag: "1:1" },
-        { title: "AI English", desc: "Practice with AI-powered tools between sessions — instant feedback, adaptive drills, real progress.", tag: "AI" },
-        { title: "Business English Club", desc: "A recurring group format for professionals to practice, network and stay sharp in English.", tag: "Club" },
+        { title: "AVaLoN Adaptive Learning", desc: "An adaptive platform that tailors every exercise to your level and goals — with instant AI feedback.", tag: "AI" },
+        { title: "AVaLoN English Club", desc: "Enjoyable speaking practice with real people — natural conversations in a friendly, relaxed community.", tag: "Club" },
       ],
     },
     inquiry: {
@@ -62,7 +62,16 @@ export const translations = {
     about: {
       title: "About Us",
       instructors: [
-        { role: "Founder & Lead Coach-Trainer", bio: "Teaching adults since 2007. History degree, systems programming qualification, certified professional coach, and extensive experience writing economic language exam tasks." },
+        {
+          role: "Founder & Lead Coach-Trainer",
+          bio: [
+            "I'm Márk Szombathelyi, an English teacher, coach, and the founder of AVaLoN (avln.hu), an adaptive language-learning platform. I've been teaching English since 2007, mainly to adults. I help them communicate with more confidence and make sure their learning truly fits their goals, their circumstances, and their own pace.",
+            "I graduated from ELTE (Eötvös Loránd University) in Budapest with degrees in English language teaching and history, and I also hold an advanced qualification in systems programming. Today these three fields — language teaching, a humanities perspective, and technology — are closely intertwined in my work.",
+            "In 2018 I qualified as a life coach. I still use the methods I learned there, so that my students don't just gain language skills but also recognise their own resources and move consciously towards their goals.",
+            "Since 2023 I've also been developing my public speaking as a member of Toastmasters, an international volunteer community. What I've learned there helps my students speak English not only correctly, but clearly, persuasively, and confidently.",
+            "I created AVaLoN (avln.hu) to bring together learners, teachers, and the possibilities of large language models. I believe that personalised, 21st-century language education should be available to everyone in Hungary — not decades from now, but today.",
+          ],
+        },
       ],
     },
     testimonials: {
@@ -117,8 +126,8 @@ export const translations = {
         { title: "Vállalati angol és német", desc: "Vállalatoknak és üzleti csapatoknak szabott nyelvi képzés — angolul vagy németül, helyszínen vagy online.", tag: "B2B" },
         { title: "Prezentációs készségek angolul", desc: "Építsd fel, add elő és urald a termet — angol nyelvű prezentációs képzés szakembereknek.", tag: "Speak" },
         { title: "Egyéni nyelvórák", desc: "Teljesen személyre szabott 1:1 coaching — a saját tempódban, céljaid szerint, a te időbeosztásodhoz igazítva.", tag: "1:1" },
-        { title: "AI angol", desc: "Gyakorolj MI-alapú eszközökkel az órák között — azonnali visszajelzés, adaptív feladatok, valódi fejlődés.", tag: "AI" },
-        { title: "Business English Club", desc: "Visszatérő csoportos forma szakembereknek — gyakorlás, kapcsolatépítés és angol nyelvi frissesség.", tag: "Club" },
+        { title: "AVaLoN adaptív nyelvtanulás", desc: "Adaptív platform, amely minden feladatot a szintedhez és a céljaidhoz igazít — azonnali MI-visszajelzéssel.", tag: "AI" },
+        { title: "AVaLoN English Club", desc: "Élvezetes angol beszédgyakorlás élő emberekkel — természetes beszélgetések barátságos, laza közösségben.", tag: "Club" },
       ],
     },
     inquiry: {
@@ -151,7 +160,16 @@ export const translations = {
     about: {
       title: "Rólunk",
       instructors: [
-        { role: "Alapító és vezető coach-trainer", bio: "2007 óta tanít felnőtteket. Történész diploma, rendszerprogramozói képesítés, minősített professzionális coach, és kiterjedt tapasztalat gazdasági nyelvvizsga-feladatok írásában." },
+        {
+          role: "Alapító és vezető coach-trainer",
+          bio: [
+            "Szombathelyi Márk vagyok, angoltanár, coach és az AVaLoN (avln.hu) adaptív nyelvtanulási platform alapítója. 2007 óta elsősorban felnőtteket tanítok angolul. Abban segítek nekik, hogy magabiztosabban kommunikáljanak, és a tanulás valóban igazodjon a céljaikhoz, az élethelyzetükhöz és a saját tempójukhoz.",
+            "Az ELTE-n angoltanári és történelem szakos bölcsészdiplomát szereztem, emellett felsőfokú rendszerprogramozói képesítéssel is rendelkezem. Ez a három terület — a nyelvoktatás, a humán szemlélet és a technológia — ma szorosan összekapcsolódik a munkámban.",
+            "2018-ban life coach képesítést szereztem. Az ott elsajátított módszereket azóta is alkalmazom, hogy tanítványaim ne csupán nyelvi tudást szerezzenek, hanem felismerjék saját erőforrásaikat, és tudatosan haladjanak a céljaik felé.",
+            "2023 óta a nyilvános beszéd fejlesztésével is foglalkozom a Toastmasters nemzetközi, önkéntes közösségének tagjaként. Az itt szerzett tapasztalataim abban segítenek, hogy tanítványaim ne csak helyesen, hanem érthetően, meggyőzően és magabiztosan szólaljanak meg angolul.",
+            "Az AVaLoN (avln.hu) platformot azért hoztam létre, hogy összekapcsoljam a tanulókat, a tanárokat és a nagy nyelvi modellek lehetőségeit. Hiszek abban, hogy a XXI. századi, személyre szabott nyelvoktatásnak nem évtizedek múlva, hanem már ma mindenki számára elérhetőnek kell lennie Magyarországon.",
+          ],
+        },
       ],
     },
     testimonials: {
@@ -206,8 +224,8 @@ export const translations = {
         { title: "Business-Englisch & -Deutsch", desc: "Maßgeschneidertes Sprachtraining für Unternehmen und Teams — Englisch oder Deutsch, vor Ort oder online.", tag: "B2B" },
         { title: "Präsentationstraining auf Englisch", desc: "Struktur, Vortrag und Souveränität — Präsentationstraining auf Englisch für Berufstätige.", tag: "Speak" },
         { title: "Einzelunterricht", desc: "Vollständig personalisiertes 1:1-Coaching — in deinem Tempo, nach deinen Zielen und deinem Zeitplan.", tag: "1:1" },
-        { title: "KI-Englisch", desc: "Übe zwischen den Sitzungen mit KI-gestützten Tools — sofortiges Feedback, adaptive Übungen, echter Fortschritt.", tag: "AI" },
-        { title: "Business English Club", desc: "Ein wiederkehrendes Gruppenformat für Berufstätige — Üben, Networking und sprachliche Frische auf Englisch.", tag: "Club" },
+        { title: "AVaLoN – adaptives Sprachenlernen", desc: "Eine adaptive Plattform, die jede Übung an dein Niveau und deine Ziele anpasst — mit sofortigem KI-Feedback.", tag: "AI" },
+        { title: "AVaLoN English Club", desc: "Englisch sprechen mit Freude — echte Gespräche mit echten Menschen in einer entspannten Gemeinschaft.", tag: "Club" },
       ],
     },
     inquiry: {
@@ -240,7 +258,16 @@ export const translations = {
     about: {
       title: "Über uns",
       instructors: [
-        { role: "Gründer & Leitender Coach-Trainer", bio: "Unterrichtet Erwachsene seit 2007. Geschichtsstudium, Qualifikation als Systemprogrammierer, zertifizierter professioneller Coach und umfangreiche Erfahrung im Verfassen von Wirtschaftssprachprüfungsaufgaben." },
+        {
+          role: "Gründer & Leitender Coach-Trainer",
+          bio: [
+            "Ich bin Márk Szombathelyi, Englischlehrer, Coach und Gründer der adaptiven Sprachlernplattform AVaLoN (avln.hu). Seit 2007 unterrichte ich vor allem Erwachsene in Englisch. Ich helfe ihnen, selbstbewusster zu kommunizieren, und sorge dafür, dass sich das Lernen wirklich an ihren Zielen, ihrer Lebenssituation und ihrem eigenen Tempo orientiert.",
+            "An der ELTE (Eötvös-Loránd-Universität) in Budapest habe ich ein geisteswissenschaftliches Studium als Englischlehrer und in Geschichte abgeschlossen; außerdem verfüge ich über eine höhere Qualifikation als Systemprogrammierer. Diese drei Bereiche – Sprachunterricht, geisteswissenschaftliche Perspektive und Technologie – sind heute in meiner Arbeit eng miteinander verbunden.",
+            "2018 habe ich eine Ausbildung zum Life Coach abgeschlossen. Die dort erlernten Methoden setze ich bis heute ein, damit meine Lernenden nicht nur Sprachkenntnisse erwerben, sondern auch ihre eigenen Ressourcen erkennen und ihre Ziele bewusst verfolgen.",
+            "Seit 2023 entwickle ich als Mitglied von Toastmasters, einer internationalen ehrenamtlichen Gemeinschaft, auch meine Fähigkeiten im öffentlichen Reden weiter. Die Erfahrungen, die ich dort sammle, helfen meinen Lernenden, auf Englisch nicht nur korrekt, sondern auch verständlich, überzeugend und selbstbewusst zu sprechen.",
+            "Ich habe AVaLoN (avln.hu) gegründet, um Lernende, Lehrende und die Möglichkeiten großer Sprachmodelle miteinander zu verbinden. Ich bin überzeugt, dass personalisierter Sprachunterricht des 21. Jahrhunderts in Ungarn nicht erst in Jahrzehnten, sondern schon heute für alle zugänglich sein sollte.",
+          ],
+        },
       ],
     },
     testimonials: {

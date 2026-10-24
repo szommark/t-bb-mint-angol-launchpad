@@ -157,8 +157,8 @@ const courseMeta = [
 ];
 
 const CORPORATE_COURSE_INDEX = 0;
-const AI_ENGLISH_COURSE_INDEX = 3;
-const AI_ENGLISH_URL = "https://aienglish.hu";
+const AVALON_COURSE_INDEX = 3;
+const AVALON_URL = "https://avln.hu";
 
 const instructors = [
   { name: "Márk Szombathelyi", initials: "MS", photo: instructorMarkImg },
@@ -559,8 +559,8 @@ function Index() {
                   </div>
                   <h3 className="mt-5 text-lg font-semibold tracking-tight">{c.title}</h3>
                   <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{c.desc}</p>
-                  {i === AI_ENGLISH_COURSE_INDEX ? (
-                    <a href={AI_ENGLISH_URL} target="_blank" rel="noopener noreferrer"
+                  {i === AVALON_COURSE_INDEX ? (
+                    <a href={AVALON_URL} target="_blank" rel="noopener noreferrer"
                       className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:text-[var(--teal-accent-strong)]">
                       {t.courses.learnMore} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                     </a>
@@ -703,7 +703,9 @@ function Index() {
                   <div>
                     <h3 className="text-xl font-semibold tracking-tight">{p.name}</h3>
                     <div className="mt-0.5 text-sm font-medium text-[var(--teal-accent-strong)]">{info.role}</div>
-                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{info.bio}</p>
+                    <div className="mt-3 space-y-3 text-sm leading-relaxed text-muted-foreground">
+                      {info.bio.map((para) => <p key={para}>{para}</p>)}
+                    </div>
                   </div>
                 </div>
               );
