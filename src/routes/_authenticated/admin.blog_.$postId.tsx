@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { adminListBlogPosts, adminSaveBlogPost, adminUploadBlogImage } from "@/lib/blog.functions";
+import { BlogContentField } from "@/components/BlogContentField";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -201,10 +202,7 @@ function AdminPostEditor() {
               <Label htmlFor="excerpt">Kivonat</Label>
               <Textarea id="excerpt" rows={3} value={excerpt} onChange={(e) => setExcerpt(e.target.value)} />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="content">Tartalom (Markdown)</Label>
-              <Textarea id="content" rows={16} className="font-mono text-sm" value={content} onChange={(e) => setContent(e.target.value)} />
-            </div>
+            <BlogContentField id="content" label="Tartalom (Markdown)" value={content} onChange={setContent} />
           </TabsContent>
 
           <TabsContent value="en" className="space-y-5">
@@ -217,10 +215,7 @@ function AdminPostEditor() {
               <Label htmlFor="excerpt-en">Excerpt</Label>
               <Textarea id="excerpt-en" rows={3} value={excerptEn} onChange={(e) => setExcerptEn(e.target.value)} />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="content-en">Content (Markdown)</Label>
-              <Textarea id="content-en" rows={16} className="font-mono text-sm" value={contentEn} onChange={(e) => setContentEn(e.target.value)} />
-            </div>
+            <BlogContentField id="content-en" label="Content (Markdown)" value={contentEn} onChange={setContentEn} />
           </TabsContent>
 
           <TabsContent value="de" className="space-y-5">
@@ -233,10 +228,7 @@ function AdminPostEditor() {
               <Label htmlFor="excerpt-de">Auszug</Label>
               <Textarea id="excerpt-de" rows={3} value={excerptDe} onChange={(e) => setExcerptDe(e.target.value)} />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="content-de">Inhalt (Markdown)</Label>
-              <Textarea id="content-de" rows={16} className="font-mono text-sm" value={contentDe} onChange={(e) => setContentDe(e.target.value)} />
-            </div>
+            <BlogContentField id="content-de" label="Inhalt (Markdown)" value={contentDe} onChange={setContentDe} />
           </TabsContent>
         </Tabs>
 

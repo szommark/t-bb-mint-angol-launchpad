@@ -30,6 +30,8 @@ import testimonialAdriennImg from "@/assets/testimonial-adrienn.jpg";
 import { translations } from "@/lib/i18n";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { BrandText } from "@/components/BrandText";
+import { AVALON_URL } from "@/lib/avalon";
 import { pickLocalized } from "@/lib/blog-i18n";
 import { SITE_URL } from "@/lib/site";
 
@@ -157,8 +159,7 @@ const courseMeta = [
 ];
 
 const CORPORATE_COURSE_INDEX = 0;
-const AI_ENGLISH_COURSE_INDEX = 3;
-const AI_ENGLISH_URL = "https://aienglish.hu";
+const AVALON_COURSE_INDEX = 3;
 
 const instructors = [
   { name: "Márk Szombathelyi", initials: "MS", photo: instructorMarkImg },
@@ -557,10 +558,10 @@ function Index() {
                       {c.tag}
                     </span>
                   </div>
-                  <h3 className="mt-5 text-lg font-semibold tracking-tight">{c.title}</h3>
+                  <h3 className="mt-5 text-lg font-semibold tracking-tight"><BrandText text={c.title} /></h3>
                   <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{c.desc}</p>
-                  {i === AI_ENGLISH_COURSE_INDEX ? (
-                    <a href={AI_ENGLISH_URL} target="_blank" rel="noopener noreferrer"
+                  {i === AVALON_COURSE_INDEX ? (
+                    <a href={AVALON_URL} target="_blank" rel="noopener noreferrer"
                       className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:text-[var(--teal-accent-strong)]">
                       {t.courses.learnMore} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                     </a>
@@ -584,7 +585,7 @@ function Index() {
             <DialogTitle>{t.inquiry.title}</DialogTitle>
             {inquiryCourseIndex !== null && (
               <DialogDescription>
-                {t.inquiry.descPrefix} "{t.courses.items[inquiryCourseIndex].title}"
+                {t.inquiry.descPrefix} "<BrandText text={t.courses.items[inquiryCourseIndex].title} links={false} />"
               </DialogDescription>
             )}
           </DialogHeader>
@@ -703,7 +704,9 @@ function Index() {
                   <div>
                     <h3 className="text-xl font-semibold tracking-tight">{p.name}</h3>
                     <div className="mt-0.5 text-sm font-medium text-[var(--teal-accent-strong)]">{info.role}</div>
-                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{info.bio}</p>
+                    <div className="mt-3 space-y-3 text-sm leading-relaxed text-muted-foreground">
+                      {info.bio.map((para) => <p key={para}><BrandText text={para} /></p>)}
+                    </div>
                   </div>
                 </div>
               );
@@ -774,8 +777,8 @@ function Index() {
                     <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                       {new Date(post.published_at).toLocaleDateString(lang === "hu" ? "hu-HU" : lang === "de" ? "de-DE" : "en-GB", { year: "numeric", month: "long", day: "numeric" })}
                     </span>
-                    <h3 className="mt-2 text-lg font-semibold leading-snug tracking-tight">{localizedTitle}</h3>
-                    <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{localizedExcerpt}</p>
+                    <h3 className="mt-2 text-lg font-semibold leading-snug tracking-tight"><BrandText text={localizedTitle} links={false} /></h3>
+                    <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground"><BrandText text={localizedExcerpt} links={false} /></p>
                     <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors group-hover:text-[var(--teal-accent-strong)]">
                       {t.blog.readMore} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                     </span>
