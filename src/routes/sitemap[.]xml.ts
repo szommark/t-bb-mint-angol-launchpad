@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { SITE_URL } from "@/lib/site";
 
-const STATIC_PATHS = ["/", "/free-placement-test", "/privacy"];
+const STATIC_PATHS = ["/", "/free-placement-test", "/presentations", "/privacy"];
 
 function escapeXml(value: string) {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");

@@ -31,9 +31,10 @@ import { translations } from "@/lib/i18n";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { BrandText } from "@/components/BrandText";
-import { AVALON_URL } from "@/lib/avalon";
+import { AVALON_URL, AVALON_CLUBS_URL } from "@/lib/avalon";
 import { pickLocalized } from "@/lib/blog-i18n";
 import { SITE_URL } from "@/lib/site";
+import { PRESENTATION_COURSE_INDEX } from "@/lib/courses";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -159,7 +160,11 @@ const courseMeta = [
 ];
 
 const CORPORATE_COURSE_INDEX = 0;
-const AVALON_COURSE_INDEX = 3;
+// Course tiles whose "Learn more" opens the AVaLoN site instead of the inquiry dialog.
+const EXTERNAL_COURSE_LINKS: Record<number, string> = {
+  3: AVALON_URL,
+  4: AVALON_CLUBS_URL,
+};
 
 const instructors = [
   { name: "Márk Szombathelyi", initials: "MS", photo: instructorMarkImg },
@@ -186,6 +191,11 @@ function Index() {
     title_en?: string | null; excerpt_en?: string | null; title_de?: string | null; excerpt_de?: string | null;
   };
   const [blogPosts, setBlogPosts] = useState<BlogCard[]>([]);
+  useEffect(() => {
+    if (window.location.hash === "#courses") {
+      coursesRef.current?.scrollIntoView({ block: "start" });
+    }
+  }, []);
   useEffect(() => {
     (async () => {
       const { data } = await supabase
@@ -560,11 +570,16 @@ function Index() {
                   </div>
                   <h3 className="mt-5 text-lg font-semibold tracking-tight"><BrandText text={c.title} /></h3>
                   <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{c.desc}</p>
-                  {i === AVALON_COURSE_INDEX ? (
-                    <a href={AVALON_URL} target="_blank" rel="noopener noreferrer"
+                  {EXTERNAL_COURSE_LINKS[i] ? (
+                    <a href={EXTERNAL_COURSE_LINKS[i]} target="_blank" rel="noopener noreferrer"
                       className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:text-[var(--teal-accent-strong)]">
                       {t.courses.learnMore} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                     </a>
+                  ) : i === PRESENTATION_COURSE_INDEX ? (
+                    <Link to="/presentations"
+                      className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:text-[var(--teal-accent-strong)]">
+                      {t.courses.learnMore} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                    </Link>
                   ) : (
                     <button onClick={() => openInquiry(i)}
                       className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:text-[var(--teal-accent-strong)]">

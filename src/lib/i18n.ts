@@ -26,10 +26,23 @@ export const translations = {
       learnMore: "Learn more",
       items: [
         { title: "Corporate English & German", desc: "Tailored language training for enterprises and business teams — English or German, delivered on-site or online.", tag: "B2B" },
-        { title: "Presentation Skills in English", desc: "Structure, deliver and own the room — English presentation training for professionals.", tag: "Speak" },
+        { title: "Talks & Presentations in English", desc: "Make an impact in the room. Enchant your audience.", tag: "Speak" },
         { title: "One-on-One Language Sessions", desc: "Fully personalized 1:1 coaching — your pace, your goals, your schedule.", tag: "1:1" },
         { title: "AVaLoN Adaptive Learning", desc: "An adaptive platform that tailors every exercise to your level and goals — with instant AI feedback.", tag: "AI" },
         { title: "AVaLoN English Club", desc: "Enjoyable speaking practice with real people — natural conversations in a friendly, relaxed community.", tag: "Club" },
+      ],
+    },
+    presentations: {
+      back: "← Back to courses",
+      body: [
+        "I have been a member of a public speaking club for three years. In that time I have learned that winning the hearts of your audience matters far more than conveying your thoughts with perfect precision.",
+        "If you have to speak in front of people — especially in English — and instead of a heavy, fact-packed talk you would rather truly move your audience: I am here. I will help you prepare, from writing your speech to polishing your delivery style.",
+      ],
+      closing: "Don't hesitate to get in touch.",
+      photoAlts: [
+        "Márk with an award at a Toastmasters club meeting",
+        "Award winners at a Toastmasters club evening in Győr",
+        "Márk and fellow award winners at a Toastmasters event",
       ],
     },
     inquiry: {
@@ -124,10 +137,23 @@ export const translations = {
       learnMore: "Tudj meg többet",
       items: [
         { title: "Vállalati angol és német", desc: "Vállalatoknak és üzleti csapatoknak szabott nyelvi képzés — angolul vagy németül, helyszínen vagy online.", tag: "B2B" },
-        { title: "Prezentációs készségek angolul", desc: "Építsd fel, add elő és urald a termet — angol nyelvű prezentációs képzés szakembereknek.", tag: "Speak" },
+        { title: "Előadások és prezentáció angolul", desc: "Legyél hatással a közönségedre. Bűvöld el őket.", tag: "Speak" },
         { title: "Egyéni nyelvórák", desc: "Teljesen személyre szabott 1:1 coaching — a saját tempódban, céljaid szerint, a te időbeosztásodhoz igazítva.", tag: "1:1" },
         { title: "AVaLoN adaptív nyelvtanulás", desc: "Adaptív platform, amely minden feladatot a szintedhez és a céljaidhoz igazít — azonnali MI-visszajelzéssel.", tag: "AI" },
         { title: "AVaLoN English Club", desc: "Élvezetes angol beszédgyakorlás élő emberekkel — természetes beszélgetések barátságos, laza közösségben.", tag: "Club" },
+      ],
+    },
+    presentations: {
+      back: "← Vissza a kurzusokhoz",
+      body: [
+        "3 éve vagyok egy nyilvános beszéd klub tagja. Az itt eltöltött idő során tanultam meg, hogy gondolataink pontos közvetítésénél sokkal fontosabb a közönség, a hallgatóság szívének megnyerése.",
+        "Ha nyilvánosan kell beszélned emberek előtt — különösen, ha angolul —, és egy tényekkel megtűzdelt, nehéz előadás helyett inkább a közönségedre szeretnél hatni: itt vagyok. Segítek felkészülni, a beszéd megírásától az előadói stílusod csiszolásáig.",
+      ],
+      closing: "Keress bátran.",
+      photoAlts: [
+        "Márk díjjal egy Toastmasters klubesten",
+        "Díjazottak egy győri Toastmasters klubesten",
+        "Márk és díjazott társai egy Toastmasters rendezvényen",
       ],
     },
     inquiry: {
@@ -222,10 +248,23 @@ export const translations = {
       learnMore: "Mehr erfahren",
       items: [
         { title: "Business-Englisch & -Deutsch", desc: "Maßgeschneidertes Sprachtraining für Unternehmen und Teams — Englisch oder Deutsch, vor Ort oder online.", tag: "B2B" },
-        { title: "Präsentationstraining auf Englisch", desc: "Struktur, Vortrag und Souveränität — Präsentationstraining auf Englisch für Berufstätige.", tag: "Speak" },
+        { title: "Vorträge & Präsentationen auf Englisch", desc: "Beeindrucke dein Publikum. Verzaubere es.", tag: "Speak" },
         { title: "Einzelunterricht", desc: "Vollständig personalisiertes 1:1-Coaching — in deinem Tempo, nach deinen Zielen und deinem Zeitplan.", tag: "1:1" },
         { title: "AVaLoN – adaptives Sprachenlernen", desc: "Eine adaptive Plattform, die jede Übung an dein Niveau und deine Ziele anpasst — mit sofortigem KI-Feedback.", tag: "AI" },
         { title: "AVaLoN English Club", desc: "Englisch sprechen mit Freude — echte Gespräche mit echten Menschen in einer entspannten Gemeinschaft.", tag: "Club" },
+      ],
+    },
+    presentations: {
+      back: "← Zurück zu den Kursen",
+      body: [
+        "Seit drei Jahren bin ich Mitglied in einem Club für öffentliches Reden. In dieser Zeit habe ich gelernt, dass es viel wichtiger ist, die Herzen des Publikums zu gewinnen, als die eigenen Gedanken bis ins Letzte präzise zu vermitteln.",
+        "Wenn du vor Menschen sprechen musst — besonders auf Englisch — und statt eines schweren, mit Fakten gespickten Vortrags lieber dein Publikum bewegen möchtest: Ich bin für dich da. Ich helfe dir bei der Vorbereitung, vom Schreiben der Rede bis zum Feinschliff deines Vortragsstils.",
+      ],
+      closing: "Melde dich gerne.",
+      photoAlts: [
+        "Márk mit einer Auszeichnung bei einem Toastmasters-Clubabend",
+        "Preisträger bei einem Toastmasters-Clubabend in Győr",
+        "Márk mit weiteren Preisträgern bei einer Toastmasters-Veranstaltung",
       ],
     },
     inquiry: {

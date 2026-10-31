@@ -2,6 +2,7 @@
 // "a" and "o", as in the logo) and every "avln.hu" becomes a link to the platform.
 
 export const AVALON_URL = "https://avln.hu";
+export const AVALON_CLUBS_URL = "https://www.avln.hu/coming-soon/onsite-clubs";
 
 // Splits text into brand mentions and the text between them (capturing group keeps the mentions).
 export const BRAND_SPLIT = /\b(avalon|avln\.hu)\b/i;

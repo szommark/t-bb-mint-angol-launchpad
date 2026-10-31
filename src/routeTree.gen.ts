@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as FreePlacementTestRouteImport } from './routes/free-placement-test'
+import { Route as PresentationsRouteImport } from './routes/presentations'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -60,6 +61,11 @@ const AuthRoute = AuthRouteImport.update({
 const FreePlacementTestRoute = FreePlacementTestRouteImport.update({
   id: '/free-placement-test',
   path: '/free-placement-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PresentationsRoute = PresentationsRouteImport.update({
+  id: '/presentations',
+  path: '/presentations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -221,6 +227,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/free-placement-test': typeof FreePlacementTestRoute
+  '/presentations': typeof PresentationsRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -255,6 +262,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/free-placement-test': typeof FreePlacementTestRoute
+  '/presentations': typeof PresentationsRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -291,6 +299,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/free-placement-test': typeof FreePlacementTestRoute
+  '/presentations': typeof PresentationsRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -327,6 +336,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/free-placement-test'
+    | '/presentations'
     | '/privacy'
     | '/reset-password'
     | '/sitemap.xml'
@@ -361,6 +371,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/free-placement-test'
+    | '/presentations'
     | '/privacy'
     | '/reset-password'
     | '/sitemap.xml'
@@ -396,6 +407,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/free-placement-test'
+    | '/presentations'
     | '/privacy'
     | '/reset-password'
     | '/sitemap.xml'
@@ -432,6 +444,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   FreePlacementTestRoute: typeof FreePlacementTestRoute
+  PresentationsRoute: typeof PresentationsRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -479,6 +492,13 @@ declare module '@tanstack/react-router' {
       path: '/free-placement-test'
       fullPath: '/free-placement-test'
       preLoaderRoute: typeof FreePlacementTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/presentations': {
+      id: '/presentations'
+      path: '/presentations'
+      fullPath: '/presentations'
+      preLoaderRoute: typeof PresentationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -737,6 +757,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   FreePlacementTestRoute: FreePlacementTestRoute,
+  PresentationsRoute: PresentationsRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
