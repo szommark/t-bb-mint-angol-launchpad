@@ -31,7 +31,7 @@ import { translations } from "@/lib/i18n";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { BrandText } from "@/components/BrandText";
-import { AVALON_URL, AVALON_CLUBS_URL } from "@/lib/avalon";
+import { AVALON_URL, AVALON_CLUBS_URL, avalonBlogUrl } from "@/lib/avalon";
 import { pickLocalized } from "@/lib/blog-i18n";
 import { SITE_URL } from "@/lib/site";
 import { PRESENTATION_COURSE_INDEX } from "@/lib/courses";
@@ -779,9 +779,10 @@ function Index() {
               {blogPosts.map((post) => {
                 const localizedTitle = pickLocalized(post, "title", lang);
                 const localizedExcerpt = pickLocalized(post, "excerpt", lang);
-                return (
-                <Link key={post.slug} to="/blog/$slug" params={{ slug: post.slug }}
-                  className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elegant)]">
+                const cardClass = "group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elegant)]";
+                const avalonUrl = avalonBlogUrl(post.slug);
+                const cardBody = (
+                  <>
                   {post.image_url && (
                     <div className="aspect-[16/10] w-full overflow-hidden bg-muted">
                       <img src={post.image_url} alt={localizedTitle} loading="lazy"
@@ -798,7 +799,17 @@ function Index() {
                       {t.blog.readMore} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                     </span>
                   </div>
-                </Link>
+                  </>
+                );
+                // Posts read on the AVaLoN blog open avln.hu in a new tab.
+                return avalonUrl ? (
+                  <a key={post.slug} href={avalonUrl} target="_blank" rel="noopener noreferrer" className={cardClass}>
+                    {cardBody}
+                  </a>
+                ) : (
+                  <Link key={post.slug} to="/blog/$slug" params={{ slug: post.slug }} className={cardClass}>
+                    {cardBody}
+                  </Link>
                 );
               })}
             </div>

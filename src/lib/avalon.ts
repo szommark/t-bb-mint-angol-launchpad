@@ -4,6 +4,14 @@
 export const AVALON_URL = "https://avln.hu";
 export const AVALON_CLUBS_URL = "https://www.avln.hu/coming-soon/onsite-clubs";
 
+// Posts that are read on the AVaLoN blog: their cards here open avln.hu/blog/<slug>, and their old
+// address on this site redirects there.
+const AVALON_BLOG_SLUGS = new Set(["a-klub-az-uj-nyelviskola", "unalmas-prezentacio-helyett-nagyhatasu-beszed"]);
+
+export function avalonBlogUrl(slug: string): string | null {
+  return AVALON_BLOG_SLUGS.has(slug) ? `${AVALON_URL}/blog/${slug}` : null;
+}
+
 // Splits text into brand mentions and the text between them (capturing group keeps the mentions).
 export const BRAND_SPLIT = /\b(avalon|avln\.hu)\b/i;
 

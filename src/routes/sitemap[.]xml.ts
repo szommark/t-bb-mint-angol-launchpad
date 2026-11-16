@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { SITE_URL } from "@/lib/site";
+import { avalonBlogUrl } from "@/lib/avalon";
 
 const STATIC_PATHS = ["/", "/free-placement-test", "/presentations", "/privacy"];
 
@@ -20,7 +21,10 @@ export const Route = createFileRoute("/sitemap.xml")({
 
         const urls = [
           ...STATIC_PATHS.map((path) => ({ loc: `${SITE_URL}${path}`, lastmod: undefined as string | undefined })),
-          ...(posts ?? []).map((post) => ({ loc: `${SITE_URL}/blog/${post.slug}`, lastmod: post.updated_at })),
+          // Posts read on the AVaLoN blog are listed in avln.hu's own pages, not here.
+          ...(posts ?? [])
+            .filter((post) => !avalonBlogUrl(post.slug))
+            .map((post) => ({ loc: `${SITE_URL}/blog/${post.slug}`, lastmod: post.updated_at })),
         ];
 
         const body = `<?xml version="1.0" encoding="UTF-8"?>
