@@ -1,4 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { avalonBlogUrl } from "@/lib/avalon";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { BlogContent } from "@/components/BlogContent";
@@ -35,7 +36,12 @@ async function fetchPost(slug: string): Promise<BlogPost | null> {
 }
 
 export const Route = createFileRoute("/blog/$slug")({
-  loader: async ({ params }) => fetchPost(params.slug),
+  loader: async ({ params }) => {
+    // Posts read on the AVaLoN blog: old links and shares land there.
+    const avalonUrl = avalonBlogUrl(params.slug);
+    if (avalonUrl) throw redirect({ href: avalonUrl, statusCode: 301 });
+    return fetchPost(params.slug);
+  },
   head: ({ loaderData, params }) => {
     if (!loaderData) {
       return { meta: [{ title: "Blog — Több mint angol" }, { name: "robots", content: "noindex" }] };
